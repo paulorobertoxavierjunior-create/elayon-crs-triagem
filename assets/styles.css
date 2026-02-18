@@ -154,15 +154,6 @@ input:focus, textarea:focus{
   border-top:1px solid var(--stroke);
 }
 
-.canvasWrap{
-  margin-top:12px;
-  border:1px solid var(--stroke);
-  border-radius:14px;
-  overflow:hidden;
-  background: rgba(255,255,255,.75);
-}
-canvas{display:block; width:100%; height:220px}
-
 .row{
   display:flex; gap:10px; flex-wrap:wrap; align-items:center;
 }
@@ -177,55 +168,25 @@ canvas{display:block; width:100%; height:220px}
 .list{margin:8px 0 0; padding-left:18px; color:var(--muted)}
 hr{border:none;border-top:1px solid var(--stroke); margin:14px 0}
 
-/* ===== Spectro Panels (Dashboard) ===== */
-.spectroGrid{
-  display:grid;
-  grid-template-columns: 1fr;
-  gap:12px;
-  margin-top:12px;
-}
-@media (min-width:900px){
-  .spectroGrid{ grid-template-columns: 1fr 1fr; }
-  .spectroGrid .span2{ grid-column: 1 / -1; }
-}
-
 .canvasWrap{
-  margin-top:10px;
-}
-
-.canvasTitle{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  margin-bottom:8px;
-}
-.canvasTitle strong{font-size:13px}
-.canvasTitle span{font-size:12px; color:var(--muted)}
-
-canvas.spectro{
-  display:block;
-  width:100%;
-  height:220px;
-}
-
-.kpiRow{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top:10px;
-}
-.kpi2{
-  padding:10px 12px;
+  margin-top:12px;
   border:1px solid var(--stroke);
   border-radius:14px;
-  background: rgba(255,255,255,.65);
-  font-family: var(--mono);
-  font-size:12px;
+  overflow:hidden;
+  background: rgba(255,255,255,.75);
 }
-.smallNote{
-  font-size:12px;
-  color:var(--muted);
-  margin-top:8px;
-  line-height:1.35;
+canvas{display:block; width:100%; height:220px}
+
+/* ===== Login cinematic ===== */
+.authCard{max-width:760px; margin:0 auto}
+.authHead{
+  display:flex; gap:14px; align-items:center;
+}
+.brandImg{
+  width:92px; height:92px;
+  border-radius:18px;
+  border:1px solid var(--stroke);
+  background: rgba(255,255,255,.6);
+  object-fit:contain;
+  box-shadow: 0 10px 24px rgba(0,0,0,.06);
 }
