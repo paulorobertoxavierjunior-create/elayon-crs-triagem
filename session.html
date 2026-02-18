@@ -36,6 +36,27 @@
         <div class="kpi" id="kpiTimer">tempo: --:--</div>
         <div class="kpi" id="kpiState">estado: aguardando</div>
         <div class="kpi" id="kpiLevel">nível: --</div>
+
+<section class="card">
+  <h2>Sessão (Tempo Real)</h2>
+
+  <div class="row">
+    <button class="btn" id="btnStartAudio">Iniciar Captação</button>
+    <button class="btn ghost" id="btnStopAudio">Encerrar Sessão</button>
+  </div>
+
+  <div class="mini">
+    <div><b>Status:</b> <span id="audioStatus">parado</span></div>
+    <div><b>Duração:</b> <span id="timer">00:00</span> / <span id="maxMin">30</span> min</div>
+  </div>
+
+  <canvas id="scope" width="1100" height="520" style="width:100%; max-width:980px; border-radius:16px;"></canvas>
+
+  <div class="hint">
+    7 linhas = 7 ritmos/medidas simultâneas. (Demo visual/metricamente útil; sem diagnóstico.)
+  </div>
+</section>
+
       </div>
 
       <div class="actions">
