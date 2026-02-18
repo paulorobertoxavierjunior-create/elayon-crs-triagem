@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Elayon CRS — Login</title>
+  <title>Elayon CRS — Entrar</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -14,66 +14,65 @@
       <div class="logo">E</div>
       <div>
         <div class="brand-title">Elayon CRS</div>
-        <div class="brand-sub">Acesso do médico • Demo</div>
+        <div class="brand-sub">Humanidade e Tecnologia em Harmonia • Demo</div>
       </div>
     </div>
     <nav class="nav">
       <a class="link" href="pricing.html">Token & Ética</a>
-      <a class="link" href="report.html">Relatórios</a>
     </nav>
   </header>
 
-  <main class="container">
-    <section class="card authCard">
-      <div class="authHead">
-        <img class="brandImg" src="assets/logo.png" alt="Elayon" onerror="this.style.display='none'">
-        <div>
-          <h1>Entrar</h1>
-          <p class="muted">Acesso do médico para operar a demo. Sem diagnóstico automático.</p>
+  <main class="container center">
+    <div class="loginWrap">
+      <section class="card">
+        <div class="brandHero">
+          <!-- Se ainda não subir a imagem, o sistema continua funcionando -->
+          <img class="brand-img" src="assets/logo.png" alt="Elayon" onerror="this.style.display='none'">
+          <div>
+            <h1>Entrar</h1>
+            <p>Ambiente de triagem vocal (demo). A responsabilidade clínica é do médico.</p>
+          </div>
         </div>
-      </div>
 
-      <div class="grid2">
         <div class="field">
-          <label for="nome">Nome completo</label>
-          <input id="nome" placeholder="Ex: Dr. Paulo Roberto" autocomplete="name" />
+          <label for="nome">Nome do médico</label>
+          <input id="nome" placeholder="Ex: Dr. Paulo" autocomplete="name" />
         </div>
-        <div class="field">
-          <label for="crm">CRM (opcional na demo)</label>
-          <input id="crm" placeholder="Ex: CRM-AM 00000" />
+
+        <div class="grid2">
+          <div class="field">
+            <label for="email">E-mail</label>
+            <input id="email" type="email" placeholder="exemplo@hospital.com" autocomplete="email" />
+          </div>
+          <div class="field">
+            <label for="senha">Senha</label>
+            <input id="senha" type="password" placeholder="••••••••" />
+          </div>
         </div>
-      </div>
 
-      <div class="grid2">
-        <div class="field">
-          <label for="email">E-mail</label>
-          <input id="email" type="email" placeholder="Ex: medico@hospital.com" autocomplete="email" />
+        <div class="mini">
+          <div class="pill info">Login demo (local)</div>
+          <div class="pill warn">Sem diagnóstico automático</div>
+          <div class="pill ok">Consentimento será exigido no fluxo</div>
         </div>
-        <div class="field">
-          <label for="senha">Senha</label>
-          <input id="senha" type="password" placeholder="••••••••" autocomplete="current-password" />
+
+        <div class="actions">
+          <button class="btn primary" id="btnEntrar">Entrar</button>
+          <button class="btn" id="btnLimpar">Limpar</button>
         </div>
-      </div>
 
-      <div class="mini">
-        <div class="pill info">Sessões consomem token ao encerrar</div>
-        <div class="pill warn">Checkout é fictício na demo</div>
-        <div class="pill ok">Humano no processo do começo ao fim</div>
-      </div>
-
-      <div class="actions">
-        <button class="btn primary" id="btnLogin">Entrar</button>
-        <button class="btn" id="btnGoPricing">Carregar tokens</button>
-      </div>
-
-      <hr />
-      <p class="muted" style="font-size:12px">
-        Ética: esta interface só organiza captação e visualização. O diagnóstico é do médico, registrado manualmente no relatório.
-      </p>
-    </section>
+        <hr/>
+        <p class="muted" style="margin:0">
+          Ética: este protótipo é apoio visual/métrico. O relatório final deve conter o diagnóstico escrito pelo médico, com credenciais.
+        </p>
+      </section>
+    </div>
   </main>
 
-  <footer class="footer"><span>Elayon CRS • Login</span></footer>
-  <script src="assets/app.js"></script>
+  <footer class="footer">
+    <span>Elayon CRS • Login • armazenamento local (demo)</span>
+  </footer>
+
+  <script src="assets/auth.js"></script>
 </body>
 </html>
