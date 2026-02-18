@@ -4,7 +4,7 @@ function getParam(name){
   const u = new URL(location.href);
   return u.searchParams.get(name);
 }
-
+ 
 function loadSessions(){
   return JSON.parse(localStorage.getItem(KEY_SESSIONS) || "[]");
 }
