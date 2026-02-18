@@ -7,7 +7,7 @@ function load(){
   }catch{}
   return { sessionMinutes: 30, sampleHz: 10, notes: "Config padrão (demo)." };
 }
-
+ 
 function save(cfg){
   localStorage.setItem(KEY_CONFIG, JSON.stringify(cfg));
 }
