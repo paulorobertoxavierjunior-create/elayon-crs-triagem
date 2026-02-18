@@ -7,7 +7,7 @@ function getParam(name){
 function loadSessions(){
   return JSON.parse(localStorage.getItem(KEY_SESSIONS) || "[]");
 }
-
+ 
 const id = getParam("id");
 const sessions = loadSessions();
 
