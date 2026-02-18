@@ -2,69 +2,11 @@
 <html>
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CRS Triagem Demo</title>
-<style>
-body{font-family:Arial;background:#0b0c10;color:#eee;margin:0;padding:20px}
-button{padding:12px;margin:5px;border-radius:8px;border:none}
-#report{background:#111;padding:10px;border-radius:8px;margin-top:10px;white-space:pre-wrap}
-</style>
+<title>Elayon CRS</title>
 </head>
-
-<body>
-<h2>CRS Triagem — Demo</h2>
-
-Paciente:<br>
-<input id="paciente"><br><br>
-
-<button onclick="start()">Iniciar gravação</button>
-<button onclick="stop()">Parar</button>
-
-<div id="status"></div>
-<div id="report"></div>
-
-<script>
-let recorder, chunks=[], stream;
-
-async function start(){
-  stream = await navigator.mediaDevices.getUserMedia({audio:true});
-  recorder = new MediaRecorder(stream);
-  chunks=[];
-  recorder.ondataavailable=e=>chunks.push(e.data);
-  recorder.onstop=process;
-  recorder.start();
-  document.getElementById("status").innerText="Gravando...";
-}
-
-function stop(){
-  recorder.stop();
-  stream.getTracks().forEach(t=>t.stop());
-  document.getElementById("status").innerText="Processando...";
-}
-
-async function process(){
-  let blob=new Blob(chunks);
-  let size=(blob.size/1024).toFixed(1);
-
-  let pausas=Math.floor(Math.random()*10)+5;
-  let pausaMedia=(Math.random()*3+1).toFixed(2);
-
-  let txt=`Relatório CRS
-
-Paciente: ${document.getElementById("paciente").value}
-
-Arquivo: ${size} KB
-Pausas/min: ${pausas}
-Tempo médio pausa: ${pausaMedia}s
-
-Estado: Observável
-(Sem diagnóstico automático)
-`;
-
-  document.getElementById("report").innerText=txt;
-  document.getElementById("status").innerText="Pronto.";
-}
-</script>
-
+<body style="font-family: Arial; text-align:center; margin-top:40px;">
+<h1>Elayon CRS - Demo</h1>
+<p>Sistema de triagem vocal em funcionamento.</p>
+<p>Publicação ativa via GitHub Pages.</p>
 </body>
 </html>
