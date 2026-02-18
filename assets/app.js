@@ -50,7 +50,7 @@ document.getElementById("btnIniciar")?.addEventListener("click", () => {
     summary: null,
     configSnapshot: cfg
   };
-
+ 
   saveSession(session);
   location.href = `session.html?id=${encodeURIComponent(id)}`;
 });
