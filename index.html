@@ -1,31 +1,108 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<title>Elayon CRS</title>
-<link rel="stylesheet" href="css/style.css">
-</head>
+<style>
+  :root{
+    --bg1:#f6fbff;   /* quase branco azulado */
+    --bg2:#f0fffd;   /* quase branco ciano */
+    --bg3:#f3fff7;   /* quase branco esverdeado */
+    --card:#ffffffcc; /* branco com leve transparência */
+    --stroke:#dbeafe; /* borda azul bem clara */
+    --text:#0f172a;   /* texto escuro elegante */
+    --muted:#334155;  /* texto secundário */
+    --btn1:#22c55e;   /* verde */
+    --btn2:#06b6d4;   /* ciano */
+    --shadow: 0 10px 30px rgba(2, 132, 199, 0.12);
+  }
 
-<body>
+  *{ box-sizing:border-box; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
 
-<h1>Elayon CRS</h1>
-<p>Triagem vocal inteligente</p>
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    color:var(--text);
+    background:
+      radial-gradient(900px 500px at 20% 20%, var(--bg2), transparent 60%),
+      radial-gradient(900px 500px at 80% 30%, var(--bg3), transparent 60%),
+      linear-gradient(135deg, var(--bg1), #ffffff);
+  }
 
-<div class="box">
+  .wrap{
+    width:min(520px, 100%);
+    text-align:center;
+  }
 
-<h2>Iniciar Atendimento</h2>
+  h1{
+    margin:0 0 6px 0;
+    font-size:34px;
+    letter-spacing:-0.5px;
+  }
 
-<label>Médico:</label>
-<input id="medico" placeholder="Nome do médico">
+  .subtitle{
+    margin:0 0 18px 0;
+    color:var(--muted);
+    font-size:14px;
+  }
 
-<label>Paciente:</label>
-<input id="paciente" placeholder="Nome do paciente">
+  .card{
+    margin:0 auto;
+    width:min(420px, 100%);
+    background:var(--card);
+    border:1px solid var(--stroke);
+    border-radius:18px;
+    box-shadow: var(--shadow);
+    padding:18px 18px 16px;
+    backdrop-filter: blur(6px);
+  }
 
-<button onclick="iniciarSessao()">Iniciar Sessão</button>
+  .card h2{
+    margin:6px 0 14px 0;
+    font-size:18px;
+  }
 
-</div>
+  label{
+    display:block;
+    text-align:left;
+    font-size:12px;
+    color:var(--muted);
+    margin:10px 0 6px;
+  }
 
-<script src="js/app.js"></script>
+  input{
+    width:100%;
+    padding:12px 12px;
+    border-radius:12px;
+    border:1px solid var(--stroke);
+    outline:none;
+    background:#ffffff;
+    font-size:14px;
+  }
 
-</body>
-</html>
+  input:focus{
+    border-color:#93c5fd;
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.12);
+  }
+
+  .btn{
+    width:100%;
+    margin-top:14px;
+    padding:12px 14px;
+    border:none;
+    border-radius:14px;
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+    background: linear-gradient(90deg, var(--btn2), var(--btn1));
+    box-shadow: 0 10px 18px rgba(34,197,94,0.12);
+  }
+
+  .btn:active{ transform: translateY(1px); }
+
+  .foot{
+    margin-top:10px;
+    font-size:12px;
+    color:var(--muted);
+    opacity:0.85;
+  }
+</style>
