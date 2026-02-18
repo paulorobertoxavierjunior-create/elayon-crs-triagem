@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="bg"></div>
- 
+
   <header class="topbar">
     <div class="brand">
       <div class="logo">E</div>
@@ -25,6 +25,7 @@
   </header>
 
   <main class="container">
+    <!-- CONFIG -->
     <section class="card">
       <h1>Painel de Configuração</h1>
       <p class="muted">Esses parâmetros influenciam a sessão e o relatório (demo). Você pode evoluir isso depois para modelos mais ricos.</p>
@@ -55,6 +56,64 @@
       <p class="muted">
         Dica: no futuro você pode adicionar “Presets” (Afasia / Tremor / Pós-AVC / etc) como botões que preenchem o campo de notas e thresholds.
       </p>
+    </section>
+
+    <!-- AUDIO / SPECTROS -->
+    <section class="card">
+      <h2>Laboratório de Espectros (demo)</h2>
+      <p class="muted">
+        3 painéis: (1) espectro de som (frequências), (2) espectro de silêncio (energia/RMS no tempo),
+        (3) sobreposição (som + silêncio juntos). Sem diagnóstico — apenas apoio visual/métrico.
+      </p>
+
+      <div class="actions">
+        <button class="btn primary" id="btnMicStart">Ligar Microfone</button>
+        <button class="btn danger" id="btnMicStop" disabled>Desligar</button>
+        <button class="btn" id="btnClear" disabled>Limpar Traço</button>
+      </div>
+
+      <div class="kpiRow">
+        <div class="kpi2" id="kpiState">MIC: OFF</div>
+        <div class="kpi2" id="kpiRms">RMS: 0.000</div>
+        <div class="kpi2" id="kpiSil">Silêncio: 0%</div>
+        <div class="kpi2" id="kpiHz">FFT bins: -</div>
+      </div>
+
+      <div class="spectroGrid">
+        <div class="card soft">
+          <div class="canvasTitle">
+            <strong>1) Espectrômetro de Som</strong>
+            <span>barras de frequência (analyser)</span>
+          </div>
+          <div class="canvasWrap">
+            <canvas class="spectro" id="cvSound"></canvas>
+          </div>
+        </div>
+
+        <div class="card soft">
+          <div class="canvasTitle">
+            <strong>2) Espectrômetro de Silêncio</strong>
+            <span>energia (RMS) ao longo do tempo</span>
+          </div>
+          <div class="canvasWrap">
+            <canvas class="spectro" id="cvSilence"></canvas>
+          </div>
+        </div>
+
+        <div class="card soft span2">
+          <div class="canvasTitle">
+            <strong>3) Sobreposição</strong>
+            <span>som (freq) + silêncio (RMS)</span>
+          </div>
+          <div class="canvasWrap">
+            <canvas class="spectro" id="cvOverlay"></canvas>
+          </div>
+          <div class="smallNote">
+            Nota: “Silêncio” aqui é métrica de energia baixa (RMS), não interpretação. Serve para visualizar pausas,
+            fôlego, variações e blocos de fala.
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 
