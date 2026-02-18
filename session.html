@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Elayon CRS - Sessão</title>
+  <link rel="stylesheet" href="./assets/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">
+        <h1>Elayon CRS — Sessão</h1>
+        <p>Coleta local + visualização básica (demo).</p>
+      </div>
+      <div class="row">
+        <a class="btn" href="./dashboard.html" style="text-decoration:none;">Voltar</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between;">
+        <span class="badge" id="sidBadge">Sessão: —</span>
+        <span class="badge" id="micBadge">Mic: parado</span>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="grid two">
+        <div>
+          <h3 style="margin:0 0 10px;">Dados do paciente</h3>
+
+          <div class="grid two">
+            <div>
+              <label>ID do paciente (ou apelido)</label>
+              <input id="p_id" placeholder="Ex.: P001" />
+            </div>
+            <div>
+              <label>Idade</label>
+              <input id="p_idade" inputmode="numeric" placeholder="Ex.: 38" />
+            </div>
+          </div>
+
+          <div class="grid two" style="margin-top:10px;">
+            <div>
+              <label>Sexo</label>
+              <select id="p_sexo">
+                <option value="">—</option>
+                <option value="F">F</option>
+                <option value="M">M</option>
+                <option value="O">Outro</option>
+              </select>
+            </div>
+            <div>
+              <label>Observação rápida</label>
+              <input id="p_obs" placeholder="Ex.: triagem respiratória" />
+            </div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>Termo de consentimento (obrigatório)</label>
+            <div class="row">
+              <input type="checkbox" id="consent" style="width:auto;" />
+              <span class="note">Confirmo que o paciente autorizou a coleta de áudio para fins de triagem.</span>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+            <button class="btn primary" id="btnSalvar">Salvar sessão</button>
+            <button class="btn" id="btnTestMic">Testar microfone</button>
+          </div>
+
+          <p class="small" id="sessStatus" style="margin:10px 0 0;"></p>
+        </div>
+
+        <div>
+          <h3 style="margin:0 0 10px;">Visualização (demo)</h3>
+          <canvas id="wave"></canvas>
+          <div class="row" style="margin-top:12px;">
+            <button class="btn ok" id="btnStart">Iniciar coleta</button>
+            <button class="btn danger" id="btnStop">Parar</button>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="kv">
+            <div>Energia (RMS)</div><div id="m_rms">—</div>
+            <div>Silêncio (ratio)</div><div id="m_sil">—</div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="note">
+            Nesta versão, a análise é <b>local</b>.  
+            Próximo passo: plugar “upload manual” do trecho (quando você autorizar).
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import {
+      mustHaveDoctorOrRedirect,
+      getSessions,
+      updateSession,
+      initMic,
+      stopMic,
+      drawWaveform
+    } from "./assets/app.js";
+
+    mustHaveDoctorOrRedirect();
+    const el = (id) => document.getElementById(id);
+
+    const params = new URLSearchParams(location.search);
+    const sid = params.get("sid") || "SEM_ID";
+    el("sidBadge").textContent = "Sessão: " + sid;
+
+    const sessions = getSessions();
+    const sess = sessions.find(s => s.id === sid) || null;
+
+    if (sess?.patientId) el("p_id").value = sess.patientId;
+
+    function setStatus(msg, ok=false) {
+      el("sessStatus").textContent = msg;
+      el("sessStatus").style.color = ok ? "var(--ok)" : "var(--muted)";
+    }
+
+    el("btnSalvar").addEventListener("click", () => {
+      const patientId = el("p_id").value.trim();
+      if (!patientId) {
+        el("sessStatus").style.color = "var(--danger)";
+        el("sessStatus").textContent = "Preencha ao menos o ID do paciente.";
+        return;
+      }
+      updateSession(sid, {
+        patientId,
+        idade: el("p_idade").value.trim(),
+        sexo: el("p_sexo").value,
+        obs: el("p_obs").value.trim(),
+        consent: el("consent").checked,
+      });
+      setStatus("Sessão salva ✅", true);
+    });
+
+    el("btnTestMic").addEventListener("click", async () => {
+      try {
+        await initMic();
+        stopMic();
+        el("micBadge").textContent = "Mic: ok";
+        el("micBadge").style.borderColor = "rgba(69, 212, 131, 0.55)";
+        setStatus("Microfone autorizado e funcionando ✅", true);
+      } catch (e) {
+        el("micBadge").textContent = "Mic: bloqueado";
+        el("micBadge").style.borderColor = "rgba(255, 106, 106, 0.55)";
+        el("sessStatus").style.color = "var(--danger)";
+        el("sessStatus").textContent = "Falha ao acessar microfone. Verifique permissões do navegador.";
+      }
+    });
+
+    el("btnStart").addEventListener("click", async () => {
+      if (!el("consent").checked) {
+        el("sessStatus").style.color = "var(--danger)";
+        el("sessStatus").textContent = "Consentimento obrigatório antes de iniciar.";
+        return;
+      }
+      try {
+        await initMic();
+        el("micBadge").textContent = "Mic: coletando";
+        el("micBadge").style.borderColor = "rgba(106, 167, 255, 0.6)";
+
+        drawWaveform(el("wave"), ({ rms, silenceRatio }) => {
+          el("m_rms").textContent = rms.toFixed(4);
+          el("m_sil").textContent = (silenceRatio * 100).toFixed(1) + "%";
+        });
+
+        setStatus("Coleta ativa. Peça ao paciente para responder normalmente.", true);
+      } catch (e) {
+        el("sessStatus").style.color = "var(--danger)";
+        el("sessStatus").textContent = "Não foi possível iniciar microfone. Verifique permissões.";
+      }
+    });
+
+    el("btnStop").addEventListener("click", () => {
+      stopMic();
+      el("micBadge").textContent = "Mic: parado";
+      el("micBadge").style.borderColor = "rgba(34, 48, 74, 0.9)";
+      setStatus("Coleta encerrada.");
+    });
+  </script>
+</body>
+</html>
