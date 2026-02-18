@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Elayon CRS — Configuração</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">E</div>
+      <div>
+        <div class="brand-title">Configurar CRS</div>
+        <div class="brand-sub">Parâmetros visíveis e ajustáveis pelo médico</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="link" href="index.html">Início</a>
+      <a class="link" href="report.html">Relatórios</a>
+      <a class="link" href="pricing.html">Token & Ética</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h1>Painel de Configuração</h1>
+      <p class="muted">Esses parâmetros influenciam a sessão e o relatório (demo). Você pode evoluir isso depois para modelos mais ricos.</p>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="sessionMinutes">Duração máxima da sessão (min)</label>
+          <input id="sessionMinutes" type="number" min="1" max="120" />
+        </div>
+
+        <div class="field">
+          <label for="sampleHz">Amostragem por segundo (Hz)</label>
+          <input id="sampleHz" type="number" min="1" max="30" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="notes">Notas/Protocolo interno (texto livre)</label>
+        <textarea id="notes" rows="4" placeholder="Ex: Afasia: observar pausas, ritmo, variabilidade..."></textarea>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="btnSave">Salvar Configuração</button>
+        <button class="btn" id="btnReset">Restaurar Padrão</button>
+      </div>
+
+      <hr/>
+      <p class="muted">
+        Dica: no futuro você pode adicionar “Presets” (Afasia / Tremor / Pós-AVC / etc) como botões que preenchem o campo de notas e thresholds.
+      </p>
+    </section>
+  </main>
+
+  <footer class="footer"><span>Elayon CRS • Config</span></footer>
+  <script src="assets/dashboard.js"></script>
+</body>
+</html>
