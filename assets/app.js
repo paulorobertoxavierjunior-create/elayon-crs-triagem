@@ -1,62 +1,116 @@
+// assets/app.js
+"use strict";
+
+/**
+ * Chaves de armazenamento
+ */
+const KEY_DOCTOR = "elayon_doctor";
+const KEY_TOKENS = "elayon_tokens";
 const KEY_CONFIG = "elayon_crs_config";
 const KEY_SESSIONS = "elayon_crs_sessions";
 
-function uid() {
-  return "S" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+/**
+ * Utils
+ */
+function $(id){ return document.getElementById(id); }
+
+function safeJsonParse(raw, fallback){
+  try { return JSON.parse(raw); } catch { return fallback; }
 }
 
-function loadConfig() {
-  try {
-    const raw = localStorage.getItem(KEY_CONFIG);
-    if (raw) return JSON.parse(raw);
-  } catch {}
+function loadDoctor(){
+  return safeJsonParse(localStorage.getItem(KEY_DOCTOR) || "null", null);
+}
+function saveDoctor(doc){
+  localStorage.setItem(KEY_DOCTOR, JSON.stringify(doc));
+}
+function clearDoctor(){
+  localStorage.removeItem(KEY_DOCTOR);
+}
+
+function getTokens(){
+  const n = Number(localStorage.getItem(KEY_TOKENS) || "0");
+  return Number.isFinite(n) ? n : 0;
+}
+function setTokens(n){
+  localStorage.setItem(KEY_TOKENS, String(Math.max(0, Math.floor(n))));
+}
+function addTokens(n){
+  setTokens(getTokens() + Number(n || 0));
+}
+function consumeToken(){
+  const t = getTokens();
+  if (t <= 0) return false;
+  setTokens(t - 1);
+  return true;
+}
+
+function loadConfig(){
+  const cfg = safeJsonParse(localStorage.getItem(KEY_CONFIG) || "{}", {});
   return {
-    sessionMinutes: 30,
-    sampleHz: 10,
-    notes: "Config padrão (demo)."
+    // defaults
+    sessionMinutes: Number(cfg.sessionMinutes ?? 20),
+    sampleHz: Number(cfg.sampleHz ?? 10),
+    presetKey: String(cfg.presetKey ?? "AFASIA"),
+    // 8 “linhas/medidas” por padrão (7 emblemático + 1 RMS total)
+    lines: Number(cfg.lines ?? 8),
   };
 }
 
-function saveSession(session) {
-  const arr = JSON.parse(localStorage.getItem(KEY_SESSIONS) || "[]");
-  arr.unshift(session);
-  localStorage.setItem(KEY_SESSIONS, JSON.stringify(arr));
+function requireLoginOrRedirect(){
+  const doc = loadDoctor();
+  if (!doc) {
+    location.href = "index.html";
+    return null;
+  }
+  return doc;
 }
 
-document.getElementById("btnIniciar")?.addEventListener("click", () => {
-  const medico = (document.getElementById("medico").value || "").trim();
-  const paciente = (document.getElementById("paciente").value || "").trim();
-  const contexto = (document.getElementById("contexto").value || "").trim();
+function genId(prefix="S"){
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`.toUpperCase();
+}
 
-  if (!medico || !paciente) {
-    alert("Preencha Médico e Paciente.");
+/**
+ * Login page behavior
+ */
+(function initLogin(){
+  const btnLogin = $("btnLogin");
+  if (!btnLogin) return; // não está no index.html login
+
+  // Se já estiver logado, manda pro home
+  const already = loadDoctor();
+  if (already) {
+    location.href = "home.html";
     return;
   }
 
-  const cfg = loadConfig();
-  const id = uid();
-  const start = Date.now();
-  const expiresAt = start + (cfg.sessionMinutes || 30) * 60 * 1000;
+  $("btnGoPricing")?.addEventListener("click", ()=> location.href = "pricing.html");
 
-  const session = {
-    id,
-    medico,
-    paciente,
-    contexto,
-    start,
-    expiresAt,
-    status: "active",
-    metrics: [],
-    summary: null,
-    configSnapshot: cfg
-  };
- 
-  saveSession(session);
-  location.href = `session.html?id=${encodeURIComponent(id)}`;
-});
+  btnLogin.addEventListener("click", ()=>{
+    const nome = ($("nome")?.value || "").trim();
+    const email = ($("email")?.value || "").trim();
+    const senha = ($("senha")?.value || "").trim();
+    const crm = ($("crm")?.value || "").trim();
 
-document.getElementById("btnLimpar")?.addEventListener("click", () => {
-  document.getElementById("medico").value = "";
-  document.getElementById("paciente").value = "";
-  document.getElementById("contexto").value = "";
-});
+    if (!nome || !email || !senha) {
+      alert("Preencha nome, e-mail e senha.");
+      return;
+    }
+
+    // Demo: validação local (sem backend)
+    const doctor = {
+      id: genId("DOC"),
+      nome,
+      email,
+      crm: crm || "",
+      createdAt: Date.now()
+    };
+
+    saveDoctor(doctor);
+
+    // Se for a primeira vez, dá 1 token de demo opcional (se quiser, comente essa linha)
+    if (getTokens() === 0) setTokens(1);
+
+    location.href = "home.html";
+  });
+})();
