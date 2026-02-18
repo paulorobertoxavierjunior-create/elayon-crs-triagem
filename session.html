@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Elayon CRS — Sessão</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">E</div>
+      <div>
+        <div class="brand-title">Sessão CRS</div>
+        <div class="brand-sub" id="subTitle">Carregando...</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="link" href="index.html">Início</a>
+      <a class="link" href="dashboard.html">Configurar</a>
+      <a class="link" href="report.html">Relatórios</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h1>Captação & Visualização</h1>
+      <p class="muted">
+        Clique em <b>Ativar Microfone</b>. Em seguida, <b>Iniciar Captação</b>.
+        <br/>Você pode encerrar manualmente (gera relatório) ou a sessão expira automaticamente.
+      </p>
+
+      <div class="row">
+        <div class="kpi" id="kpiTimer">tempo: --:--</div>
+        <div class="kpi" id="kpiState">estado: aguardando</div>
+        <div class="kpi" id="kpiLevel">nível: --</div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="btnMic">Ativar Microfone</button>
+        <button class="btn" id="btnStart" disabled>Iniciar Captação</button>
+        <button class="btn" id="btnStop" disabled>Pausar</button>
+        <button class="btn danger" id="btnEnd">Encerrar Sessão</button>
+      </div>
+
+      <div class="canvasWrap">
+        <canvas id="cv"></canvas>
+      </div>
+
+      <p class="muted" style="margin-top:12px">
+        Observação: esta demo calcula métricas simples (nível/pausas/variação) para apoiar análise.
+        Não substitui avaliação clínica.
+      </p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Elayon CRS • Sessão • 30min</span>
+  </footer>
+
+  <script src="assets/session.js"></script>
+</body>
+</html>
