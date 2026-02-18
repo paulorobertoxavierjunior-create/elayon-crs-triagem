@@ -1,169 +1,31 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Elayon CRS - Entrada</title>
-  <link rel="stylesheet" href="./assets/styles.css" />
+<meta charset="UTF-8">
+<title>Elayon CRS</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="brand">
-        <h1>Elayon CRS — Entrada</h1>
-        <p>Cadastro do médico e início de sessão (demo funcional).</p>
-      </div>
-      <span class="badge">GitHub Pages • MVP</span>
-    </div>
 
-    <div class="card">
-      <div class="note">
-        <b>Protocolo de isolamento (recomendado):</b> o paciente fica na sala e responde.
-        O médico orienta <b>de fora</b> (ex.: chamada/WhatsApp no ouvido do paciente) para reduzir interferência no áudio.
-      </div>
-      <div class="hr"></div>
+<h1>Elayon CRS</h1>
+<p>Triagem vocal inteligente</p>
 
-      <div class="grid two">
-        <div>
-          <h3 style="margin:0 0 10px;">Cadastrar médico</h3>
+<div class="box">
 
-          <div style="margin-bottom:10px;">
-            <label>Nome</label>
-            <input id="doc_nome" placeholder="Ex.: Dra. Maria Silva" />
-          </div>
+<h2>Iniciar Atendimento</h2>
 
-          <div class="grid two">
-            <div>
-              <label>CRM</label>
-              <input id="doc_crm" placeholder="Ex.: AM 12345" />
-            </div>
-            <div>
-              <label>Especialidade (opcional)</label>
-              <input id="doc_esp" placeholder="Ex.: Clínica geral" />
-            </div>
-          </div>
+<label>Médico:</label>
+<input id="medico" placeholder="Nome do médico">
 
-          <div class="grid two" style="margin-top:10px;">
-            <div>
-              <label>WhatsApp/Telefone (opcional)</label>
-              <input id="doc_tel" placeholder="Ex.: 92 9xxxx-xxxx" />
-            </div>
-            <div>
-              <label>E-mail (opcional)</label>
-              <input id="doc_email" placeholder="exemplo@dominio.com" />
-            </div>
-          </div>
+<label>Paciente:</label>
+<input id="paciente" placeholder="Nome do paciente">
 
-          <div style="margin-top:10px;">
-            <label>Clínica/Unidade (opcional)</label>
-            <input id="doc_unidade" placeholder="Nome do local" />
-          </div>
+<button onclick="iniciarSessao()">Iniciar Sessão</button>
 
-          <div class="row" style="margin-top:12px;">
-            <button class="btn primary" id="btnSalvarDoc">Salvar cadastro</button>
-            <button class="btn" id="btnLimparDoc">Limpar</button>
-          </div>
+</div>
 
-          <p class="small" id="docStatus" style="margin:10px 0 0;"></p>
-        </div>
+<script src="js/app.js"></script>
 
-        <div>
-          <h3 style="margin:0 0 10px;">Entrar</h3>
-          <div class="note">
-            Se já salvou o cadastro neste aparelho/navegador, você pode entrar direto.
-          </div>
-
-          <div class="hr"></div>
-
-          <div class="kv" id="docResumo" style="margin-top:10px;">
-            <div>Status</div><div class="badge">Nenhum cadastro detectado</div>
-          </div>
-
-          <div class="row" style="margin-top:14px;">
-            <button class="btn ok" id="btnEntrar">Entrar no painel</button>
-            <a class="btn" href="./session.html" style="text-decoration:none;">Ir direto para sessão (debug)</a>
-          </div>
-
-          <div class="hr"></div>
-          <div class="note">
-            <b>Privacidade (demo):</b> dados ficam neste navegador (localStorage).  
-            Não há envio automático de áudio/infos para servidor.
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script type="module">
-    import { getDoctor, setDoctor, clearDoctor } from "./assets/app.js";
-
-    const el = (id) => document.getElementById(id);
-
-    function renderResumo() {
-      const d = getDoctor();
-      const box = el("docResumo");
-      if (!d) {
-        box.innerHTML = '<div>Status</div><div class="badge">Nenhum cadastro detectado</div>';
-        return;
-      }
-      box.innerHTML = `
-        <div>Status</div><div class="badge">Cadastro encontrado</div>
-        <div>Nome</div><div>${escapeHtml(d.nome || "-")}</div>
-        <div>CRM</div><div>${escapeHtml(d.crm || "-")}</div>
-        <div>Unidade</div><div>${escapeHtml(d.unidade || "-")}</div>
-      `;
-    }
-
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, m => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-      }[m]));
-    }
-
-    el("btnSalvarDoc").addEventListener("click", () => {
-      const nome = el("doc_nome").value.trim();
-      const crm  = el("doc_crm").value.trim();
-
-      if (!nome || !crm) {
-        el("docStatus").textContent = "Preencha pelo menos Nome e CRM.";
-        el("docStatus").style.color = "var(--danger)";
-        return;
-      }
-
-      setDoctor({
-        nome,
-        crm,
-        esp: el("doc_esp").value.trim(),
-        tel: el("doc_tel").value.trim(),
-        email: el("doc_email").value.trim(),
-        unidade: el("doc_unidade").value.trim(),
-        createdAt: new Date().toISOString(),
-      });
-
-      el("docStatus").textContent = "Cadastro salvo neste navegador ✅";
-      el("docStatus").style.color = "var(--ok)";
-      renderResumo();
-    });
-
-    el("btnLimparDoc").addEventListener("click", () => {
-      clearDoctor();
-      ["doc_nome","doc_crm","doc_esp","doc_tel","doc_email","doc_unidade"].forEach(id => el(id).value = "");
-      el("docStatus").textContent = "Cadastro removido deste navegador.";
-      el("docStatus").style.color = "var(--muted)";
-      renderResumo();
-    });
-
-    el("btnEntrar").addEventListener("click", () => {
-      const d = getDoctor();
-      if (!d) {
-        el("docStatus").textContent = "Cadastre o médico antes de entrar.";
-        el("docStatus").style.color = "var(--danger)";
-        return;
-      }
-      window.location.href = "./dashboard.html";
-    });
-
-    renderResumo();
-  </script>
 </body>
 </html>
