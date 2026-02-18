@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Elayon CRS - Painel</title>
+  <link rel="stylesheet" href="./assets/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">
+        <h1>Elayon CRS — Painel do Médico</h1>
+        <p>Criação e acompanhamento de sessões (demo).</p>
+      </div>
+      <div class="row">
+        <a class="btn" href="./index.html" style="text-decoration:none;">Sair</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 10px;">Dados do médico</h3>
+      <div class="kv" id="kvDoc"></div>
+      <div class="hr"></div>
+
+      <div class="row">
+        <button class="btn primary" id="btnNovaSessao">Nova sessão de paciente</button>
+        <a class="btn" href="./session.html" style="text-decoration:none;">Abrir sessão (manual)</a>
+      </div>
+
+      <p class="small" style="margin:10px 0 0;">
+        A sessão é criada localmente e abre a tela de coleta.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 10px;">Sessões recentes</h3>
+      <div class="list" id="lista"></div>
+      <p class="small" id="vazio" style="display:none;">Nenhuma sessão criada ainda.</p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { mustHaveDoctorOrRedirect, getSessions, addSession } from "./assets/app.js";
+
+    const doc = mustHaveDoctorOrRedirect();
+    const el = (id) => document.getElementById(id);
+
+    el("kvDoc").innerHTML = `
+      <div>Nome</div><div>${escapeHtml(doc.nome)}</div>
+      <div>CRM</div><div>${escapeHtml(doc.crm)}</div>
+      <div>Unidade</div><div>${escapeHtml(doc.unidade || "-")}</div>
+    `;
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, m => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[m]));
+    }
+
+    function render() {
+      const sessions = getSessions();
+      const list = el("lista");
+      list.innerHTML = "";
+      el("vazio").style.display = sessions.length ? "none" : "block";
+
+      sessions.forEach(s => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <h4>Sessão ${escapeHtml(s.id)}</h4>
+          <p>Paciente: ${escapeHtml(s.patientId || "—")} • Criada: ${new Date(s.createdAt).toLocaleString()}</p>
+          <div class="row" style="margin-top:10px;">
+            <a class="btn" href="./session.html?sid=${encodeURIComponent(s.id)}" style="text-decoration:none;">Abrir</a>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    el("btnNovaSessao").addEventListener("click", () => {
+      const sid = "S" + Math.random().toString(16).slice(2, 8).toUpperCase();
+      addSession({ id: sid, createdAt: new Date().toISOString(), patientId: "" });
+      window.location.href = "./session.html?sid=" + encodeURIComponent(sid);
+    });
+
+    render();
+  </script>
+</body>
+</html>
