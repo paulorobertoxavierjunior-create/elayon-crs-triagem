@@ -2,20 +2,25 @@
   --bg1:#f7fffe;
   --bg2:#f3fbff;
   --bg3:#f4fff7;
+
   --ink:#0b1b24;
   --muted:#51616c;
+
   --card:rgba(255,255,255,.78);
   --stroke:rgba(10,30,40,.10);
   --shadow: 0 12px 35px rgba(0,0,0,.08);
+
   --primary:#0ea5e9;
   --primary2:#22c55e;
   --danger:#ef4444;
   --warn:#f59e0b;
+
   --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
 }
 
 *{box-sizing:border-box}
 html,body{height:100%}
+
 body{
   margin:0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -40,9 +45,11 @@ body{
   backdrop-filter: blur(10px);
   background: rgba(255,255,255,.55);
   border-bottom: 1px solid var(--stroke);
+  z-index:10;
 }
 
 .brand{display:flex; gap:12px; align-items:center}
+
 .logo{
   width:40px;height:40px;border-radius:12px;
   display:grid;place-items:center;
@@ -50,7 +57,17 @@ body{
   background: linear-gradient(135deg, rgba(14,165,233,.18), rgba(34,197,94,.18));
   border:1px solid var(--stroke);
 }
-.brand-title{font-weight:800; letter-spacing:.2px}
+
+.brand-img{
+  width:44px; height:44px;
+  border-radius:14px;
+  object-fit:cover;
+  border:1px solid var(--stroke);
+  box-shadow: 0 10px 26px rgba(0,0,0,.06);
+  background: rgba(255,255,255,.65);
+}
+
+.brand-title{font-weight:900; letter-spacing:.2px}
 .brand-sub{font-size:12px; color:var(--muted)}
 
 .nav{display:flex; gap:10px; flex-wrap:wrap}
@@ -67,7 +84,7 @@ body{
 .container{
   max-width:980px;
   margin:0 auto;
-  padding:18px 16px 80px;
+  padding:18px 16px 88px;
   display:grid;
   gap:14px;
 }
@@ -119,7 +136,7 @@ input:focus, textarea:focus{
   padding:12px 14px;
   background:rgba(255,255,255,.8);
   cursor:pointer;
-  font-weight:650;
+  font-weight:750;
 }
 .btn:hover{filter:brightness(0.99)}
 .btn.primary{
@@ -129,6 +146,9 @@ input:focus, textarea:focus{
 .btn.danger{
   border-color: rgba(239,68,68,.25);
   background: rgba(239,68,68,.10);
+}
+.btn.ghost{
+  background: transparent;
 }
 
 .mini{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap}
@@ -157,6 +177,7 @@ input:focus, textarea:focus{
 .row{
   display:flex; gap:10px; flex-wrap:wrap; align-items:center;
 }
+
 .kpi{
   padding:10px 12px;
   border:1px solid var(--stroke);
@@ -165,28 +186,33 @@ input:focus, textarea:focus{
   font-family: var(--mono);
   font-size:12px;
 }
-.list{margin:8px 0 0; padding-left:18px; color:var(--muted)}
+
 hr{border:none;border-top:1px solid var(--stroke); margin:14px 0}
 
-.canvasWrap{
-  margin-top:12px;
-  border:1px solid var(--stroke);
-  border-radius:14px;
-  overflow:hidden;
-  background: rgba(255,255,255,.75);
+.center{
+  display:grid;
+  place-items:center;
+  min-height: calc(100vh - 72px);
 }
-canvas{display:block; width:100%; height:220px}
 
-/* ===== Login cinematic ===== */
-.authCard{max-width:760px; margin:0 auto}
-.authHead{
-  display:flex; gap:14px; align-items:center;
+.loginWrap{
+  width:min(520px, 100%);
 }
-.brandImg{
-  width:92px; height:92px;
-  border-radius:18px;
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,.6);
-  object-fit:contain;
-  box-shadow: 0 10px 24px rgba(0,0,0,.06);
+
+.brandHero{
+  display:flex;
+  gap:14px;
+  align-items:center;
+  margin-bottom:12px;
+}
+
+.brandHero h1{
+  margin:0;
+  font-size:30px;
+  letter-spacing:.2px;
+}
+
+.brandHero p{
+  margin:2px 0 0;
+  color:var(--muted);
 }
