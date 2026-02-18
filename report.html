@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Elayon CRS — Relatórios</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">E</div>
+      <div>
+        <div class="brand-title">Relatórios</div>
+        <div class="brand-sub">Pré-visualização pronta para copiar/colar</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="link" href="index.html">Início</a>
+      <a class="link" href="dashboard.html">Configurar</a>
+      <a class="link" href="pricing.html">Token & Ética</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card" id="single" style="display:none">
+      <h1>Relatório de Sessão</h1>
+      <p class="muted" id="meta"></p>
+
+      <div class="grid2">
+        <div class="kpi" id="k1"></div>
+        <div class="kpi" id="k2"></div>
+      </div>
+
+      <hr/>
+
+      <h2>Texto (pré-laudo / apoio)</h2>
+      <textarea id="txt" rows="12"></textarea>
+
+      <div class="actions">
+        <button class="btn primary" id="btnCopy">Copiar relatório</button>
+        <a class="btn" id="btnBack" href="report.html">Voltar para lista</a>
+      </div>
+    </section>
+
+    <section class="card" id="list">
+      <h1>Últimas sessões</h1>
+      <p class="muted">Toque para abrir um relatório. (Armazenado no dispositivo via localStorage.)</p>
+      <div id="items"></div>
+    </section>
+  </main>
+
+  <footer class="footer"><span>Elayon CRS • Relatórios</span></footer>
+  <script src="assets/report.js"></script>
+</body>
+</html>
