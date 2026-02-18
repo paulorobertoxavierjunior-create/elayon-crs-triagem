@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Elayon CRS — Início</title>
+  <title>Elayon CRS — Login</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -14,67 +14,66 @@
       <div class="logo">E</div>
       <div>
         <div class="brand-title">Elayon CRS</div>
-        <div class="brand-sub">Triagem vocal inteligente • Demo</div>
+        <div class="brand-sub">Acesso do médico • Demo</div>
       </div>
     </div>
     <nav class="nav">
-      <a class="link" href="dashboard.html">Configurar CRS</a>
       <a class="link" href="pricing.html">Token & Ética</a>
       <a class="link" href="report.html">Relatórios</a>
     </nav>
   </header>
 
   <main class="container">
-    <section class="card">
-      <h1>Iniciar Atendimento</h1>
-      <p class="muted">
-        Fluxo recomendado: <b>cadastro → sessão → encerrar → relatório</b>.
-        <br/>A sessão expira automaticamente em <b>30 minutos</b>.
-      </p>
+    <section class="card authCard">
+      <div class="authHead">
+        <img class="brandImg" src="assets/logo.png" alt="Elayon" onerror="this.style.display='none'">
+        <div>
+          <h1>Entrar</h1>
+          <p class="muted">Acesso do médico para operar a demo. Sem diagnóstico automático.</p>
+        </div>
+      </div>
 
       <div class="grid2">
         <div class="field">
-          <label for="medico">Médico</label>
-          <input id="medico" placeholder="Ex: Dr. Paulo" autocomplete="name" />
+          <label for="nome">Nome completo</label>
+          <input id="nome" placeholder="Ex: Dr. Paulo Roberto" autocomplete="name" />
         </div>
-
         <div class="field">
-          <label for="paciente">Paciente</label>
-          <input id="paciente" placeholder="Ex: Glaucia" autocomplete="name" />
+          <label for="crm">CRM (opcional na demo)</label>
+          <input id="crm" placeholder="Ex: CRM-AM 00000" />
         </div>
       </div>
 
-      <div class="field">
-        <label for="contexto">Contexto da triagem (opcional)</label>
-        <input id="contexto" placeholder="Ex: triagem neurológica, queixa principal, observações..." />
-      </div>
-
-      <div class="actions">
-        <button class="btn primary" id="btnIniciar">Iniciar Sessão</button>
-        <button class="btn" id="btnLimpar">Limpar</button>
+      <div class="grid2">
+        <div class="field">
+          <label for="email">E-mail</label>
+          <input id="email" type="email" placeholder="Ex: medico@hospital.com" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label for="senha">Senha</label>
+          <input id="senha" type="password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
       </div>
 
       <div class="mini">
-        <div class="pill ok">GitHub Pages ativo</div>
-        <div class="pill warn">Permissão de microfone será pedida na sessão</div>
-        <div class="pill info">Sem diagnóstico — apenas apoio visual/métrico</div>
+        <div class="pill info">Sessões consomem token ao encerrar</div>
+        <div class="pill warn">Checkout é fictício na demo</div>
+        <div class="pill ok">Humano no processo do começo ao fim</div>
       </div>
-    </section>
 
-    <section class="card soft">
-      <h2>Protocolo de captação (isolamento)</h2>
-      <ul class="list">
-        <li>Paciente com fone/áudio isolado; perguntas do médico fora do mic do paciente.</li>
-        <li>Captação prioriza a voz do paciente para melhor sinal/ruído.</li>
-        <li>O sistema registra métricas temporais e gera um relatório de sessão.</li>
-      </ul>
+      <div class="actions">
+        <button class="btn primary" id="btnLogin">Entrar</button>
+        <button class="btn" id="btnGoPricing">Carregar tokens</button>
+      </div>
+
+      <hr />
+      <p class="muted" style="font-size:12px">
+        Ética: esta interface só organiza captação e visualização. O diagnóstico é do médico, registrado manualmente no relatório.
+      </p>
     </section>
   </main>
 
-  <footer class="footer">
-    <span>Elayon CRS • Demo • Interface estática (HTML/CSS/JS)</span>
-  </footer>
-
+  <footer class="footer"><span>Elayon CRS • Login</span></footer>
   <script src="assets/app.js"></script>
 </body>
 </html>
