@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Elayon Health • Relatórios</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo"><img src="IMG-20260218-WA0016.jpg" alt="Elayon" /></div>
+      <div>
+        <div class="brand-title">Relatórios</div>
+        <div class="brand-sub">Relatório fechado • diagnóstico manual obrigatório</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="link" href="index.html">Painel</a>
+      <a class="link" href="session.html">Nova sessão</a>
+      <a class="link" href="dashboard.html">Config</a>
+      <a class="link" href="pricing.html">Tokens</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card" id="single" style="display:none">
+      <h1>Relatório de sessão</h1>
+      <p class="muted" id="meta"></p>
+
+      <div class="grid2">
+        <div class="kpi" id="k1"></div>
+        <div class="kpi" id="k2"></div>
+      </div>
+
+      <hr/>
+
+      <h2>Evidência visual congelada</h2>
+      <div class="grid2">
+        <div class="card soft">
+          <h3>Som (FFT)</h3>
+          <img id="imgSound" style="width:100%;border-radius:14px;border:1px solid rgba(10,30,40,.10)" />
+        </div>
+        <div class="card soft">
+          <h3>Silêncio (pausas)</h3>
+          <img id="imgSil" style="width:100%;border-radius:14px;border:1px solid rgba(10,30,40,.10)" />
+        </div>
+      </div>
+      <div class="card soft" style="margin-top:12px">
+        <h3>Overlay (RMS + bandas)</h3>
+        <img id="imgOv" style="width:100%;border-radius:14px;border:1px solid rgba(10,30,40,.10)" />
+      </div>
+
+      <hr/>
+
+      <h2>Diagnóstico do médico (obrigatório)</h2>
+      <div class="field">
+        <label for="diag">Diagnóstico / hipótese clínica / conclusão</label>
+        <textarea id="diag" rows="5" placeholder="Texto do médico (obrigatório)"></textarea>
+      </div>
+
+      <h2>Relatório textual (pré-visualização para copiar)</h2>
+      <textarea id="txt" rows="16"></textarea>
+
+      <div class="actions">
+        <button class="btn primary" id="btnFinalize">Finalizar (assinar)</button>
+        <button class="btn" id="btnCopy">Copiar</button>
+        <a class="btn" href="report.html">Voltar para lista</a>
+      </div>
+    </section>
+
+    <section class="card" id="list">
+      <h1>Últimas sessões</h1>
+      <p class="muted">Armazenado no dispositivo (localStorage). Toque para abrir.</p>
+      <div id="items"></div>
+    </section>
+  </main>
+
+  <footer class="footer"><span>Elayon Health • Relatórios</span></footer>
+
+  <script src="assets/auth.js"></script>
+  <script src="assets/report.js"></script>
+</body>
+</html>
