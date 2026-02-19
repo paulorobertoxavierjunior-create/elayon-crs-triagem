@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Elayon Health — Acesso</title>
+  <title>Elayon Health • Acesso</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -11,38 +11,57 @@
 
   <header class="topbar">
     <div class="brand">
-      <div class="logo">
+      <div class="logoImg">
         <img src="IMG-20260218-WA0016.jpg" alt="Elayon" />
       </div>
       <div>
         <div class="brand-title">Elayon Health</div>
-        <div class="brand-sub">Acesso do profissional • Demo</div>
+        <div class="brand-sub">Acesso do médico • Demo CRS</div>
       </div>
     </div>
+    <nav class="nav">
+      <a class="link" href="pricing.html">Token & Ética</a>
+      <a class="link" href="index.html">Ir para o CRS</a>
+    </nav>
   </header>
 
   <main class="container">
     <section class="card">
       <h1>Entrar</h1>
       <p class="muted">
-        Acesso local (demo). Dados ficam <b>apenas neste dispositivo</b> (localStorage).
+        Demo ética: registro local no dispositivo (localStorage).<br/>
+        Sem cobrança real nesta fase.
       </p>
 
       <div class="grid2">
         <div class="field">
-          <label for="nome">Nome do profissional</label>
+          <label for="nome">Nome do médico</label>
           <input id="nome" placeholder="Ex: Dr. Paulo" autocomplete="name" />
         </div>
 
         <div class="field">
           <label for="email">E-mail</label>
-          <input id="email" placeholder="Ex: doctor@email.com" autocomplete="email" />
+          <input id="email" type="email" placeholder="ex: medico@hospital.com" autocomplete="email" />
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="senha">Senha</label>
+          <input id="senha" type="password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+
+        <div class="field">
+          <label for="crm">CRM (opcional na demo)</label>
+          <input id="crm" placeholder="Ex: CRM-AM 12345" />
         </div>
       </div>
 
       <div class="field">
-        <label for="senha">Senha (demo)</label>
-        <input id="senha" type="password" placeholder="••••••••" autocomplete="current-password" />
+        <label class="check">
+          <input id="aceite" type="checkbox" />
+          <span>Confirmo que esta demo é <b>apoio métrico/visual</b> e que o diagnóstico/conduta clínica é de responsabilidade do médico.</span>
+        </label>
       </div>
 
       <div class="actions">
@@ -51,47 +70,18 @@
       </div>
 
       <div class="mini">
-        <div class="pill info">Sem diagnóstico — apoio visual/métrico</div>
-        <div class="pill warn">Consentimento do paciente é obrigatório</div>
-        <div class="pill ok">Humano no processo do começo ao fim</div>
+        <div class="pill ok">Elayon Health</div>
+        <div class="pill info">CRS: triagem por voz</div>
+        <div class="pill warn">Sem diagnóstico automático</div>
       </div>
+
+      <p class="muted" style="margin-top:12px">
+        Dica: após entrar, o nome do médico fica “pré-preenchido” nas próximas telas.
+      </p>
     </section>
   </main>
 
-  <footer class="footer"><span>Elayon Health • Login (demo)</span></footer>
-
-  <script>
-    const KEY_USER = "elayon_user_demo";
-
-    function $(id){ return document.getElementById(id); }
-
-    $("btnLimpar").addEventListener("click", ()=>{
-      $("nome").value = "";
-      $("email").value = "";
-      $("senha").value = "";
-    });
-
-    $("btnEntrar").addEventListener("click", ()=>{
-      const nome = ($("nome").value || "").trim();
-      const email = ($("email").value || "").trim();
-      const senha = ($("senha").value || "").trim();
-
-      if (!nome || !email || !senha){
-        alert("Preencha nome, e-mail e senha.");
-        return;
-      }
-
-      const user = { nome, email, ts: Date.now() };
-      localStorage.setItem(KEY_USER, JSON.stringify(user));
-
-      location.href = "index.html";
-    });
-
-    // se já estiver logado, vai direto
-    try{
-      const u = JSON.parse(localStorage.getItem(KEY_USER) || "null");
-      if (u?.nome && u?.email) location.href = "index.html";
-    }catch{}
-  </script>
+  <footer class="footer"><span>Elayon Health • Login</span></footer>
+  <script src="assets/auth.js"></script>
 </body>
 </html>
