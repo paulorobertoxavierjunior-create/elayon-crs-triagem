@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Elayon Health • Sessão CRS</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo"><img src="IMG-20260218-WA0016.jpg" alt="Elayon" /></div>
+      <div>
+        <div class="brand-title">Sessão CRS</div>
+        <div class="brand-sub" id="subTitle">Carregando...</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="link" href="index.html">Painel</a>
+      <a class="link" href="dashboard.html">Config</a>
+      <a class="link" href="report.html">Relatórios</a>
+      <a class="link" href="pricing.html">Tokens</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h1>Dados da sessão</h1>
+      <div class="grid2">
+        <div class="field">
+          <label for="paciente">Paciente</label>
+          <input id="paciente" placeholder="Nome do paciente" />
+        </div>
+        <div class="field">
+          <label for="contexto">Contexto (opcional)</label>
+          <input id="contexto" placeholder="Queixa principal / observações" />
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="disease">Preset (config atual)</label>
+          <input id="disease" disabled />
+        </div>
+        <div class="field">
+          <label for="maxMin">Duração máxima</label>
+          <input id="maxMin" disabled />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Perguntas sugeridas (edite se necessário)</label>
+        <textarea id="questions" rows="6"></textarea>
+      </div>
+
+      <div class="field" id="consentBox"></div>
+
+      <div class="actions">
+        <button class="btn primary" id="btnMic">Ativar microfone</button>
+        <button class="btn" id="btnStart" disabled>Iniciar captação</button>
+        <button class="btn" id="btnPause" disabled>Pausar</button>
+        <button class="btn danger" id="btnEnd" disabled>Encerrar & Gerar relatório</button>
+      </div>
+
+      <div class="mini">
+        <div class="pill warn">Encerrar congela evidência</div>
+        <div class="pill info">Sem diagnóstico automático</div>
+        <div class="pill ok">Diagnóstico manual no relatório</div>
+      </div>
+
+      <hr/>
+
+      <div class="row">
+        <div class="kpi" id="kTimer">tempo: 00:00</div>
+        <div class="kpi" id="kState">estado: aguardando</div>
+        <div class="kpi" id="kLevel">nível: --</div>
+      </div>
+
+      <div class="card soft">
+        <h2>Espectro de Som (FFT)</h2>
+        <div class="canvasWrap"><canvas id="cvSound"></canvas></div>
+      </div>
+
+      <div class="card soft">
+        <h2>Espectro de Silêncio (pausas)</h2>
+        <p class="muted">Mapa temporal: quanto mais “alto”, maior pausa/baixo nível.</p>
+        <div class="canvasWrap"><canvas id="cvSilence"></canvas></div>
+      </div>
+
+      <div class="card soft">
+        <h2>Overlay (RMS + bandas)</h2>
+        <p class="muted">8 linhas (RMS + 7 bandas). Visual cinematográfico e útil para comparação.</p>
+        <div class="canvasWrap"><canvas id="cvOverlay"></canvas></div>
+      </div>
+
+    </section>
+  </main>
+
+  <footer class="footer"><span>Elayon Health • Sessão • Demo</span></footer>
+
+  <script src="assets/auth.js"></script>
+  <script src="assets/session.js"></script>
+</body>
+</html>
