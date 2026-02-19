@@ -1,43 +1,46 @@
 // assets/auth.js
-import { KEY_AUTH, saveJSON, loadJSON } from "./app.js";
+const KEY_AUTH = "elayon_auth_doctor";
+const KEY_TOKENS = "elayon_tokens_balance";
 
-const elNome = document.getElementById("nome");
-const elEmail = document.getElementById("email");
-const elCrm = document.getElementById("crm");
-const elSenha = document.getElementById("senha");
+function $(id){ return document.getElementById(id); }
 
-const btnEntrar = document.getElementById("btnEntrar");
-const btnDemo = document.getElementById("btnDemo");
-
-// se já está logado, vai direto
-const existing = loadJSON(KEY_AUTH, null);
-if (existing?.email) {
-  location.href = "home.html";
+function saveDoctor(doctor){
+  localStorage.setItem(KEY_AUTH, JSON.stringify(doctor));
+  // demo: inicia com 0 tokens se não existir
+  if (localStorage.getItem(KEY_TOKENS) == null) {
+    localStorage.setItem(KEY_TOKENS, JSON.stringify({ tokens: 0, updatedAt: Date.now() }));
+  }
 }
 
-btnDemo?.addEventListener("click", () => {
-  elNome.value = "Dr. Paulo (demo)";
-  elEmail.value = "demo@elayon.com";
-  elCrm.value = "CRM-AM 00000";
-  elSenha.value = "1234";
-});
+function clearForm(){
+  ["nome","email","senha","crm"].forEach(id => { if($(id)) $(id).value = ""; });
+  if ($("aceite")) $("aceite").checked = false;
+}
 
-btnEntrar?.addEventListener("click", () => {
-  const nome = (elNome.value || "").trim();
-  const email = (elEmail.value || "").trim();
-  const crm = (elCrm.value || "").trim();
-  const senha = (elSenha.value || "").trim();
+function validate(){
+  const nome = ($("nome")?.value || "").trim();
+  const email = ($("email")?.value || "").trim();
+  const senha = ($("senha")?.value || "").trim();
+  const crm = ($("crm")?.value || "").trim();
+  const aceite = !!$("aceite")?.checked;
 
-  if (!nome || !email || !senha) {
-    alert("Preencha Nome, E-mail e Senha.");
-    return;
-  }
+  if (!nome) return { ok:false, msg:"Informe o nome do médico." };
+  if (!email || !email.includes("@")) return { ok:false, msg:"Informe um e-mail válido." };
+  if (!senha || senha.length < 4) return { ok:false, msg:"Senha muito curta (mínimo 4 caracteres) — demo." };
+  if (!aceite) return { ok:false, msg:"Você precisa confirmar o termo de responsabilidade (demo)." };
 
-  // DEMO: sem validação servidor. Depois vira backend/checkout real.
-  saveJSON(KEY_AUTH, {
-    nome, email, crm,
-    createdAt: Date.now()
+  return { ok:true, doctor: { nome, email, crm, loggedAt: Date.now() } };
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  $("btnEntrar")?.addEventListener("click", () => {
+    const v = validate();
+    if (!v.ok) return alert(v.msg);
+
+    saveDoctor(v.doctor);
+    // Vai para a página principal do CRS
+    location.href = "index.html";
   });
 
-  location.href = "home.html";
+  $("btnLimpar")?.addEventListener("click", clearForm);
 });
