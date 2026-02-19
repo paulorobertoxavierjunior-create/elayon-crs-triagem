@@ -1,20 +1,13 @@
-# Elayon Health • CRS (Demo)
+# Elayon Health — CRS (Demo)
 
-Demo 100% estática (GitHub Pages) — HTML/CSS/JS + localStorage.
+Web app estático (GitHub Pages) para triagem vocal com:
+- Sessão de 30 min (expira), com gravação/registro máximo de 5 min (pode pausar e retomar)
+- 3 painéis:
+  1) FFT (som)
+  2) Silêncio (proxy temporal)
+  3) Overlay 8 linhas (energia + pausas + bandas + pitch proxy)
+- Relatório com gráficos congelados + texto grande + diagnóstico obrigatório
+- Limite de 10 relatórios no dispositivo (localStorage)
+- Tokens fictícios (fluxo e ética)
 
-Fluxo:
-1) login.html (médico)
-2) index.html (painel)
-3) dashboard.html (config CRS)
-4) session.html (captação + espectros)
-5) report.html (relatório fechado + diagnóstico manual)
-6) pricing.html (tokens fictícios + checkout simulado)
-
-Ética:
-- Não há diagnóstico automático.
-- Diagnóstico/conduta são do médico.
-- Consentimento (TCLE) é obrigatório antes da sessão.
-
-GitHub Pages:
-- Settings → Pages → Deploy from branch → main / root
-- Acesse: https://SEUUSUARIO.github.io/SEU-REPO/
+⚠️ Demo: não é diagnóstico automático. É apoio métrico/visual.
