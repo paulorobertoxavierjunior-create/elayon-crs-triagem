@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Elayon Health — Entrada</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">
+        <img src="IMG-20260218-WA0016.jpg" alt="Elayon Health" />
+      </div>
+      <div>
+        <div class="brand-title">Elayon Health</div>
+        <div class="brand-sub">CRS • Triagem vocal (demo) • Acesso do médico</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="link" href="pricing.html">Token & Ética</a>
+      <a class="link" href="index.html">Ir para Demo</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h1>Bem-vindo(a)</h1>
+      <p class="muted">
+        Entrada para uso clínico responsável (demo).<br/>
+        <b>Sem diagnóstico automático</b> — o médico registra e assina o diagnóstico.
+      </p>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="nome">Nome do médico</label>
+          <input id="nome" placeholder="Ex: Dr. Paulo" autocomplete="name" />
+        </div>
+
+        <div class="field">
+          <label for="email">E-mail</label>
+          <input id="email" type="email" placeholder="ex: medico@instituicao.com" autocomplete="email" />
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="senha">Senha</label>
+          <input id="senha" type="password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+
+        <div class="field">
+          <label for="instituicao">Instituição (opcional)</label>
+          <input id="instituicao" placeholder="Ex: Clínica X / Hospital Y" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>
+          <input id="chkEtica" type="checkbox" />
+          Confirmo ciência: esta ferramenta é <b>apoio visual/métrico</b> (demo), não substitui avaliação clínica.
+        </label>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="btnEntrar">Entrar</button>
+        <button class="btn" id="btnLimpar">Limpar</button>
+      </div>
+
+      <div class="mini">
+        <div class="pill info">Login local (dispositivo) • sem servidor</div>
+        <div class="pill warn">Cadastros e sessões ficam no <b>localStorage</b></div>
+        <div class="pill ok">Ética e consentimento serão exigidos na prática</div>
+      </div>
+    </section>
+
+    <section class="card soft">
+      <h2>Fluxo de telas (agora)</h2>
+      <ul class="list">
+        <li><b>login.html</b> → entra e salva o perfil do médico no dispositivo.</li>
+        <li><b>index.html</b> → inicia atendimento (médico/paciente/contexto).</li>
+        <li><b>session.html</b> → captação e gráficos em tempo real.</li>
+        <li><b>report.html</b> → relatório final para copiar/colar + assinatura do médico (próximo upgrade).</li>
+        <li><b>pricing.html</b> → token fictício agora; checkout real depois.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Elayon Health • Entrada</span>
+  </footer>
+
+  <script>
+    const KEY_USER = "elayon_health_user";
+
+    function $(id){ return document.getElementById(id); }
+
+    // pré-preenche se já existe
+    try{
+      const u = JSON.parse(localStorage.getItem(KEY_USER) || "null");
+      if (u){
+        $("nome").value = u.nome || "";
+        $("email").value = u.email || "";
+        $("instituicao").value = u.instituicao || "";
+      }
+    }catch{}
+
+    $("btnEntrar").addEventListener("click", ()=>{
+      const nome = ($("nome").value || "").trim();
+      const email = ($("email").value || "").trim();
+      const senha = ($("senha").value || "").trim();
+      const instituicao = ($("instituicao").value || "").trim();
+      const okEtica = $("chkEtica").checked;
+
+      if (!nome || !email || !senha){
+        alert("Preencha nome, e-mail e senha.");
+        return;
+      }
+      if (!okEtica){
+        alert("Marque a ciência ética para prosseguir.");
+        return;
+      }
+
+      localStorage.setItem(KEY_USER, JSON.stringify({
+        nome, email, instituicao,
+        lastLogin: Date.now()
+      }));
+
+      // Vai para o início do fluxo
+      location.href = "index.html";
+    });
+
+    $("btnLimpar").addEventListener("click", ()=>{
+      $("nome").value = "";
+      $("email").value = "";
+      $("senha").value = "";
+      $("instituicao").value = "";
+      $("chkEtica").checked = false;
+    });
+  </script>
+</body>
+</html>
