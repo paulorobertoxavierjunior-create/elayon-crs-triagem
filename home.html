@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Elayon CRS — Início</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logoBox">
+        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon" />
+      </div>
+      <div>
+        <div class="brand-title">Elayon CRS</div>
+        <div class="brand-sub">Triagem vocal inteligente • Demo</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="link" href="dashboard.html">Configurar CRS</a>
+      <a class="link" href="pricing.html">Token & Ética</a>
+      <a class="link" href="report.html">Relatórios</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h1>Iniciar Atendimento</h1>
+      <p class="muted">
+        Fluxo recomendado: <b>cadastro → sessão → encerrar → relatório</b>.
+        <br/>A sessão expira automaticamente em <b>20 minutos</b> (configurável pelo painel).
+      </p>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="medico">Médico</label>
+          <input id="medico" placeholder="Ex: Dr. Paulo" autocomplete="name" />
+        </div>
+
+        <div class="field">
+          <label for="paciente">Paciente</label>
+          <input id="paciente" placeholder="Ex: Glaucia" autocomplete="name" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="contexto">Contexto da triagem (opcional)</label>
+        <input id="contexto" placeholder="Ex: triagem neurológica, queixa principal, observações..." />
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="btnIniciar">Iniciar Sessão</button>
+        <button class="btn" id="btnLimpar">Limpar</button>
+      </div>
+
+      <div class="mini">
+        <div class="pill ok">GitHub Pages ativo</div>
+        <div class="pill warn">Permissão de microfone será pedida na sessão</div>
+        <div class="pill info">Sem diagnóstico — apenas apoio visual/métrico</div>
+      </div>
+    </section>
+
+    <section class="card soft">
+      <h2>Protocolo de captação (isolamento)</h2>
+      <ul class="list">
+        <li>Paciente com fone/áudio isolado; perguntas do médico fora do mic do paciente.</li>
+        <li>Captação prioriza a voz do paciente para melhor sinal/ruído.</li>
+        <li>O sistema registra métricas temporais e gera um relatório de sessão.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Elayon CRS • Demo</span>
+  </footer>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>
