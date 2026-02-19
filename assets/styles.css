@@ -188,3 +188,49 @@ canvas{display:block; width:100%; height:220px}
 }
 .list{margin:8px 0 0; padding-left:18px; color:var(--muted)}
 hr{border:none;border-top:1px solid var(--stroke); margin:14px 0}
+
+/* ====== UPGRADE BLOCO 2 (logo maior + check) ====== */
+
+/* container da imagem da marca */
+.logoImg{
+  width:52px;
+  height:52px;
+  border-radius:14px;
+  overflow:hidden;
+  border:1px solid var(--stroke);
+  background: rgba(255,255,255,.75);
+  box-shadow: 0 10px 24px rgba(0,0,0,.06);
+  display:grid;
+  place-items:center;
+}
+.logoImg img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transform: scale(1.12); /* dá “presença” sem estourar */
+}
+
+/* deixa o brand mais “respirado” quando tem imagem */
+.brand{gap:14px}
+.brand-title{font-size:16px}
+.brand-sub{font-size:12px}
+
+/* checkbox termo */
+.check{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  padding:12px 12px;
+  border:1px solid var(--stroke);
+  border-radius:14px;
+  background: rgba(255,255,255,.70);
+}
+.check input{
+  margin-top:4px;
+  transform: scale(1.15);
+}
+.check span{
+  font-size:13px;
+  color: var(--muted);
+  line-height:1.35;
+}
