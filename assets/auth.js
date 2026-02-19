@@ -1,58 +1,43 @@
-const KEY_DOCTOR = "elayon_crs_doctor";
+// assets/auth.js
+import { KEY_AUTH, saveJSON, loadJSON } from "./app.js";
 
-function $(id){ return document.getElementById(id); }
+const elNome = document.getElementById("nome");
+const elEmail = document.getElementById("email");
+const elCrm = document.getElementById("crm");
+const elSenha = document.getElementById("senha");
 
-function saveDoctor(doc){
-  localStorage.setItem(KEY_DOCTOR, JSON.stringify(doc));
-}
+const btnEntrar = document.getElementById("btnEntrar");
+const btnDemo = document.getElementById("btnDemo");
 
-function loadDoctor(){
-  try{
-    const raw = localStorage.getItem(KEY_DOCTOR);
-    return raw ? JSON.parse(raw) : null;
-  }catch{
-    return null;
-  }
-}
-
-function clearForm(){
-  $("nome").value = "";
-  $("email").value = "";
-  $("senha").value = "";
-}
-
-function goHome(){
+// se já está logado, vai direto
+const existing = loadJSON(KEY_AUTH, null);
+if (existing?.email) {
   location.href = "home.html";
 }
 
-document.addEventListener("DOMContentLoaded", ()=>{
-  const doc = loadDoctor();
-  if (doc?.name && doc?.email) {
-    // já logado → vai direto pro início
-    goHome();
+btnDemo?.addEventListener("click", () => {
+  elNome.value = "Dr. Paulo (demo)";
+  elEmail.value = "demo@elayon.com";
+  elCrm.value = "CRM-AM 00000";
+  elSenha.value = "1234";
+});
+
+btnEntrar?.addEventListener("click", () => {
+  const nome = (elNome.value || "").trim();
+  const email = (elEmail.value || "").trim();
+  const crm = (elCrm.value || "").trim();
+  const senha = (elSenha.value || "").trim();
+
+  if (!nome || !email || !senha) {
+    alert("Preencha Nome, E-mail e Senha.");
     return;
   }
 
-  $("btnEntrar").addEventListener("click", ()=>{
-    const name = ($("nome").value || "").trim();
-    const email = ($("email").value || "").trim();
-    const pass = ($("senha").value || "").trim();
-
-    if (!name || !email || !pass) {
-      alert("Preencha nome, e-mail e senha.");
-      return;
-    }
-
-    // Login DEMO (local) — depois você troca por backend/CRM/etc.
-    saveDoctor({
-      name,
-      email,
-      role: "doctor",
-      loggedAt: Date.now()
-    });
-
-    goHome();
+  // DEMO: sem validação servidor. Depois vira backend/checkout real.
+  saveJSON(KEY_AUTH, {
+    nome, email, crm,
+    createdAt: Date.now()
   });
 
-  $("btnLimpar").addEventListener("click", clearForm);
+  location.href = "home.html";
 });
