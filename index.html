@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Elayon Health • CRS</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo"><img src="IMG-20260218-WA0016.jpg" alt="Elayon" /></div>
+      <div>
+        <div class="brand-title">Elayon Health • CRS</div>
+        <div class="brand-sub">Painel do médico • Demo</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="link" href="dashboard.html">Configurar CRS</a>
+      <a class="link" href="session.html">Nova Sessão</a>
+      <a class="link" href="report.html">Relatórios</a>
+      <a class="link" href="pricing.html">Tokens & Ética</a>
+      <a class="link" href="login.html" id="btnSair">Sair</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h1>Painel</h1>
+      <p class="muted" id="who"></p>
+
+      <div class="row">
+        <div class="kpi" id="kTokens">tokens: --</div>
+        <div class="kpi" id="kCfg">config: --</div>
+        <div class="kpi" id="kSessions">sessões: --</div>
+      </div>
+
+      <div class="actions">
+        <a class="btn primary" href="session.html">Iniciar nova sessão</a>
+        <a class="btn" href="dashboard.html">Configurar CRS</a>
+        <a class="btn" href="report.html">Abrir relatórios</a>
+        <a class="btn" href="pricing.html">Comprar tokens (demo)</a>
+      </div>
+
+      <div class="mini">
+        <div class="pill info">Diagnóstico sempre manual</div>
+        <div class="pill warn">TCLE obrigatório antes da captação</div>
+        <div class="pill ok">Relatório congelado ao encerrar</div>
+      </div>
+    </section>
+
+    <section class="card soft">
+      <h2>Protocolo rápido (isolamento)</h2>
+      <ul class="list">
+        <li>Paciente com fone/áudio isolado.</li>
+        <li>Perguntas do médico fora do microfone do paciente.</li>
+        <li>Encerrar sessão congela a evidência visual/métrica.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer"><span>Elayon Health • CRS</span></footer>
+
+  <script src="assets/auth.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
