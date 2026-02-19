@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Elayon Health • Configuração CRS</title>
+  <title>Elayon Health — Configuração CRS</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -11,67 +11,40 @@
 
   <header class="topbar">
     <div class="brand">
-      <div class="logo"><img src="IMG-20260218-WA0016.jpg" alt="Elayon" /></div>
+      <div class="logo">
+        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon Health" />
+      </div>
       <div>
         <div class="brand-title">Configurar CRS</div>
-        <div class="brand-sub">Parâmetros ajustáveis pelo médico • Demo</div>
+        <div class="brand-sub">Parâmetros do demo (não clínicos)</div>
       </div>
     </div>
     <nav class="nav">
-      <a class="link" href="index.html">Painel</a>
-      <a class="link" href="session.html">Nova sessão</a>
+      <a class="link" href="index.html">Início</a>
       <a class="link" href="report.html">Relatórios</a>
-      <a class="link" href="pricing.html">Tokens</a>
+      <a class="link" href="pricing.html">Token & Ética</a>
     </nav>
   </header>
 
   <main class="container">
     <section class="card">
-      <h1>Painel CRS</h1>
-      <p class="muted">Escolha um preset, edite perguntas e salve. Isso vira “snapshot” na sessão e no relatório.</p>
+      <h1>Painel de Configuração</h1>
+      <p class="muted">Sessão expira em 30 min, mas o registro máximo é 5 min (fixo). Aqui você controla a taxa de amostragem e sensibilidade do silêncio.</p>
 
       <div class="grid2">
         <div class="field">
-          <label for="disease">Preset / Doença (fala)</label>
-          <select id="disease"></select>
+          <label for="sampleHz">Amostragem (Hz)</label>
+          <input id="sampleHz" type="number" min="1" max="30" />
         </div>
-
         <div class="field">
-          <label for="sessionMinutes">Duração máxima (min)</label>
-          <input id="sessionMinutes" type="number" min="5" max="60" />
-        </div>
-      </div>
-
-      <div class="grid2">
-        <div class="field">
-          <label for="sampleHz">Taxa de amostragem (Hz)</label>
-          <input id="sampleHz" type="number" min="5" max="25" />
-        </div>
-
-        <div class="field">
-          <label for="bands">Bandas (overlay)</label>
-          <select id="bands">
-            <option value="8">8 linhas (RMS + 7 bandas)</option>
-            <option value="7">7 linhas (RMS + 6 bandas)</option>
-          </select>
+          <label for="silenceThr">Limiar de silêncio (proxy)</label>
+          <input id="silenceThr" type="number" min="0.005" max="0.10" step="0.001" />
         </div>
       </div>
 
       <div class="field">
-        <label for="questions">Perguntas sugeridas (editáveis, 1 por linha)</label>
-        <textarea id="questions" rows="8"></textarea>
-      </div>
-
-      <div class="field">
-        <label class="check">
-          <input id="consentRequired" type="checkbox" checked />
-          <span>TCLE obrigatório antes de iniciar captação.</span>
-        </label>
-      </div>
-
-      <div class="field">
-        <label for="consentText">Texto do consentimento (TCLE)</label>
-        <textarea id="consentText" rows="3"></textarea>
+        <label for="hint">Observação interna (aparece no relatório)</label>
+        <textarea id="hint" rows="4" placeholder="Ex: repetir captação com melhor isolamento se ruído..."></textarea>
       </div>
 
       <div class="actions">
@@ -79,17 +52,12 @@
         <button class="btn" id="btnReset">Restaurar padrão</button>
       </div>
 
-      <div class="mini">
-        <div class="pill info">Preset pré-setado</div>
-        <div class="pill ok">Perguntas editáveis</div>
-        <div class="pill warn">Snapshot entra no relatório</div>
-      </div>
+      <hr/>
+      <p class="muted">Recomendação demo: 10 Hz e limiar 0.020–0.030 (depende do microfone/ruído).</p>
     </section>
   </main>
 
-  <footer class="footer"><span>Elayon Health • CRS Config</span></footer>
-
-  <script src="assets/auth.js"></script>
+  <footer class="footer"><span>Elayon Health • Config</span></footer>
   <script src="assets/dashboard.js"></script>
 </body>
 </html>
