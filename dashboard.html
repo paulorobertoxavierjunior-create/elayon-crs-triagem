@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Elayon Health • Configuração CRS</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo"><img src="IMG-20260218-WA0016.jpg" alt="Elayon" /></div>
+      <div>
+        <div class="brand-title">Configurar CRS</div>
+        <div class="brand-sub">Parâmetros ajustáveis pelo médico • Demo</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="link" href="index.html">Painel</a>
+      <a class="link" href="session.html">Nova sessão</a>
+      <a class="link" href="report.html">Relatórios</a>
+      <a class="link" href="pricing.html">Tokens</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h1>Painel CRS</h1>
+      <p class="muted">Escolha um preset, edite perguntas e salve. Isso vira “snapshot” na sessão e no relatório.</p>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="disease">Preset / Doença (fala)</label>
+          <select id="disease"></select>
+        </div>
+
+        <div class="field">
+          <label for="sessionMinutes">Duração máxima (min)</label>
+          <input id="sessionMinutes" type="number" min="5" max="60" />
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="sampleHz">Taxa de amostragem (Hz)</label>
+          <input id="sampleHz" type="number" min="5" max="25" />
+        </div>
+
+        <div class="field">
+          <label for="bands">Bandas (overlay)</label>
+          <select id="bands">
+            <option value="8">8 linhas (RMS + 7 bandas)</option>
+            <option value="7">7 linhas (RMS + 6 bandas)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="questions">Perguntas sugeridas (editáveis, 1 por linha)</label>
+        <textarea id="questions" rows="8"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="check">
+          <input id="consentRequired" type="checkbox" checked />
+          <span>TCLE obrigatório antes de iniciar captação.</span>
+        </label>
+      </div>
+
+      <div class="field">
+        <label for="consentText">Texto do consentimento (TCLE)</label>
+        <textarea id="consentText" rows="3"></textarea>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="btnSave">Salvar</button>
+        <button class="btn" id="btnReset">Restaurar padrão</button>
+      </div>
+
+      <div class="mini">
+        <div class="pill info">Preset pré-setado</div>
+        <div class="pill ok">Perguntas editáveis</div>
+        <div class="pill warn">Snapshot entra no relatório</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><span>Elayon Health • CRS Config</span></footer>
+
+  <script src="assets/auth.js"></script>
+  <script src="assets/dashboard.js"></script>
+</body>
+</html>
