@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Elayon Health • CRS</title>
+  <title>Elayon Health — CRS (Início)</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -11,59 +11,78 @@
 
   <header class="topbar">
     <div class="brand">
-      <div class="logo"><img src="IMG-20260218-WA0016.jpg" alt="Elayon" /></div>
+      <div class="logo">
+        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon Health" />
+      </div>
       <div>
-        <div class="brand-title">Elayon Health • CRS</div>
-        <div class="brand-sub">Painel do médico • Demo</div>
+        <div class="brand-title">Elayon Health</div>
+        <div class="brand-sub">CRS • Triagem vocal (Demo)</div>
       </div>
     </div>
     <nav class="nav">
+      <a class="link" href="login.html">Login</a>
       <a class="link" href="dashboard.html">Configurar CRS</a>
-      <a class="link" href="session.html">Nova Sessão</a>
+      <a class="link" href="pricing.html">Token & Ética</a>
       <a class="link" href="report.html">Relatórios</a>
-      <a class="link" href="pricing.html">Tokens & Ética</a>
-      <a class="link" href="login.html" id="btnSair">Sair</a>
     </nav>
   </header>
 
   <main class="container">
     <section class="card">
-      <h1>Painel</h1>
-      <p class="muted" id="who"></p>
+      <h1>Iniciar Atendimento</h1>
+      <p class="muted">
+        Sessão expira em <b>30 min</b>, com registro máximo de <b>5 min</b> (pausar/retomar até completar).
+        <br/>Fluxo: <b>cadastro → sessão → encerrar → relatório</b>.
+      </p>
 
-      <div class="row">
-        <div class="kpi" id="kTokens">tokens: --</div>
-        <div class="kpi" id="kCfg">config: --</div>
-        <div class="kpi" id="kSessions">sessões: --</div>
+      <div class="grid2">
+        <div class="field">
+          <label for="medico">Médico</label>
+          <input id="medico" placeholder="Ex: Dra. Ana" autocomplete="name" />
+        </div>
+
+        <div class="field">
+          <label for="paciente">Paciente</label>
+          <input id="paciente" placeholder="Ex: João" autocomplete="name" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="preset">Protocolo (preset)</label>
+        <select id="preset"></select>
+      </div>
+
+      <div class="field">
+        <label for="contexto">Contexto (opcional)</label>
+        <input id="contexto" placeholder="Ex: triagem neurológica / queixa principal..." />
       </div>
 
       <div class="actions">
-        <a class="btn primary" href="session.html">Iniciar nova sessão</a>
-        <a class="btn" href="dashboard.html">Configurar CRS</a>
-        <a class="btn" href="report.html">Abrir relatórios</a>
-        <a class="btn" href="pricing.html">Comprar tokens (demo)</a>
+        <button class="btn primary" id="btnIniciar">Iniciar Sessão</button>
+        <button class="btn" id="btnLimpar">Limpar</button>
       </div>
 
       <div class="mini">
-        <div class="pill info">Diagnóstico sempre manual</div>
-        <div class="pill warn">TCLE obrigatório antes da captação</div>
-        <div class="pill ok">Relatório congelado ao encerrar</div>
+        <div class="pill ok" id="pillReports">Relatórios: --/10</div>
+        <div class="pill info">Sem diagnóstico automático</div>
+        <div class="pill warn">Microfone será solicitado na sessão</div>
       </div>
     </section>
 
     <section class="card soft">
-      <h2>Protocolo rápido (isolamento)</h2>
+      <h2>Protocolo de captação (isolamento)</h2>
       <ul class="list">
-        <li>Paciente com fone/áudio isolado.</li>
-        <li>Perguntas do médico fora do microfone do paciente.</li>
-        <li>Encerrar sessão congela a evidência visual/métrica.</li>
+        <li>Paciente com fone e microfone isolado; perguntas do médico fora do mic do paciente.</li>
+        <li>Priorizar voz do paciente para melhorar sinal/ruído.</li>
+        <li>Ao final, relatório congela os gráficos para auditoria do médico.</li>
       </ul>
     </section>
   </main>
 
-  <footer class="footer"><span>Elayon Health • CRS</span></footer>
+  <footer class="footer">
+    <span>Elayon Health • CRS Demo • HTML/CSS/JS</span>
+  </footer>
 
-  <script src="assets/auth.js"></script>
   <script src="assets/app.js"></script>
 </body>
 </html>
