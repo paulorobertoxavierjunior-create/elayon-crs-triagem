@@ -158,4 +158,43 @@ input:focus, textarea:focus{
   font-size:12px;
   padding:6px 10px;
   border-radius:999px;
-  border:1px solid var
+  border:1px solid var(--stroke);
+  background: rgba(255,255,255,.65);
+}
+.pill.ok{border-color:rgba(34,197,94,.25)}
+.pill.warn{border-color:rgba(245,158,11,.25)}
+.pill.info{border-color:rgba(14,165,233,.25)}
+
+.footer{
+  position:fixed;
+  left:0; right:0; bottom:0;
+  padding:10px 16px;
+  font-size:12px;
+  color:var(--muted);
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(10px);
+  border-top:1px solid var(--stroke);
+}
+
+.canvasWrap{
+  margin-top:12px;
+  border:1px solid var(--stroke);
+  border-radius:14px;
+  overflow:hidden;
+  background: rgba(255,255,255,.75);
+}
+canvas{display:block; width:100%; height:220px}
+
+.row{
+  display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+}
+.kpi{
+  padding:10px 12px;
+  border:1px solid var(--stroke);
+  border-radius:14px;
+  background: rgba(255,255,255,.65);
+  font-family: var(--mono);
+  font-size:12px;
+}
+.list{margin:8px 0 0; padding-left:18px; color:var(--muted)}
+hr{border:none;border-top:1px solid var(--stroke); margin:14px 0}
