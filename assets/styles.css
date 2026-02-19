@@ -2,25 +2,23 @@
   --bg1:#f7fffe;
   --bg2:#f3fbff;
   --bg3:#f4fff7;
-
   --ink:#0b1b24;
   --muted:#51616c;
-
   --card:rgba(255,255,255,.78);
   --stroke:rgba(10,30,40,.10);
   --shadow: 0 12px 35px rgba(0,0,0,.08);
-
   --primary:#0ea5e9;
   --primary2:#22c55e;
   --danger:#ef4444;
   --warn:#f59e0b;
-
   --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+
+  /* logo */
+  --brandLogoSize:44px; /* 👈 AQUI você ajusta o tamanho da logo */
 }
 
 *{box-sizing:border-box}
 html,body{height:100%}
-
 body{
   margin:0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -45,29 +43,31 @@ body{
   backdrop-filter: blur(10px);
   background: rgba(255,255,255,.55);
   border-bottom: 1px solid var(--stroke);
-  z-index:10;
 }
 
 .brand{display:flex; gap:12px; align-items:center}
 
+/* ✅ Agora a logo pode ser letra OU imagem */
 .logo{
-  width:40px;height:40px;border-radius:12px;
-  display:grid;place-items:center;
+  width:var(--brandLogoSize);
+  height:var(--brandLogoSize);
+  border-radius:14px;
+  display:grid;
+  place-items:center;
   font-weight:800;
   background: linear-gradient(135deg, rgba(14,165,233,.18), rgba(34,197,94,.18));
   border:1px solid var(--stroke);
+  overflow:hidden;
+}
+.logo img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+  background: rgba(255,255,255,.35);
 }
 
-.brand-img{
-  width:44px; height:44px;
-  border-radius:14px;
-  object-fit:cover;
-  border:1px solid var(--stroke);
-  box-shadow: 0 10px 26px rgba(0,0,0,.06);
-  background: rgba(255,255,255,.65);
-}
-
-.brand-title{font-weight:900; letter-spacing:.2px}
+.brand-title{font-weight:800; letter-spacing:.2px}
 .brand-sub{font-size:12px; color:var(--muted)}
 
 .nav{display:flex; gap:10px; flex-wrap:wrap}
@@ -84,7 +84,7 @@ body{
 .container{
   max-width:980px;
   margin:0 auto;
-  padding:18px 16px 88px;
+  padding:18px 16px 80px;
   display:grid;
   gap:14px;
 }
@@ -136,7 +136,7 @@ input:focus, textarea:focus{
   padding:12px 14px;
   background:rgba(255,255,255,.8);
   cursor:pointer;
-  font-weight:750;
+  font-weight:650;
 }
 .btn:hover{filter:brightness(0.99)}
 .btn.primary{
@@ -147,8 +147,10 @@ input:focus, textarea:focus{
   border-color: rgba(239,68,68,.25);
   background: rgba(239,68,68,.10);
 }
+
+/* extra: botão “ghost” se você quiser usar */
 .btn.ghost{
-  background: transparent;
+  background: rgba(255,255,255,.55);
 }
 
 .mini{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap}
@@ -156,82 +158,4 @@ input:focus, textarea:focus{
   font-size:12px;
   padding:6px 10px;
   border-radius:999px;
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,.65);
-}
-.pill.ok{border-color:rgba(34,197,94,.25)}
-.pill.warn{border-color:rgba(245,158,11,.25)}
-.pill.info{border-color:rgba(14,165,233,.25)}
-
-.footer{
-  position:fixed;
-  left:0; right:0; bottom:0;
-  padding:10px 16px;
-  font-size:12px;
-  color:var(--muted);
-  background: rgba(255,255,255,.55);
-  backdrop-filter: blur(10px);
-  border-top:1px solid var(--stroke);
-}
-
-.row{
-  display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-}
-
-.kpi{
-  padding:10px 12px;
-  border:1px solid var(--stroke);
-  border-radius:14px;
-  background: rgba(255,255,255,.65);
-  font-family: var(--mono);
-  font-size:12px;
-}
-
-hr{border:none;border-top:1px solid var(--stroke); margin:14px 0}
-
-.center{
-  display:grid;
-  place-items:center;
-  min-height: calc(100vh - 72px);
-}
-
-.loginWrap{
-  width:min(520px, 100%);
-}
-
-.brandHero{
-  display:flex;
-  gap:14px;
-  align-items:center;
-  margin-bottom:12px;
-}
-
-.brandHero h1{
-  margin:0;
-  font-size:30px;
-  letter-spacing:.2px;
-}
-
-.brandHero p{
-  margin:2px 0 0;
-  color:var(--muted);
-}
-
-/* ===== Logo no Header ===== */
-.logo{
-  width:58px;
-  height:58px;
-  border-radius:14px;
-  overflow:hidden;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:white;
-  border:1px solid var(--stroke);
-}
-
-.logo img{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-}
+  border:1px solid var
