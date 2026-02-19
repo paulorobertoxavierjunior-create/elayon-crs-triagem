@@ -1,116 +1,84 @@
 // assets/app.js
-"use strict";
+// Núcleo: storage, helpers, rotas simples (GitHub Pages friendly)
 
-/**
- * Chaves de armazenamento
- */
-const KEY_DOCTOR = "elayon_doctor";
-const KEY_TOKENS = "elayon_tokens";
-const KEY_CONFIG = "elayon_crs_config";
-const KEY_SESSIONS = "elayon_crs_sessions";
+export const KEY_AUTH = "elayon_auth";
+export const KEY_CONFIG = "elayon_crs_config";
+export const KEY_SESSIONS = "elayon_crs_sessions";
+export const KEY_TOKENS = "elayon_tokens_demo";
 
-/**
- * Utils
- */
-function $(id){ return document.getElementById(id); }
+export function now() { return Date.now(); }
 
-function safeJsonParse(raw, fallback){
-  try { return JSON.parse(raw); } catch { return fallback; }
+export function uid(prefix="S") {
+  return `${prefix}-${Math.random().toString(16).slice(2,10)}-${Date.now().toString(16)}`;
 }
 
-function loadDoctor(){
-  return safeJsonParse(localStorage.getItem(KEY_DOCTOR) || "null", null);
-}
-function saveDoctor(doc){
-  localStorage.setItem(KEY_DOCTOR, JSON.stringify(doc));
-}
-function clearDoctor(){
-  localStorage.removeItem(KEY_DOCTOR);
-}
-
-function getTokens(){
-  const n = Number(localStorage.getItem(KEY_TOKENS) || "0");
-  return Number.isFinite(n) ? n : 0;
-}
-function setTokens(n){
-  localStorage.setItem(KEY_TOKENS, String(Math.max(0, Math.floor(n))));
-}
-function addTokens(n){
-  setTokens(getTokens() + Number(n || 0));
-}
-function consumeToken(){
-  const t = getTokens();
-  if (t <= 0) return false;
-  setTokens(t - 1);
-  return true;
+export function loadJSON(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
 }
 
-function loadConfig(){
-  const cfg = safeJsonParse(localStorage.getItem(KEY_CONFIG) || "{}", {});
-  return {
-    // defaults
-    sessionMinutes: Number(cfg.sessionMinutes ?? 20),
-    sampleHz: Number(cfg.sampleHz ?? 10),
-    presetKey: String(cfg.presetKey ?? "AFASIA"),
-    // 8 “linhas/medidas” por padrão (7 emblemático + 1 RMS total)
-    lines: Number(cfg.lines ?? 8),
-  };
+export function saveJSON(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
 }
 
-function requireLoginOrRedirect(){
-  const doc = loadDoctor();
-  if (!doc) {
+export function getAuth() {
+  return loadJSON(KEY_AUTH, null);
+}
+
+export function requireAuthOrRedirect() {
+  const auth = getAuth();
+  if (!auth?.email) {
     location.href = "index.html";
     return null;
   }
-  return doc;
+  return auth;
 }
 
-function genId(prefix="S"){
-  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`.toUpperCase();
-}
-
-/**
- * Login page behavior
- */
-(function initLogin(){
-  const btnLogin = $("btnLogin");
-  if (!btnLogin) return; // não está no index.html login
-
-  // Se já estiver logado, manda pro home
-  const already = loadDoctor();
-  if (already) {
-    location.href = "home.html";
-    return;
-  }
-
-  $("btnGoPricing")?.addEventListener("click", ()=> location.href = "pricing.html");
-
-  btnLogin.addEventListener("click", ()=>{
-    const nome = ($("nome")?.value || "").trim();
-    const email = ($("email")?.value || "").trim();
-    const senha = ($("senha")?.value || "").trim();
-    const crm = ($("crm")?.value || "").trim();
-
-    if (!nome || !email || !senha) {
-      alert("Preencha nome, e-mail e senha.");
-      return;
-    }
-
-    // Demo: validação local (sem backend)
-    const doctor = {
-      id: genId("DOC"),
-      nome,
-      email,
-      crm: crm || "",
-      createdAt: Date.now()
-    };
-
-    saveDoctor(doctor);
-
-    // Se for a primeira vez, dá 1 token de demo opcional (se quiser, comente essa linha)
-    if (getTokens() === 0) setTokens(1);
-
-    location.href = "home.html";
+export function getConfig() {
+  return loadJSON(KEY_CONFIG, {
+    sessionMinutes: 20,
+    sampleHz: 10,
+    preset: "Afasia (triagem)",
+    questions: [
+      "Diga seu nome completo e sua idade.",
+      "Conte, com suas palavras, o motivo principal da consulta.",
+      "Repita: 'Hoje está um dia claro em Manaus.'",
+      "Conte de 1 a 20 em voz alta.",
+      "Diga os meses do ano (ou os dias da semana).",
+      "Descreva o que você fez hoje pela manhã (30–60s).",
+      "Leia uma frase curta (se possível)."
+    ]
   });
-})();
+}
+
+export function getTokens() {
+  return loadJSON(KEY_TOKENS, { balance: 0, lastUpdate: now() });
+}
+
+export function setTokens(balance) {
+  saveJSON(KEY_TOKENS, { balance: Math.max(0, Number(balance || 0)), lastUpdate: now() });
+}
+
+export function loadSessions() {
+  return loadJSON(KEY_SESSIONS, []);
+}
+
+export function saveSessions(arr) {
+  saveJSON(KEY_SESSIONS, Array.isArray(arr) ? arr : []);
+}
+
+export function findSession(id) {
+  const arr = loadSessions();
+  const idx = arr.findIndex(s => s.id === id);
+  return { arr, idx, session: idx >= 0 ? arr[idx] : null };
+}
+
+export function qs(name) {
+  const u = new URL(location.href);
+  return u.searchParams.get(name);
+}
