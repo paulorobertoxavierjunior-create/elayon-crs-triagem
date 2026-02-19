@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Elayon Health • Acesso</title>
+  <title>Elayon Health — Login</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -11,95 +11,117 @@
 
   <header class="topbar">
     <div class="brand">
-      <div class="logo"><img src="IMG-20260218-WA0016.jpg" alt="Elayon" /></div>
+      <div class="logo">
+        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon Health" />
+      </div>
       <div>
         <div class="brand-title">Elayon Health</div>
-        <div class="brand-sub">CRS • Acesso do profissional • Demo</div>
+        <div class="brand-sub">CRS • Demo de validação</div>
       </div>
     </div>
     <nav class="nav">
-      <a class="link" href="pricing.html">Tokens & Ética</a>
+      <a class="link" href="pricing.html">Token & Ética</a>
+      <a class="link" href="report.html">Relatórios</a>
     </nav>
   </header>
 
   <main class="container">
-    <section class="card" style="max-width:680px;margin:0 auto;">
-      <h1>Entrar (demo)</h1>
-      <p class="muted">
-        Esta versão roda no navegador e salva dados localmente (localStorage).
-        <br/>Sem cobrança real nesta fase. Diagnóstico é sempre do médico.
-      </p>
+    <section class="card">
+      <h1>Entrar</h1>
+      <p class="muted">Acesso de demo. Registre seus dados para preencher automaticamente as sessões.</p>
 
       <div class="grid2">
         <div class="field">
-          <label for="nome">Nome do médico</label>
-          <input id="nome" placeholder="Ex: Dr. Paulo" autocomplete="name" />
+          <label for="name">Nome</label>
+          <input id="name" placeholder="Ex: Dra. Ana" autocomplete="name" />
         </div>
         <div class="field">
           <label for="email">E-mail</label>
-          <input id="email" placeholder="ex: medico@hospital.com" autocomplete="email" inputmode="email" />
+          <input id="email" placeholder="ex: ana@hospital.com" autocomplete="email" />
         </div>
       </div>
 
       <div class="grid2">
         <div class="field">
-          <label for="crm">CRM (obrigatório)</label>
-          <input id="crm" placeholder="Ex: CRM-AM 12345" />
+          <label for="crm">CRM</label>
+          <input id="crm" placeholder="Ex: 12345" />
         </div>
         <div class="field">
-          <label for="senha">Senha (demo)</label>
-          <input id="senha" type="password" placeholder="••••••••" autocomplete="current-password" />
+          <label for="uf">UF</label>
+          <select id="uf">
+            <option value="">Selecione</option>
+            <option>AC</option><option>AL</option><option>AM</option><option>AP</option><option>BA</option>
+            <option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option>
+            <option>MG</option><option>MS</option><option>MT</option><option>PA</option><option>PB</option>
+            <option>PE</option><option>PI</option><option>PR</option><option>RJ</option><option>RN</option>
+            <option>RO</option><option>RR</option><option>RS</option><option>SC</option><option>SE</option>
+            <option>SP</option><option>TO</option>
+          </select>
         </div>
       </div>
 
       <div class="field">
-        <label class="check">
-          <input id="aceite" type="checkbox" />
-          <span>
-            Confirmo que esta ferramenta é <b>apoio métrico/visual</b> e que o diagnóstico/conduta clínica são de responsabilidade do médico.
-          </span>
+        <label for="inst">Instituição (opcional)</label>
+        <input id="inst" placeholder="Ex: Hospital X / Clínica Y" />
+      </div>
+
+      <div class="field">
+        <label>
+          <input type="checkbox" id="agree" />
+          Declaro que esta ferramenta é apoio métrico/visual, sem diagnóstico automático, e assumo responsabilidade clínica pelo uso.
         </label>
       </div>
 
       <div class="actions">
-        <button class="btn primary" id="btnEntrar">Entrar</button>
-        <button class="btn" id="btnLimpar">Limpar</button>
+        <button class="btn primary" id="btnLogin">Salvar & Entrar</button>
+        <a class="btn" href="index.html">Pular (demo)</a>
       </div>
 
       <div class="mini">
-        <div class="pill info">Sem diagnóstico automático</div>
-        <div class="pill warn">Consentimento obrigatório na sessão</div>
-        <div class="pill ok">Humano no processo</div>
+        <div class="pill info">Dados salvos no dispositivo (localStorage)</div>
+        <div class="pill warn">Demo: sem validação de CRM online</div>
       </div>
     </section>
   </main>
 
   <footer class="footer"><span>Elayon Health • Login</span></footer>
 
-  <script src="assets/auth.js"></script>
   <script>
+    const KEY_DOC = "elayon_demo_doctor";
     const $ = (id)=>document.getElementById(id);
 
-    $("btnLimpar").addEventListener("click", ()=>{
-      ["nome","email","crm","senha"].forEach(id=>$(id).value="");
-      $("aceite").checked=false;
-      ELAYON.clearDoctor();
-    });
+    // prefill
+    try{
+      const raw = localStorage.getItem(KEY_DOC);
+      if(raw){
+        const d = JSON.parse(raw);
+        $("name").value = d.name || "";
+        $("email").value = d.email || "";
+        $("crm").value = d.crm || "";
+        $("uf").value = d.uf || "";
+        $("inst").value = d.inst || "";
+        $("agree").checked = !!d.agree;
+      }
+    }catch{}
 
-    $("btnEntrar").addEventListener("click", ()=>{
-      const nome = ($("nome").value||"").trim();
-      const email = ($("email").value||"").trim();
-      const crm = ($("crm").value||"").trim();
-      const senha = ($("senha").value||"").trim();
-      const aceite = $("aceite").checked;
-
-      if(!nome||!email||!crm||!senha) return alert("Preencha nome, e-mail, CRM e senha (demo).");
-      if(!email.includes("@")) return alert("E-mail inválido.");
-      if(!aceite) return alert("Você precisa confirmar o termo de responsabilidade.");
-
-      ELAYON.setDoctor({ nome, email, crm, loggedAt: Date.now() });
-      ELAYON.ensureConfig();
-      ELAYON.getTokens();
+    $("btnLogin").addEventListener("click", ()=>{
+      const d = {
+        name: $("name").value.trim(),
+        email: $("email").value.trim(),
+        crm: $("crm").value.trim(),
+        uf: $("uf").value.trim(),
+        inst: $("inst").value.trim(),
+        agree: $("agree").checked
+      };
+      if(!d.name || !d.email || !d.crm || !d.uf){
+        alert("Preencha Nome, E-mail, CRM e UF.");
+        return;
+      }
+      if(!d.agree){
+        alert("É necessário marcar a declaração de responsabilidade.");
+        return;
+      }
+      localStorage.setItem(KEY_DOC, JSON.stringify(d));
       location.href = "index.html";
     });
   </script>
