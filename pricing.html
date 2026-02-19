@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Elayon Health • Tokens & Ética</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo"><img src="IMG-20260218-WA0016.jpg" alt="Elayon" /></div>
+      <div>
+        <div class="brand-title">Tokens & Ética</div>
+        <div class="brand-sub">Checkout simulado • transparência desde o início</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="link" href="index.html">Painel</a>
+      <a class="link" href="dashboard.html">Config</a>
+      <a class="link" href="session.html">Sessão</a>
+      <a class="link" href="report.html">Relatórios</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h1>Tokens (demo)</h1>
+      <p class="muted">
+        Nesta fase, <b>não há cobrança real</b>. O “checkout” é simulação para validar fluxo.
+        <br/>Mais tarde: integração real de pagamento e emissão.
+      </p>
+
+      <div class="row">
+        <div class="kpi" id="kTokens">tokens: --</div>
+        <div class="kpi">consumo: 1 token por sessão encerrada</div>
+        <div class="kpi">preço: R$ 0,01 (simulado)</div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="btnBuy">Simular checkout (R$ 0,01) → +10 tokens</button>
+        <button class="btn" id="btnAdd1">+1 token (demo)</button>
+        <button class="btn danger" id="btnReset">Zerar tokens (demo)</button>
+      </div>
+
+      <hr/>
+
+      <h2>Cláusula ética (visível)</h2>
+      <ul class="list">
+        <li>O CRS não emite diagnóstico automático.</li>
+        <li>O médico registra o diagnóstico manualmente e assina.</li>
+        <li>Consentimento (TCLE) é obrigatório para captação.</li>
+        <li>O objetivo é apoio visual/métrico, não substituição clínica.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer"><span>Elayon Health • Tokens & Ética</span></footer>
+
+  <script src="assets/auth.js"></script>
+  <script src="assets/pricing.js"></script>
+</body>
+</html>
