@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Elayon CRS — Acesso</title>
+  <title>Elayon CRS — Início</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -11,72 +11,94 @@
 
   <header class="topbar">
     <div class="brand">
-      <div class="logoBox">
-        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon" />
+      <div class="logo">
+        <img src="IMG-20260218-WA0016.jpg" alt="Elayon" />
       </div>
       <div>
-        <div class="brand-title">Elayon CRS</div>
-        <div class="brand-sub">Humanidade e Tecnologia em Harmonia • Demo</div>
+        <div class="brand-title">Elayon Health • CRS</div>
+        <div class="brand-sub">Triagem vocal inteligente • Demo</div>
       </div>
     </div>
     <nav class="nav">
+      <a class="link" href="dashboard.html">Configurar CRS</a>
       <a class="link" href="pricing.html">Token & Ética</a>
+      <a class="link" href="report.html">Relatórios</a>
+      <a class="link" href="login.html" id="btnSair">Sair</a>
     </nav>
   </header>
 
   <main class="container">
     <section class="card">
-      <h1>Entrar</h1>
-      <p class="muted">Acesso do médico (demo). Sem cobrança real nesta etapa.</p>
+      <h1>Iniciar Atendimento</h1>
+      <p class="muted">
+        Fluxo recomendado: <b>cadastro → sessão → encerrar → relatório</b>.
+        <br/>A sessão expira automaticamente em <b>20 minutos</b> (configurável no painel).
+      </p>
 
       <div class="grid2">
         <div class="field">
-          <label for="loginName">Nome</label>
-          <input id="loginName" placeholder="Ex: Dr. Paulo" autocomplete="name" />
+          <label for="medico">Médico</label>
+          <input id="medico" placeholder="Ex: Dr. Paulo" autocomplete="name" />
         </div>
 
         <div class="field">
-          <label for="loginEmail">E-mail</label>
-          <input id="loginEmail" type="email" placeholder="ex@hospital.com" autocomplete="email" />
+          <label for="paciente">Paciente</label>
+          <input id="paciente" placeholder="Ex: Glaucia" autocomplete="name" />
         </div>
       </div>
 
-      <div class="grid2">
-        <div class="field">
-          <label for="loginPass">Senha</label>
-          <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password" />
-        </div>
-
-        <div class="field">
-          <label for="loginPin">PIN (opcional)</label>
-          <input id="loginPin" inputmode="numeric" placeholder="Ex: 1234" />
-        </div>
+      <div class="field">
+        <label for="contexto">Contexto da triagem (opcional)</label>
+        <input id="contexto" placeholder="Ex: triagem neurológica, queixa principal, observações..." />
       </div>
 
       <div class="actions">
-        <button class="btn primary" id="btnLogin">Entrar</button>
-        <button class="btn" id="btnClearLogin">Limpar</button>
+        <button class="btn primary" id="btnIniciar">Iniciar Sessão</button>
+        <button class="btn" id="btnLimpar">Limpar</button>
       </div>
 
       <div class="mini">
-        <div class="pill info">Termo e consentimento serão obrigatórios antes do uso real</div>
-        <div class="pill ok">Tudo local (localStorage) • Demo</div>
+        <div class="pill ok">GitHub Pages ativo</div>
+        <div class="pill warn">Permissão de microfone será pedida na sessão</div>
+        <div class="pill info">Sem diagnóstico — apenas apoio visual/métrico</div>
       </div>
     </section>
 
     <section class="card soft">
-      <h2>Nota ética</h2>
+      <h2>Protocolo de captação (isolamento)</h2>
       <ul class="list">
-        <li>O sistema é apoio visual/métrico e não emite diagnóstico.</li>
-        <li>Diagnóstico final (campo obrigatório) é preenchido pelo médico no relatório.</li>
-        <li>Qualquer uso com paciente exige consentimento.</li>
+        <li>Paciente com fone/áudio isolado; perguntas do médico fora do mic do paciente.</li>
+        <li>Captação prioriza a voz do paciente para melhor sinal/ruído.</li>
+        <li>O sistema registra métricas temporais e gera um relatório de sessão.</li>
       </ul>
     </section>
   </main>
 
   <footer class="footer">
-    <span>Elayon CRS • Acesso</span>
+    <span>Elayon Health • CRS • Demo • Interface estática (HTML/CSS/JS)</span>
   </footer>
+
+  <script>
+    const KEY_USER = "elayon_user_demo";
+
+    // exige login
+    let user = null;
+    try{ user = JSON.parse(localStorage.getItem(KEY_USER) || "null"); }catch{}
+    if (!user?.nome || !user?.email){
+      location.href = "login.html";
+    }
+
+    // sair
+    document.getElementById("btnSair").addEventListener("click", (e)=>{
+      e.preventDefault();
+      localStorage.removeItem(KEY_USER);
+      location.href = "login.html";
+    });
+
+    // médico preenche automático
+    const elMed = document.getElementById("medico");
+    if (elMed && user?.nome) elMed.value = user.nome;
+  </script>
 
   <script src="assets/app.js"></script>
 </body>
