@@ -4,43 +4,66 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Elayon Health — Conexão</title>
-  <link rel="stylesheet" href="assets/styles.css" /> 
+  <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
   <div class="bg"></div>
 
-  <main class="container">
-    <section class="card loginCard">
-      <div class="loginCenter">
-        <img class="loginLogo" src="IMG-20260218-WA0016.jpg" alt="Elayon Health" />
-        <h1 class="loginTitle">Bem-vindos ao Elayon Health</h1>
-        <p class="muted" style="margin-top:6px">
-          Demo ética • Evidência visual congelada • Diagnóstico manual do médico
-        </p>
-
-        <div class="actions" style="margin-top:16px; justify-content:center">
-          <button class="btn primary" id="btnConnect">Iniciar conexão</button>
-        </div>
-
-        <p class="hint" style="margin-top:12px">
-          Observação: esta versão (GitHub Pages) salva dados apenas neste dispositivo (localStorage).
-        </p>
+  <main class="centerHero">
+    <section class="card heroCard">
+      <div class="heroLogo">
+        <img src="IMG-20260218-WA0016.jpg" alt="Elayon Health" />
       </div>
+
+      <h1 class="heroTitle">Bem-vindos ao Elayon Health</h1>
+      <p class="heroSub">
+        CRS • Triagem vocal (demo).<br/>
+        Sem diagnóstico automático. Evidência visual + responsabilidade clínica do médico.
+      </p>
+
+      <div class="actions" style="justify-content:center">
+        <button class="btn primary" id="btnConnect">Iniciar conexão</button>
+        <button class="btn" id="btnClear">Limpar conexão</button>
+      </div>
+
+      <p class="muted" style="margin-top:12px;font-size:12px">
+        Observação: nesta demo, os dados ficam salvos neste dispositivo (localStorage).
+      </p>
     </section>
   </main>
 
-  <footer class="footer">
-    <span>Elayon Health • Conexão</span>
-  </footer>
+  <footer class="footer"><span>Elayon Health • Conexão</span></footer>
 
   <script src="assets/auth.js"></script>
   <script>
-    document.getElementById("btnConnect").addEventListener("click", () => {
-      // marca “conectado” no dispositivo
-      ELAYON.setConnection({ connectedAt: Date.now(), mode: "demo" });
+    const btn = document.getElementById("btnConnect");
+    const btnClear = document.getElementById("btnClear");
 
-      // manda pro Painel (index.html)
+    btn.addEventListener("click", () => {
+      const nome = (prompt("Nome do médico (como quer aparecer):") || "").trim();
+      if(!nome) return alert("Nome é obrigatório.");
+
+      const crm = (prompt("CRM (somente números, ou como preferir):") || "").trim();
+      if(!crm) return alert("CRM é obrigatório.");
+
+      const uf = (prompt("UF do CRM (ex: AM):") || "").trim().toUpperCase();
+      if(!uf) return alert("UF é obrigatória.");
+
+      const email = (prompt("E-mail (opcional):") || "").trim();
+
+      ELAYON.setDoctor({
+        nome, crm, uf, email,
+        connectedAt: Date.now()
+      });
+      ELAYON.ensureConfig();
       location.href = "index.html";
+    });
+
+    btnClear.addEventListener("click", () => {
+      if(confirm("Apagar conexão salva neste dispositivo?")){
+        ELAYON.clearDoctor();
+        alert("Conexão apagada.");
+      }
     });
   </script>
 </body>
