@@ -346,3 +346,84 @@ hr{border:none;border-top:1px solid var(--stroke); margin:14px 0}
   padding: 12px;
   border-radius: 14px;
 }
+
+/* ====== UPGRADES ELAYON HEALTH ====== */
+
+/* Logo com imagem */
+.logo{
+  width:44px;height:44px;border-radius:14px;
+  overflow:hidden;
+  display:grid;place-items:center;
+  background: rgba(255,255,255,.65);
+}
+.logoImg{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+/* Login central cinematográfico */
+.centerHero{
+  min-height: calc(100vh - 120px);
+  display:grid;
+  place-items:center;
+  padding: 18px 16px 80px;
+}
+.heroCard{
+  width:min(520px, 92vw);
+  text-align:center;
+}
+.heroLogo{
+  width:110px;
+  height:110px;
+  border-radius:24px;
+  margin: 0 auto 12px;
+  overflow:hidden;
+  border:1px solid var(--stroke);
+  box-shadow: var(--shadow);
+  background: rgba(255,255,255,.75);
+}
+.heroLogo img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.heroTitle{ font-weight:900; letter-spacing:.2px; margin:0 0 6px; }
+.heroSub{ color:var(--muted); margin:0 0 16px; line-height:1.35; }
+
+/* Snaps retangulares (relatório) */
+.snap{
+  width:100%;
+  height:auto;
+  display:block;
+  border-radius:12px;
+  border:1px solid var(--stroke);
+  background: rgba(255,255,255,.75);
+}
+
+/* Campo grande pro médico */
+.bigText{
+  width:100%;
+  min-height: 140px;
+  border-radius:14px;
+  padding:12px 12px;
+  font-size: 14px;
+  line-height:1.35;
+}
+
+/* Canvas do overlay/fft/silêncio com “cara de instrumento” */
+.canvasTall canvas{ height:260px }
+@media (max-width:720px){
+  .canvasTall canvas{ height:220px }
+}
+
+/* Pequena badge do médico */
+.badge{
+  display:inline-flex;
+  gap:8px;
+  align-items:center;
+  font-size:12px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid var(--stroke);
+  background: rgba(255,255,255,.65);
+  color: var(--muted);
+}
