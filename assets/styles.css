@@ -1,4 +1,42 @@
-:root{
+/* ===== Login ===== */
+.loginCard{ padding:22px; }
+.loginLogoWrap{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin-bottom:10px;
+}
+.loginLogo{
+  width:min(320px, 78vw);
+  height:auto;
+  border-radius:16px;
+  border:1px solid var(--stroke);
+  background: rgba(255,255,255,.7);
+  box-shadow: var(--shadow);
+}
+
+/* ===== Topbar logo maior (se você estiver usando <img> no header) ===== */
+.brandLogo{
+  width:46px;
+  height:46px;
+  border-radius:12px;
+  border:1px solid var(--stroke);
+  object-fit:cover;
+}
+
+/* ===== Relatório: overlay menor e retangular ===== */
+.overlayRect{
+  width:100%;
+  height:260px;           /* <<< retangular menor */
+  max-height:260px;
+  display:block;
+  border-radius:14px;
+  border:1px solid var(--stroke);
+  background: rgba(255,255,255,.75);
+}
+@media (max-width:720px){
+  .overlayRect{ height:220px; max-height:220px; }
+}:root{
   --bg1:#f7fffe;
   --bg2:#f3fbff;
   --bg3:#f4fff7;
@@ -199,4 +237,45 @@ hr{border:none;border-top:1px solid var(--stroke); margin:14px 0}
   resize: vertical;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   line-height:1.35;
+}
+
+
+/* ===== Login ===== */
+.loginCard{ padding:22px; }
+.loginLogoWrap{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin-bottom:10px;
+}
+.loginLogo{
+  width:min(320px, 78vw);
+  height:auto;
+  border-radius:16px;
+  border:1px solid var(--stroke);
+  background: rgba(255,255,255,.7);
+  box-shadow: var(--shadow);
+}
+
+/* ===== Topbar logo maior (se você estiver usando <img> no header) ===== */
+.brandLogo{
+  width:46px;
+  height:46px;
+  border-radius:12px;
+  border:1px solid var(--stroke);
+  object-fit:cover;
+}
+
+/* ===== Relatório: overlay menor e retangular ===== */
+.overlayRect{
+  width:100%;
+  height:260px;           /* <<< retangular menor */
+  max-height:260px;
+  display:block;
+  border-radius:14px;
+  border:1px solid var(--stroke);
+  background: rgba(255,255,255,.75);
+}
+@media (max-width:720px){
+  .overlayRect{ height:220px; max-height:220px; }
 }
