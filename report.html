@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Elayon Health • Relatórios</title>
+  <title>Elayon Health — Relatórios</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -11,23 +11,24 @@
 
   <header class="topbar">
     <div class="brand">
-      <div class="logo"><img src="IMG-20260218-WA0016.jpg" alt="Elayon" /></div>
+      <div class="logo">
+        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon Health" />
+      </div>
       <div>
         <div class="brand-title">Relatórios</div>
-        <div class="brand-sub">Relatório fechado • diagnóstico manual obrigatório</div>
+        <div class="brand-sub">Gráficos congelados + texto do médico</div>
       </div>
     </div>
     <nav class="nav">
-      <a class="link" href="index.html">Painel</a>
-      <a class="link" href="session.html">Nova sessão</a>
-      <a class="link" href="dashboard.html">Config</a>
-      <a class="link" href="pricing.html">Tokens</a>
+      <a class="link" href="index.html">Início</a>
+      <a class="link" href="dashboard.html">Configurar</a>
+      <a class="link" href="pricing.html">Token & Ética</a>
     </nav>
   </header>
 
   <main class="container">
     <section class="card" id="single" style="display:none">
-      <h1>Relatório de sessão</h1>
+      <h1>Relatório de Sessão</h1>
       <p class="muted" id="meta"></p>
 
       <div class="grid2">
@@ -37,50 +38,52 @@
 
       <hr/>
 
-      <h2>Evidência visual congelada</h2>
+      <h2>Evidência congelada</h2>
       <div class="grid2">
         <div class="card soft">
-          <h3>Som (FFT)</h3>
-          <img id="imgSound" style="width:100%;border-radius:14px;border:1px solid rgba(10,30,40,.10)" />
+          <div style="font-weight:800;margin-bottom:8px">FFT (som)</div>
+          <img id="imgFft" class="snap" alt="FFT" />
         </div>
         <div class="card soft">
-          <h3>Silêncio (pausas)</h3>
-          <img id="imgSil" style="width:100%;border-radius:14px;border:1px solid rgba(10,30,40,.10)" />
+          <div style="font-weight:800;margin-bottom:8px">Silêncio (proxy)</div>
+          <img id="imgSil" class="snap" alt="Silêncio" />
         </div>
       </div>
+
       <div class="card soft" style="margin-top:12px">
-        <h3>Overlay (RMS + bandas)</h3>
-        <img id="imgOv" style="width:100%;border-radius:14px;border:1px solid rgba(10,30,40,.10)" />
+        <div style="font-weight:800;margin-bottom:8px">Overlay 8 linhas</div>
+        <img id="imgOv" class="snap" alt="Overlay" />
       </div>
 
       <hr/>
 
-      <h2>Diagnóstico do médico (obrigatório)</h2>
-      <div class="field">
-        <label for="diag">Diagnóstico / hipótese clínica / conclusão</label>
-        <textarea id="diag" rows="5" placeholder="Texto do médico (obrigatório)"></textarea>
-      </div>
+      <h2>Diagnóstico/Hipótese (obrigatório)</h2>
+      <textarea id="dx" class="bigText" rows="6" placeholder="Escreva aqui o diagnóstico/hipótese e conduta (responsabilidade do médico)."></textarea>
 
-      <h2>Relatório textual (pré-visualização para copiar)</h2>
-      <textarea id="txt" rows="16"></textarea>
+      <h2 style="margin-top:14px">Relatório (texto completo)</h2>
+      <textarea id="txt" class="bigText" rows="16"></textarea>
 
       <div class="actions">
-        <button class="btn primary" id="btnFinalize">Finalizar (assinar)</button>
-        <button class="btn" id="btnCopy">Copiar</button>
-        <a class="btn" href="report.html">Voltar para lista</a>
+        <button class="btn primary" id="btnSave">Salvar diagnóstico no relatório</button>
+        <button class="btn" id="btnCopy">Copiar relatório</button>
+        <button class="btn danger" id="btnDelete">Excluir este relatório</button>
+        <a class="btn" id="btnBack" href="report.html">Voltar para lista</a>
       </div>
     </section>
 
     <section class="card" id="list">
-      <h1>Últimas sessões</h1>
-      <p class="muted">Armazenado no dispositivo (localStorage). Toque para abrir.</p>
-      <div id="items"></div>
+      <h1>Últimos relatórios (máx. 10)</h1>
+      <p class="muted">Armazenado no dispositivo. Ao atingir 10/10, exclua antes de gerar novos.</p>
+
+      <div class="actions">
+        <button class="btn danger" id="btnDeleteAll">Excluir todos</button>
+      </div>
+
+      <div id="items" style="margin-top:10px"></div>
     </section>
   </main>
 
   <footer class="footer"><span>Elayon Health • Relatórios</span></footer>
-
-  <script src="assets/auth.js"></script>
   <script src="assets/report.js"></script>
 </body>
 </html>
