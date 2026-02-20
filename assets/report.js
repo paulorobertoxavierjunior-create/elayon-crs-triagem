@@ -1,149 +1,217 @@
-// assets/report.js
-document.addEventListener("DOMContentLoaded", ()=>{
-  ELAYON.requireLogin();
+const KEY_SESSIONS = "elayon_crs_sessions";
+const MAX_REPORTS = 10;
 
-  const $ = (id)=>document.getElementById(id);
-  const params = new URL(location.href).searchParams;
-  const id = params.get("id");
+function getParam(name){
+  const u = new URL(location.href);
+  return u.searchParams.get(name);
+}
+function loadSessions(){
+  return JSON.parse(localStorage.getItem(KEY_SESSIONS) || "[]");
+}
+function saveSessions(arr){
+  localStorage.setItem(KEY_SESSIONS, JSON.stringify(arr));
+}
+function fmt(ts){
+  const d = new Date(ts);
+  return d.toLocaleString();
+}
 
-  const sessions = ELAYON.readJSON(ELAYON.KEYS.SESSIONS, []);
-  const single = $("single");
-  const list = $("list");
+const id = getParam("id");
+const sessions = loadSessions();
 
-  function fmtTime(ts){
-    const d = new Date(ts);
-    return d.toLocaleString();
+const single = document.getElementById("single");
+const list = document.getElementById("list");
+
+function closedOnly(arr){
+  return arr.filter(s => s.status === "closed");
+}
+
+function deleteSession(sessionId){
+  const arr = loadSessions();
+  const out = arr.filter(s => s.id !== sessionId);
+  saveSessions(out);
+}
+
+function deleteAllClosed(){
+  const arr = loadSessions();
+  const out = arr.filter(s => s.status !== "closed");
+  saveSessions(out);
+}
+
+if (id) {
+  const s = sessions.find(x => x.id === id);
+  if (!s) {
+    alert("Relatório não encontrado.");
+    location.href = "report.html";
   }
 
-  function buildText(s, diagText){
-    const sum = s.summary || {};
-    const cfg = s.configSnapshot || {};
-    const bandAvg = sum.bandAvg || [];
+  single.style.display = "block";
+  list.style.display = "none";
 
-    const bandsTxt = bandAvg.length
-      ? `Bandas (médias):
-- 20–60Hz: ${(bandAvg[0]||0).toFixed(4)}
-- 60–120Hz: ${(bandAvg[1]||0).toFixed(4)}
-- 120–250Hz: ${(bandAvg[2]||0).toFixed(4)}
-- 250–500Hz: ${(bandAvg[3]||0).toFixed(4)}
-- 500–1kHz: ${(bandAvg[4]||0).toFixed(4)}
-- 1–2kHz: ${(bandAvg[5]||0).toFixed(4)}
-- 2–4kHz: ${(bandAvg[6]||0).toFixed(4)}
-` : "";
+  const durMs = ((s.closedAt || Date.now()) - s.start);
+  const mins = Math.max(1, Math.round(durMs/60000));
+  const sum = s.summary || {};
 
-    return `ELAYON HEALTH • CRS — RELATÓRIO (DEMO)
-Gerado em: ${fmtTime(Date.now())}
+  document.getElementById("meta").textContent =
+    `ID: ${s.id} • Médico: ${s.medico} • Paciente: ${s.paciente} • Início: ${fmt(s.start)} • Encerrado: ${fmt(s.closedAt || Date.now())} • Motivo: ${s.closeReason || "manual"}`;
+
+  document.getElementById("k1").textContent =
+    `duração: ~${mins} min\npausas (proxy): ${((sum.pauseRatio ?? 0)*100).toFixed(1)}%`;
+
+  document.getElementById("k2").textContent =
+    `nível médio (RMS): ${(sum.avgRms ?? 0).toFixed(4)}\nvariabilidade: ${(sum.variability ?? 0).toFixed(4)}`;
+
+  // imagens congeladas
+  const snaps = s.snaps || {};
+  const imgFft = document.getElementById("imgFft");
+  const imgSil = document.getElementById("imgSil");
+  const imgOv = document.getElementById("imgOv");
+  if(snaps.fft) imgFft.src = snaps.fft;
+  if(snaps.sil) imgSil.src = snaps.sil;
+  if(snaps.ov) imgOv.src = snaps.ov;
+
+  const cfg = s.configSnapshot || {};
+  const hint = cfg.hint ? `\n\nObservação interna:\n${cfg.hint}` : "";
+
+  const questions = (s.questions || []).map((q,i)=>`  ${i+1}. ${q}`).join("\n");
+
+  const baseText =
+`ELAYON HEALTH — CRS (DEMO)
+Data/hora: ${fmt(Date.now())}
 Sessão: ${s.id}
 
-Identificação do médico:
-- Nome: ${s.doctor?.nome || "-"}
-- CRM: ${s.doctor?.crm || "-"}
-- E-mail: ${s.doctor?.email || "-"}
-
-Identificação do paciente:
-- Paciente: ${s.paciente || "-"}
+Identificação:
+- Médico: ${s.medico}
+- Paciente: ${s.paciente}
+- Preset: ${s.presetName || "(não informado)"}
 - Contexto: ${s.contexto || "(não informado)"}
 
-Configuração (snapshot):
-- Preset: ${cfg.disease || "-"}
-- Duração máxima: ${cfg.sessionMinutes || "-"} min
-- Amostragem: ${cfg.sampleHz || "-"} Hz
-- Linhas overlay: ${cfg.bands || "-"}
+Protocolo sugerido (editável pelo médico):
+${questions || "(sem perguntas)"}
 
-Resumo métrico (heurístico / apoio):
-- Amostras: ${sum.samples ?? 0}
+Duração aproximada: ${mins} min
+Registro máximo: 5 min (demo)
+Encerramento: ${(s.closeReason || "manual")}
+Token consumido (demo): ${s.tokenConsumed ? "1" : "0"}
+
+Observação ética:
+- Este documento é apoio métrico/visual e NÃO é diagnóstico automático.
+- A responsabilidade clínica é do médico.
+
+Resumo métrico (heurístico):
 - Nível médio (RMS): ${(sum.avgRms ?? 0).toFixed(4)}
 - Silêncio médio (proxy): ${(sum.avgSilence ?? 0).toFixed(4)}
-- Taxa de pausas “altas” (proxy): ${(((sum.pauseRatio ?? 0)*100)).toFixed(1)}%
-- Variabilidade (RMS): ${(sum.variability ?? 0).toFixed(4)}
+- Taxa de pausas (proxy): ${((sum.pauseRatio ?? 0)*100).toFixed(1)}%
+- Variabilidade (proxy): ${(sum.variability ?? 0).toFixed(4)}
 
-${bandsTxt}
-Diagnóstico do médico (manual, obrigatório):
-${diagText}
+Interpretação sugerida (para o médico validar):
+- Pausas altas podem indicar hesitação, interrupções frequentes ou baixa projeção vocal (avaliar contexto).
+- Variabilidade baixa pode sugerir ritmo mais constante; alta pode sugerir oscilação/instabilidade (avaliar contexto).
+- Se houver ruído, repetir captação com melhor isolamento.
 
-Ética:
-- Este relatório NÃO é diagnóstico automático.
-- Evidência visual/métrica é apoio. A conclusão clínica é do médico.
+${hint}
 `;
+
+  const txt = document.getElementById("txt");
+  const dx = document.getElementById("dx");
+
+  dx.value = s.dx || "";
+  txt.value = baseText + `\n\nDIAGNÓSTICO/HIPÓTESE (médico):\n${dx.value || "(pendente)"}\n`;
+
+  function refreshText(){
+    txt.value = baseText + `\n\nDIAGNÓSTICO/HIPÓTESE (médico):\n${dx.value || "(pendente)"}\n`;
   }
 
-  if (id){
-    const s = sessions.find(x=>x.id===id);
-    if(!s){ alert("Sessão não encontrada."); location.href="report.html"; return; }
-
-    single.style.display="block";
-    list.style.display="none";
-
-    $("meta").textContent =
-      `ID: ${s.id} • Médico: ${s.doctor?.nome} (${s.doctor?.crm}) • Paciente: ${s.paciente} • Encerrada: ${fmtTime(s.endedAt||Date.now())} • Motivo: ${s.closeReason||"-"}`;
-
-    const sum = s.summary || {};
-    $("k1").textContent = `amostras: ${sum.samples ?? 0}\npausas altas: ${(((sum.pauseRatio ?? 0)*100)).toFixed(1)}%`;
-    $("k2").textContent = `RMS médio: ${(sum.avgRms ?? 0).toFixed(4)}\nvariabilidade: ${(sum.variability ?? 0).toFixed(4)}`;
-
-    // imagens
-    $("imgSound").src = s.charts?.sound || "";
-    $("imgSil").src = s.charts?.silence || "";
-    $("imgOv").src = s.charts?.overlay || "";
-
-    const diag = $("diag");
-    const txt = $("txt");
-
-    function refreshText(){
-      txt.value = buildText(s, (diag.value||"").trim() || "(não preenchido)");
-    }
-    refreshText();
-    diag.addEventListener("input", refreshText);
-
-    $("btnCopy").addEventListener("click", async ()=>{
-      try{
-        await navigator.clipboard.writeText(txt.value);
-        alert("Copiado.");
-      }catch{
-        txt.select(); document.execCommand("copy");
-        alert("Copiado (compat).");
-      }
-    });
-
-    $("btnFinalize").addEventListener("click", ()=>{
-      const d = (diag.value||"").trim();
-      if(!d) return alert("Diagnóstico obrigatório (manual).");
-
-      // salva diagnóstico + assina
-      s.diagnosis = d;
-      s.signedAt = Date.now();
-      s.signedBy = { nome: s.doctor?.nome, crm: s.doctor?.crm };
-
-      // atualiza storage
-      const idx = sessions.findIndex(x=>x.id===s.id);
-      sessions[idx] = s;
-      ELAYON.writeJSON(ELAYON.KEYS.SESSIONS, sessions);
-
-      refreshText();
-      alert("Relatório finalizado e assinado (demo).");
-    });
-
-  } else {
-    // lista
-    const items = $("items");
-    if(!sessions.length){
-      items.innerHTML = `<p class="muted">Nenhuma sessão salva ainda.</p>`;
+  document.getElementById("btnSave").addEventListener("click", ()=>{
+    const value = (dx.value || "").trim();
+    if(!value){
+      alert("Diagnóstico/Hipótese é obrigatório.");
       return;
     }
-    items.innerHTML = sessions.slice(0,30).map(s=>{
-      const status = s.signedAt ? "ASSINADO" : "ABERTO";
+    const arr = loadSessions();
+    const i = arr.findIndex(x=>x.id===s.id);
+    if(i>=0){
+      arr[i].dx = value;
+      saveSessions(arr);
+      alert("Diagnóstico salvo.");
+      refreshText();
+    }
+  });
+
+  document.getElementById("btnCopy").addEventListener("click", async ()=>{
+    // exige dx preenchido para copiar (padrão profissional)
+    if(!(dx.value||"").trim()){
+      alert("Preencha o diagnóstico/hipótese antes de copiar o relatório.");
+      return;
+    }
+    refreshText();
+    try{
+      await navigator.clipboard.writeText(txt.value);
+      alert("Copiado.");
+    }catch{
+      txt.select();
+      document.execCommand("copy");
+      alert("Copiado (modo compatível).");
+    }
+  });
+
+  document.getElementById("btnDelete").addEventListener("click", ()=>{
+    if(confirm("Excluir este relatório do dispositivo?")){
+      deleteSession(s.id);
+      location.href = "report.html";
+    }
+  });
+
+} else {
+  const items = document.getElementById("items");
+  const btnDeleteAll = document.getElementById("btnDeleteAll");
+
+  btnDeleteAll.addEventListener("click", ()=>{
+    if(confirm("Excluir TODOS os relatórios do dispositivo?")){
+      deleteAllClosed();
+      location.reload();
+    }
+  });
+
+  const closed = closedOnly(sessions).slice(0, MAX_REPORTS);
+
+  if(!closed.length){
+    items.innerHTML = `<p class="muted">Nenhum relatório salvo ainda.</p>`;
+  } else {
+    items.innerHTML = closed.map(s=>{
       return `
         <div class="card soft" style="margin-top:10px">
-          <div class="row">
+          <div class="row" style="justify-content:space-between">
             <div>
-              <div style="font-weight:900">${s.doctor?.nome || "Médico"} → ${s.paciente || "Paciente"}</div>
-              <div class="muted" style="font-size:12px">ID ${s.id} • ${fmtTime(s.endedAt||s.createdAt)}</div>
-              <div class="muted" style="font-size:12px">Preset: ${(s.configSnapshot?.disease||"-")} • ${status}</div>
+              <div style="font-weight:800">${s.medico} → ${s.paciente}</div>
+              <div class="muted" style="font-size:12px">ID ${s.id} • ${fmt(s.closedAt || s.start)} • ${s.presetName || ""}</div>
             </div>
-            <a class="btn" href="report.html?id=${encodeURIComponent(s.id)}">Abrir</a>
+            <div class="row">
+              <a class="btn" href="report.html?id=${encodeURIComponent(s.id)}">Abrir</a>
+              <button class="btn danger" data-del="${s.id}">Excluir</button>
+            </div>
           </div>
         </div>
       `;
     }).join("");
+
+    items.querySelectorAll("[data-del]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const sid = btn.getAttribute("data-del");
+        if(confirm("Excluir este relatório?")){
+          deleteSession(sid);
+          location.reload();
+        }
+      });
+    });
   }
-});
+
+  // aviso de limite
+  const count = closedOnly(sessions).length;
+  if(count >= MAX_REPORTS){
+    const p = document.createElement("p");
+    p.className = "muted";
+    p.textContent = `Limite atingido: ${MAX_REPORTS}/${MAX_REPORTS}. Exclua relatórios para gerar novos.`;
+    items.prepend(p);
+  }
+}
