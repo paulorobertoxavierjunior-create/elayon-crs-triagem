@@ -1,37 +1,33 @@
-// assets/pricing.js
-document.addEventListener("DOMContentLoaded", ()=>{
-  ELAYON.requireLogin();
+const KEY_TOKENS = "elayon_demo_tokens";
 
-  const $ = (id)=>document.getElementById(id);
+function loadTokens(){
+  try{ return Number(localStorage.getItem(KEY_TOKENS) || "0"); }catch{ return 0; }
+}
+function saveTokens(n){
+  localStorage.setItem(KEY_TOKENS, String(Math.max(0, Math.floor(n))));
+}
 
-  function render(){
-    const t = ELAYON.getTokens();
-    $("kTokens").textContent = `tokens: ${t.tokens}`;
+const kBalance = document.getElementById("kBalance");
+function refresh(){
+  kBalance.textContent = `saldo: ${loadTokens()} tokens`;
+}
+refresh();
+
+document.querySelectorAll("[data-add]").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const add = Number(btn.getAttribute("data-add") || "0");
+    saveTokens(loadTokens() + add);
+    refresh();
+  });
+});
+
+document.getElementById("btnReset").addEventListener("click", ()=>{
+  if(confirm("Zerar saldo de tokens (demo)?")){
+    saveTokens(0);
+    refresh();
   }
-  render();
+});
 
-  $("btnBuy").addEventListener("click", ()=>{
-    // simulação de checkout
-    const t = ELAYON.getTokens();
-    t.tokens = (t.tokens||0) + 10;
-    t.updatedAt = Date.now();
-    ELAYON.setTokens(t);
-    render();
-    alert("Checkout simulado: +10 tokens (R$0,01 fictício).");
-  });
-
-  $("btnAdd1").addEventListener("click", ()=>{
-    const t = ELAYON.getTokens();
-    t.tokens = (t.tokens||0) + 1;
-    t.updatedAt = Date.now();
-    ELAYON.setTokens(t);
-    render();
-  });
-
-  $("btnReset").addEventListener("click", ()=>{
-    const ok = confirm("Zerar tokens (demo)?");
-    if(!ok) return;
-    ELAYON.setTokens({ tokens: 0, updatedAt: Date.now() });
-    render();
-  });
+document.getElementById("btnFakePay").addEventListener("click", ()=>{
+  alert("Demo: pagamento simulado. Na versão real, aqui entrará Pix/CPF e confirmação.");
 });
