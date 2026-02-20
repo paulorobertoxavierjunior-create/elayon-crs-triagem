@@ -9,35 +9,37 @@
 <body>
   <div class="bg"></div>
 
-  <main class="container" style="max-width:720px">
+  <main class="container">
     <section class="card loginCard">
-      <div class="loginLogoWrap">
+      <div class="loginCenter">
         <img class="loginLogo" src="IMG-20260218-WA0016.jpg" alt="Elayon Health" />
-      </div>
+        <h1 class="loginTitle">Bem-vindos ao Elayon Health</h1>
+        <p class="muted" style="margin-top:6px">
+          Demo ética • Evidência visual congelada • Diagnóstico manual do médico
+        </p>
 
-      <h1 style="text-align:center; margin-top:6px">Bem-vindos ao Elayon Health</h1>
-      <p class="muted" style="text-align:center">
-        Conexão de demonstração (sem cobrança).<br/>
-        Ferramenta de apoio visual/métrico — <b>sem diagnóstico automático</b>.
-      </p>
+        <div class="actions" style="margin-top:16px; justify-content:center">
+          <button class="btn primary" id="btnConnect">Iniciar conexão</button>
+        </div>
 
-      <div class="actions" style="justify-content:center">
-        <button class="btn primary" id="btnConnect">Iniciar conexão</button>
-      </div>
-
-      <div class="mini" style="justify-content:center">
-        <div class="pill info">Demo • GitHub Pages</div>
-        <div class="pill warn">Microfone só na sessão</div>
+        <p class="hint" style="margin-top:12px">
+          Observação: esta versão (GitHub Pages) salva dados apenas neste dispositivo (localStorage).
+        </p>
       </div>
     </section>
   </main>
 
-  <footer class="footer"><span>Elayon Health • Conexão</span></footer>
+  <footer class="footer">
+    <span>Elayon Health • Conexão</span>
+  </footer>
 
   <script src="assets/auth.js"></script>
   <script>
     document.getElementById("btnConnect").addEventListener("click", () => {
-      ELAYON.connectDemo();
+      // marca “conectado” no dispositivo
+      ELAYON.setConnection({ connectedAt: Date.now(), mode: "demo" });
+
+      // manda pro Painel (index.html)
       location.href = "index.html";
     });
   </script>
