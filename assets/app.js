@@ -1,3 +1,5 @@
+ELAYON.requireConnection();
+
 const KEY_SESSIONS = "elayon_crs_sessions";
 const KEY_DOC = "elayon_demo_doctor";
 const KEY_CONFIG = "elayon_crs_config";
