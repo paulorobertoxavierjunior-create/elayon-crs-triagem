@@ -1,464 +1,485 @@
-// assets/session.js
-document.addEventListener("DOMContentLoaded", ()=>{
-  const doctor = ELAYON.requireLogin();
-  if(!doctor) return;
+const KEY_SESSIONS = "elayon_crs_sessions";
+const KEY_TOKENS = "elayon_demo_tokens";
 
-  const cfg = ELAYON.ensureConfig();
-  const tokensObj = ELAYON.getTokens();
+const SESSION_EXPIRE_MS = 30 * 60 * 1000;
+const RECORD_MAX_SEC = 5 * 60;
+const CRS_LINES = 8;
 
-  const $ = (id)=>document.getElementById(id);
+function getParam(name){
+  const u = new URL(location.href);
+  return u.searchParams.get(name);
+}
+function loadSessions(){
+  return JSON.parse(localStorage.getItem(KEY_SESSIONS) || "[]");
+}
+function saveSessions(arr){
+  localStorage.setItem(KEY_SESSIONS, JSON.stringify(arr));
+}
+function findSession(id){
+  const arr = loadSessions();
+  const idx = arr.findIndex(s => s.id === id);
+  return { arr, idx, session: idx >= 0 ? arr[idx] : null };
+}
+function fmtTime(sec){
+  sec = Math.max(0, Math.floor(sec));
+  const m = String(Math.floor(sec/60)).padStart(2,"0");
+  const s = String(sec%60).padStart(2,"0");
+  return `${m}:${s}`;
+}
+function clamp01(x){ return Math.max(0, Math.min(1, x)); }
 
-  $("subTitle").textContent = `Médico: ${doctor.nome} • CRM: ${doctor.crm} • tokens: ${tokensObj.tokens}`;
+function loadTokens(){
+  try{ return Number(localStorage.getItem(KEY_TOKENS) || "0"); }catch{ return 0; }
+}
+function saveTokens(n){
+  localStorage.setItem(KEY_TOKENS, String(Math.max(0, Math.floor(n))));
+}
 
-  $("disease").value = cfg.disease;
-  $("maxMin").value = `${cfg.sessionMinutes} min • ${cfg.sampleHz} Hz • ${cfg.bands} linhas`;
-  $("questions").value = (cfg.questions || []).join("\n");
+const id = getParam("id");
+const { arr, idx, session } = findSession(id);
 
-  // Consentimento obrigatório
-  const consentBox = $("consentBox");
-  let consentOK = !cfg.consentRequired;
-  if (cfg.consentRequired){
-    consentBox.innerHTML = `
-      <label class="check">
-        <input id="consentChk" type="checkbox" />
-        <span>${(cfg.consentText||"Confirmo que houve consentimento (TCLE).")}</span>
-      </label>
-    `;
-    consentBox.querySelector("#consentChk").addEventListener("change",(e)=>{
-      consentOK = !!e.target.checked;
-    });
-  }else{
-    consentBox.innerHTML = `<span class="badge">TCLE não obrigatório (config)</span>`;
+if(!session){
+  alert("Sessão não encontrada. Volte ao Início.");
+  location.href = "index.html";
+}
+
+// UI
+const subTitle = document.getElementById("subTitle");
+const kpiSess = document.getElementById("kpiSess");
+const kpiRec = document.getElementById("kpiRec");
+const kpiState = document.getElementById("kpiState");
+
+const btnMic = document.getElementById("btnMic");
+const btnStart = document.getElementById("btnStart");
+const btnPause = document.getElementById("btnPause");
+const btnEnd = document.getElementById("btnEnd");
+
+subTitle.textContent = `Médico: ${session.medico} • Paciente: ${session.paciente} • ${session.presetName || "Preset"}`;
+kpiSess.textContent = `sessão: ${session.id}`;
+
+let audioCtx, analyser, srcNode, stream;
+let raf = null;
+let enabled = false;
+let capturing = false;
+
+const sampleHz = Math.max(1, Math.min(30, Number(session.configSnapshot?.sampleHz || 10)));
+const thr = Math.max(0.005, Math.min(0.10, Number(session.configSnapshot?.silenceThr || 0.025)));
+const intervalMs = Math.max(40, Math.round(1000 / sampleHz));
+
+// canvases
+const cvFft = document.getElementById("cvFft");
+const cvSil = document.getElementById("cvSil");
+const cvOv = document.getElementById("cvOv");
+
+function fitCanvas(cv, h){
+  const r = cv.getBoundingClientRect();
+  cv.width = Math.floor(r.width * devicePixelRatio);
+  cv.height = Math.floor(h * devicePixelRatio);
+}
+function fitAll(){
+  fitCanvas(cvFft, 240);
+  fitCanvas(cvSil, 240);
+  fitCanvas(cvOv, 240);
+}
+addEventListener("resize", fitAll);
+fitAll();
+
+const ctxF = cvFft.getContext("2d");
+const ctxS = cvSil.getContext("2d");
+const ctxO = cvOv.getContext("2d");
+
+// buffers
+let lastSampleT = 0;
+let recordedMs = Math.floor((session.recordedSec || 0) * 1000);
+
+const HISTORY = 720; // display width points
+const overlaySeries = Array.from({length: CRS_LINES}, ()=> new Array(HISTORY).fill(0));
+const silSeries = new Array(HISTORY).fill(0);
+let wIdx = 0;
+
+let fftSum = null;
+let fftCount = 0;
+
+function rmsFromTimeDomain(buf){
+  let sum = 0;
+  for(let i=0;i<buf.length;i++){
+    const v = (buf[i]-128)/128;
+    sum += v*v;
+  }
+  return Math.sqrt(sum/buf.length);
+}
+
+function bandEnergy(freq, fromHz, toHz, sampleRate){
+  const nyq = sampleRate/2;
+  const from = Math.floor((fromHz/nyq) * freq.length);
+  const to = Math.floor((toHz/nyq) * freq.length);
+  let sum=0, n=0;
+  for(let i=Math.max(0,from); i<=Math.min(freq.length-1,to); i++){
+    sum += freq[i];
+    n++;
+  }
+  return n ? (sum/n)/255 : 0;
+}
+
+function pitchProxy(freq, sampleRate){
+  const nyq = sampleRate/2;
+  const from = Math.floor((90/nyq)*freq.length);
+  const to = Math.floor((350/nyq)*freq.length);
+  let max=0;
+  for(let i=from;i<=to;i++) max = Math.max(max, freq[i]);
+  return max/255;
+}
+
+// drawing helpers
+function clearPanel(ctx, cv){
+  ctx.clearRect(0,0,cv.width, cv.height);
+  ctx.fillStyle = "rgba(245,255,255,1)";
+  ctx.fillRect(0,0,cv.width, cv.height);
+  ctx.strokeStyle = "rgba(0,0,0,0.05)";
+  ctx.lineWidth = 1*devicePixelRatio;
+  for(let i=1;i<6;i++){
+    const y = (cv.height/6)*i;
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(cv.width,y); ctx.stroke();
+  }
+}
+
+function drawFFT(freq){
+  clearPanel(ctxF, cvFft);
+
+  const barCount = 64;
+  const step = Math.max(1, Math.floor(freq.length / barCount));
+  const w = cvFft.width / barCount;
+
+  for(let i=0;i<barCount;i++){
+    const v = freq[i*step]/255;
+    const h = v * (cvFft.height*0.78);
+
+    ctxF.fillStyle = `rgba(14,165,233,${0.10 + v*0.35})`;
+    ctxF.fillRect(i*w, cvFft.height - h, w*0.78, h);
+
+    ctxF.fillStyle = `rgba(34,197,94,${0.06 + v*0.25})`;
+    ctxF.fillRect(i*w, cvFft.height - h*0.45, w*0.78, h*0.45);
   }
 
-  // Canvas setup
-  const cvSound = $("cvSound");
-  const cvSilence = $("cvSilence");
-  const cvOverlay = $("cvOverlay");
-
-  function resizeCanvas(cv, h=240){
-    const r = cv.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    cv.width = Math.floor(r.width * dpr);
-    cv.height = Math.floor(h * dpr);
-    cv._dpr = dpr;
-  }
-  function onResize(){
-    resizeCanvas(cvSound, 240);
-    resizeCanvas(cvSilence, 240);
-    resizeCanvas(cvOverlay, 240);
-  }
-  window.addEventListener("resize", onResize);
-  onResize();
-
-  const ctxSound = cvSound.getContext("2d");
-  const ctxSilence = cvSilence.getContext("2d");
-  const ctxOverlay = cvOverlay.getContext("2d");
-
-  // Audio state
-  let audioCtx=null, analyser=null, srcNode=null, stream=null;
-  let raf=null;
-  let capturing=false;
-  let startedAt=0;
-  let lastSample=0;
-
-  const SAMPLE_EVERY_MS = Math.max(60, Math.floor(1000 / (cfg.sampleHz || 12)));
-  const MAX_MS = (cfg.sessionMinutes || 20) * 60 * 1000;
-
-  const HISTORY = 520; // pontos no tempo (vertical/horizontal dependendo)
-  const bandsN = (cfg.bands || 8);
-  const overlaySeries = Array.from({length: bandsN}, ()=> new Array(HISTORY).fill(0));
-  const silenceSeries = new Array(HISTORY).fill(0);
-  const rmsSeries = new Array(HISTORY).fill(0);
-  let wIdx=0;
-
-  // session record (determinístico)
-  const sessionId = `S${Date.now().toString(36)}_${Math.random().toString(36).slice(2,6)}`;
-
-  const session = {
-    id: sessionId,
-    createdAt: Date.now(),
-    doctor: { nome: doctor.nome, email: doctor.email, crm: doctor.crm },
-    configSnapshot: {
-      disease: cfg.disease,
-      sessionMinutes: cfg.sessionMinutes,
-      sampleHz: cfg.sampleHz,
-      bands: cfg.bands,
-      consentRequired: cfg.consentRequired,
-      consentText: cfg.consentText
-    },
-    paciente: "",
-    contexto: "",
-    questions: [],
-    consentOk: false,
-    status: "draft",
-    metrics: [], // {ts, rms, silence, b1..b7}
-    summary: null,
-    charts: null // dataURLs
-  };
-
-  function fmt(sec){
-    sec = Math.max(0, Math.floor(sec));
-    const m = String(Math.floor(sec/60)).padStart(2,"0");
-    const s = String(sec%60).padStart(2,"0");
-    return `${m}:${s}`;
-  }
-
-  function setKpi(){
-    const now = Date.now();
-    const elapsed = (now - startedAt)/1000;
-    $("kTimer").textContent = `tempo: ${fmt(elapsed)}`;
-    if (elapsed*1000 >= MAX_MS && capturing){
-      endSession("expired");
+  // linha de média acumulada (se existir)
+  if(fftSum && fftCount>2){
+    ctxF.strokeStyle = "rgba(10,30,40,0.55)";
+    ctxF.lineWidth = 2*devicePixelRatio;
+    ctxF.beginPath();
+    for(let i=0;i<barCount;i++){
+      const raw = fftSum[i] / fftCount; // 0..255
+      const v = raw/255;
+      const x = (i/(barCount-1)) * cvFft.width;
+      const y = cvFft.height*0.90 - v*(cvFft.height*0.70);
+      if(i===0) ctxF.moveTo(x,y); else ctxF.lineTo(x,y);
     }
-  }
-  setInterval(()=>{ if(startedAt) setKpi(); }, 250);
-
-  function rmsFromTimeDomain(buf){
-    let sum=0;
-    for(let i=0;i<buf.length;i++){
-      const v=(buf[i]-128)/128;
-      sum += v*v;
-    }
-    return Math.sqrt(sum/buf.length);
+    ctxF.stroke();
   }
 
-  function bandEnergy(freq, fromHz, toHz, sampleRate, fftSize){
-    const nyq = sampleRate/2;
-    const from = Math.floor((fromHz/nyq) * freq.length);
-    const to = Math.floor((toHz/nyq) * freq.length);
-    let sum=0, n=0;
-    for(let i=Math.max(0,from); i<=Math.min(freq.length-1,to); i++){
-      sum += freq[i];
-      n++;
-    }
-    return n ? (sum/n)/255 : 0;
+  ctxF.fillStyle = "rgba(0,0,0,0.45)";
+  ctxF.font = `${14*devicePixelRatio}px system-ui, -apple-system, Segoe UI, Roboto`;
+  ctxF.fillText(`FFT (som) • amostra ${sampleHz}Hz • thr silêncio ${thr.toFixed(3)}`, 12*devicePixelRatio, 20*devicePixelRatio);
+}
+
+function drawSilence(){
+  clearPanel(ctxS, cvSil);
+
+  ctxS.strokeStyle = "rgba(10,30,40,0.55)";
+  ctxS.lineWidth = 2*devicePixelRatio;
+  ctxS.beginPath();
+  for(let x=0;x<HISTORY;x++){
+    const idx = (wIdx + x) % HISTORY;
+    const v = silSeries[idx]; // 0..1
+    const px = (x/(HISTORY-1)) * cvSil.width;
+    const py = cvSil.height*0.85 - v*(cvSil.height*0.70);
+    if(x===0) ctxS.moveTo(px,py); else ctxS.lineTo(px,py);
   }
+  ctxS.stroke();
 
-  // 7 bandas fixas (cinematográfico: subgrave→agudo)
-  function computeBands(freq){
-    const sr = audioCtx.sampleRate;
-    const fft = analyser.fftSize;
-    const b = [
-      bandEnergy(freq, 20, 60, sr, fft),
-      bandEnergy(freq, 60, 120, sr, fft),
-      bandEnergy(freq, 120, 250, sr, fft),
-      bandEnergy(freq, 250, 500, sr, fft),
-      bandEnergy(freq, 500, 1000, sr, fft),
-      bandEnergy(freq, 1000, 2000, sr, fft),
-      bandEnergy(freq, 2000, 4000, sr, fft),
-    ];
-    return b;
-  }
+  // linha do threshold visual (referência)
+  ctxS.strokeStyle = "rgba(245,158,11,0.35)";
+  ctxS.lineWidth = 2*devicePixelRatio;
+  ctxS.beginPath();
+  ctxS.moveTo(0, cvSil.height*0.50);
+  ctxS.lineTo(cvSil.width, cvSil.height*0.50);
+  ctxS.stroke();
 
-  function bg(ctx, cv){
-    ctx.clearRect(0,0,cv.width,cv.height);
-    ctx.fillStyle = "rgba(245,255,255,1)";
-    ctx.fillRect(0,0,cv.width,cv.height);
-    ctx.strokeStyle = "rgba(0,0,0,0.06)";
-    ctx.lineWidth = 1 * (cv._dpr||1);
-    for(let i=1;i<6;i++){
-      const y = (cv.height/6)*i;
-      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(cv.width,y); ctx.stroke();
-    }
-  }
+  ctxS.fillStyle = "rgba(0,0,0,0.45)";
+  ctxS.font = `${14*devicePixelRatio}px system-ui, -apple-system, Segoe UI, Roboto`;
+  ctxS.fillText("Silêncio (proxy temporal) • 0=falando 1=silêncio", 12*devicePixelRatio, 20*devicePixelRatio);
+}
 
-  function drawSound(freq){
-    bg(ctxSound, cvSound);
-    const bars = 72;
-    const step = Math.floor(freq.length / bars);
-    const w = cvSound.width / bars;
+function drawOverlay(){
+  clearPanel(ctxO, cvOv);
 
-    for(let i=0;i<bars;i++){
-      const v = freq[i*step]/255;
-      const h = v * (cvSound.height*0.80);
-      ctxSound.fillStyle = `rgba(14,165,233,${0.10 + v*0.35})`;
-      ctxSound.fillRect(i*w, cvSound.height-h, w*0.76, h);
-      ctxSound.fillStyle = `rgba(34,197,94,${0.08 + v*0.22})`;
-      ctxSound.fillRect(i*w, cvSound.height-(h*0.55), w*0.76, h*0.55);
-    }
+  const rowH = cvOv.height / CRS_LINES;
 
-    ctxSound.fillStyle = "rgba(0,0,0,0.45)";
-    ctxSound.font = `${14*(cvSound._dpr||1)}px system-ui`;
-    ctxSound.fillText("FFT (energia por frequência)", 12*(cvSound._dpr||1), 20*(cvSound._dpr||1));
-  }
+  const labels = [
+    "1) RMS (energia)",
+    "2) Pausa curta",
+    "3) Pausa média",
+    "4) Pausa longa",
+    "5) Pitch proxy",
+    "6) Subgrave (20–60Hz)",
+    "7) Graves (60–250Hz)",
+    "8) Médias-altas (800–3500Hz)"
+  ];
 
-  function drawSilence(){
-    bg(ctxSilence, cvSilence);
+  for(let l=0;l<CRS_LINES;l++){
+    const yMid = rowH*l + rowH*0.5;
+    const amp = rowH*0.32;
 
-    // desenha como linha temporal
-    ctxSilence.strokeStyle = "rgba(10,30,40,0.75)";
-    ctxSilence.lineWidth = 2*(cvSilence._dpr||1);
-    ctxSilence.beginPath();
+    ctxO.strokeStyle = "rgba(0,0,0,0.70)";
+    ctxO.lineWidth = 2*devicePixelRatio;
 
+    ctxO.beginPath();
     for(let x=0;x<HISTORY;x++){
       const idx = (wIdx + x) % HISTORY;
-      const v = silenceSeries[idx]; // 0..1
-      const px = (x/(HISTORY-1)) * cvSilence.width;
-      const py = (cvSilence.height*0.85) - v*(cvSilence.height*0.70);
-      if(x===0) ctxSilence.moveTo(px,py); else ctxSilence.lineTo(px,py);
+      const v = overlaySeries[l][idx]; // 0..1
+      const px = (x/(HISTORY-1)) * cvOv.width;
+      const py = yMid - (v-0.5)*2*amp;
+      if(x===0) ctxO.moveTo(px,py); else ctxO.lineTo(px,py);
     }
-    ctxSilence.stroke();
+    ctxO.stroke();
 
-    ctxSilence.fillStyle = "rgba(0,0,0,0.45)";
-    ctxSilence.font = `${14*(cvSilence._dpr||1)}px system-ui`;
-    ctxSilence.fillText("Silêncio (proxy de pausas)", 12*(cvSilence._dpr||1), 20*(cvSilence._dpr||1));
+    ctxO.fillStyle = "rgba(0,0,0,0.42)";
+    ctxO.font = `${13*devicePixelRatio}px system-ui, -apple-system, Segoe UI, Roboto`;
+    ctxO.fillText(labels[l], 12*devicePixelRatio, (rowH*l + 18*devicePixelRatio));
+  }
+}
+
+function updateKPIs(){
+  const now = Date.now();
+  const left = session.expiresAt - now;
+  const leftSec = Math.max(0, Math.floor(left/1000));
+  kpiSess.textContent = `sessão: ${session.id} • expira em ${fmtTime(leftSec)}`;
+  kpiRec.textContent = `gravado: ${fmtTime(recordedMs/1000)} / 05:00`;
+
+  if(left <= 0 && session.status === "active"){
+    endSession("expired");
+  }
+  if(recordedMs >= RECORD_MAX_SEC*1000){
+    kpiState.textContent = "estado: limite de 5 min atingido";
+    btnStart.disabled = true;
+    btnPause.disabled = true;
+    btnEnd.disabled = false;
+  }
+}
+setInterval(updateKPIs, 250);
+
+async function enableMic(){
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    analyser.smoothingTimeConstant = 0.6;
+    srcNode = audioCtx.createMediaStreamSource(stream);
+    srcNode.connect(analyser);
+
+    enabled = true;
+    kpiState.textContent = "estado: microfone ok";
+    btnStart.disabled = false;
+    btnEnd.disabled = false;
+  }catch(e){
+    alert("Falha ao acessar microfone. Verifique permissões do navegador.");
+  }
+}
+
+function sampleOnce(timeData, freqData){
+  analyser.getByteTimeDomainData(timeData);
+  analyser.getByteFrequencyData(freqData);
+
+  const rms = clamp01(rmsFromTimeDomain(timeData) * 3.0);
+
+  // silêncio proxy: 0 falando → 1 silêncio
+  const silence = clamp01((thr - rms) / thr);
+
+  // pausas por suavização
+  const prevMid = overlaySeries[2][(wIdx-1+HISTORY)%HISTORY] || 0;
+  const prevLong = overlaySeries[3][(wIdx-1+HISTORY)%HISTORY] || 0;
+  const shortPause = silence;
+  const midPause = clamp01(silence*0.7 + prevMid*0.3);
+  const longPause = clamp01(silence*0.5 + prevLong*0.5);
+
+  const pp = clamp01(pitchProxy(freqData, audioCtx.sampleRate));
+  const sub = clamp01(bandEnergy(freqData, 20, 60, audioCtx.sampleRate));
+  const low = clamp01(bandEnergy(freqData, 60, 250, audioCtx.sampleRate));
+  const midHigh = clamp01(bandEnergy(freqData, 800, 3500, audioCtx.sampleRate));
+
+  overlaySeries[0][wIdx] = rms;
+  overlaySeries[1][wIdx] = shortPause;
+  overlaySeries[2][wIdx] = midPause;
+  overlaySeries[3][wIdx] = longPause;
+  overlaySeries[4][wIdx] = pp;
+  overlaySeries[5][wIdx] = sub;
+  overlaySeries[6][wIdx] = low;
+  overlaySeries[7][wIdx] = midHigh;
+
+  silSeries[wIdx] = silence;
+
+  // FFT avg accumulator (downsample to 64 bars)
+  const barCount = 64;
+  const step = Math.max(1, Math.floor(freqData.length / barCount));
+  if(!fftSum) fftSum = new Array(barCount).fill(0);
+  for(let i=0;i<barCount;i++){
+    fftSum[i] += freqData[i*step];
+  }
+  fftCount++;
+
+  wIdx = (wIdx + 1) % HISTORY;
+
+  drawFFT(freqData);
+  drawSilence();
+  drawOverlay();
+}
+
+function loop(){
+  raf = requestAnimationFrame(loop);
+
+  // sempre desenha com o que tiver (último estado)
+  drawSilence();
+  drawOverlay();
+
+  if(!capturing) return;
+  if(recordedMs >= RECORD_MAX_SEC*1000) return;
+
+  const now = performance.now();
+  if(now - lastSampleT < intervalMs) return;
+  lastSampleT = now;
+
+  recordedMs += intervalMs;
+
+  const timeData = new Uint8Array(analyser.fftSize);
+  const freqData = new Uint8Array(analyser.frequencyBinCount);
+  sampleOnce(timeData, freqData);
+
+  // persistir progresso leve na sessão
+  session.recordedSec = recordedMs/1000;
+  arr[idx] = session;
+  saveSessions(arr);
+}
+
+function startCapture(){
+  if(!enabled || !analyser) return;
+  if(recordedMs >= RECORD_MAX_SEC*1000) return;
+
+  capturing = true;
+  kpiState.textContent = "estado: captando (demo)";
+  btnStart.disabled = true;
+  btnPause.disabled = false;
+  btnEnd.disabled = false;
+
+  if(!raf) loop();
+}
+
+function pauseCapture(){
+  capturing = false;
+  kpiState.textContent = "estado: pausado";
+  btnStart.disabled = false;
+  btnPause.disabled = true;
+}
+
+function summarize(){
+  // deriva de overlaySeries[0] (rms) e silSeries
+  // pega os últimos HISTORY pontos como proxy do período captado
+  let rmsSum=0, rmsN=0, varSum=0, silSum=0;
+  let prev=null;
+
+  for(let i=0;i<HISTORY;i++){
+    const idx = i; // já está circular, mas queremos média do buffer
+    const rms = overlaySeries[0][idx];
+    const sil = silSeries[idx];
+
+    rmsSum += rms; rmsN++;
+    silSum += sil;
+
+    if(prev!==null) varSum += Math.abs(rms - prev);
+    prev = rms;
   }
 
-  function drawOverlay(){
-    bg(ctxOverlay, cvOverlay);
+  const avgRms = rmsN ? rmsSum/rmsN : 0;
+  const avgSil = rmsN ? silSum/rmsN : 0;
+  const variability = (rmsN>1) ? varSum/(rmsN-1) : 0;
 
-    const lines = bandsN;
-    const rowH = cvOverlay.height / lines;
-
-    const labels8 = [
-      "0) RMS",
-      "1) 20–60Hz",
-      "2) 60–120Hz",
-      "3) 120–250Hz",
-      "4) 250–500Hz",
-      "5) 500–1kHz",
-      "6) 1–2kHz",
-      "7) 2–4kHz"
-    ];
-    const labels7 = labels8.slice(0,7);
-
-    const labels = (bandsN===8) ? labels8 : labels7;
-
-    for(let l=0;l<lines;l++){
-      const yMid = rowH*l + rowH*0.5;
-      const amp = rowH*0.35;
-
-      ctxOverlay.strokeStyle = "rgba(0,0,0,0.78)";
-      ctxOverlay.lineWidth = 2*(cvOverlay._dpr||1);
-      ctxOverlay.beginPath();
-
-      for(let x=0;x<HISTORY;x++){
-        const idx = (wIdx + x) % HISTORY;
-        const v = overlaySeries[l][idx]; // 0..1
-        const px = (x/(HISTORY-1)) * cvOverlay.width;
-        const py = yMid - (v-0.5)*2*amp;
-        if(x===0) ctxOverlay.moveTo(px,py); else ctxOverlay.lineTo(px,py);
-      }
-      ctxOverlay.stroke();
-
-      ctxOverlay.fillStyle = "rgba(0,0,0,0.45)";
-      ctxOverlay.font = `${13*(cvOverlay._dpr||1)}px system-ui`;
-      ctxOverlay.fillText(labels[l] || `linha ${l}`, 12*(cvOverlay._dpr||1), (rowH*l + 18*(cvOverlay._dpr||1)));
-    }
+  // “pausa ratio” proxy: silêncio > 0.5
+  let pauseCount=0;
+  for(let i=0;i<HISTORY;i++){
+    if(silSeries[i] > 0.5) pauseCount++;
   }
+  const pauseRatio = pauseCount/HISTORY;
 
-  async function enableMic(){
-    try{
-      stream = await navigator.mediaDevices.getUserMedia({ audio:true });
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 2048;
-      analyser.smoothingTimeConstant = 0.6;
+  return { avgRms, avgSilence: avgSil, variability, pauseRatio, fftCount };
+}
 
-      srcNode = audioCtx.createMediaStreamSource(stream);
-      srcNode.connect(analyser);
+function snapshotAll(){
+  // garante render final
+  drawSilence(); drawOverlay();
+  return {
+    fft: cvFft.toDataURL("image/png"),
+    sil: cvSil.toDataURL("image/png"),
+    ov: cvOv.toDataURL("image/png")
+  };
+}
 
-      $("kState").textContent = "estado: microfone ok";
-      $("btnStart").disabled = false;
-    }catch(e){
-      alert("Falha ao acessar microfone. Verifique permissões do navegador.");
-    }
+function cleanupAudio(){
+  try{ if(raf) cancelAnimationFrame(raf); }catch{}
+  raf = null;
+
+  try{ srcNode?.disconnect(); }catch{}
+  try{ analyser?.disconnect?.(); }catch{}
+  try{ audioCtx?.close(); }catch{}
+  try{ stream?.getTracks()?.forEach(t=>t.stop()); }catch{}
+
+  enabled = false;
+  capturing = false;
+}
+
+function consumeTokenIfAny(){
+  // demo: consome 1 token ao encerrar
+  const t = loadTokens();
+  if(t > 0){
+    saveTokens(t-1);
+    return true;
   }
+  return false;
+}
 
-  function startCapture(){
-    // validações mínimas
-    const paciente = ($("paciente").value||"").trim();
-    if(!paciente) return alert("Informe o nome do paciente.");
-    if(cfg.consentRequired && !consentOK) return alert("Confirme o consentimento (TCLE) para iniciar.");
+function endSession(reason="manual"){
+  if(session.status === "closed") return;
 
-    const t = ELAYON.getTokens();
-    if ((t.tokens||0) <= 0) return alert("Sem tokens. Vá em Tokens & Ética e simule compra.");
+  // encerra captura
+  capturing = false;
 
-    session.paciente = paciente;
-    session.contexto = ($("contexto").value||"").trim();
-    session.questions = ($("questions").value||"").split("\n").map(s=>s.trim()).filter(Boolean);
-    session.consentOk = true;
-    session.status = "active";
-    session.startedAt = Date.now();
+  // gera evidência
+  const sum = summarize();
+  const snaps = snapshotAll();
 
-    startedAt = Date.now();
-    capturing = true;
-    $("kState").textContent = "estado: captando";
-    $("btnStart").disabled = true;
-    $("btnPause").disabled = false;
-    $("btnEnd").disabled = false;
+  session.status = "closed";
+  session.closedAt = Date.now();
+  session.closeReason = reason;
+  session.summary = sum;
+  session.snaps = snaps;
 
-    const timeData = new Uint8Array(analyser.fftSize);
-    const freqData = new Uint8Array(analyser.frequencyBinCount);
+  // consome token (demo) — se não tiver token, ainda fecha (demo), mas marca no relatório
+  const consumed = consumeTokenIfAny();
+  session.tokenConsumed = consumed ? 1 : 0;
 
-    const loop = ()=>{
-      raf = requestAnimationFrame(loop);
-      if(!capturing) return;
+  arr[idx] = session;
+  saveSessions(arr);
 
-      const now = performance.now();
-      analyser.getByteTimeDomainData(timeData);
-      analyser.getByteFrequencyData(freqData);
+  cleanupAudio();
 
-      const rms = Math.min(1, rmsFromTimeDomain(timeData) * 3.2);
-      const silence = Math.min(1, Math.max(0, (0.035 - rms) / 0.035));
+  location.href = `report.html?id=${encodeURIComponent(session.id)}`;
+}
 
-      // bandas
-      const bands = computeBands(freqData); // 7 itens
-      // escreve arrays visuais
-      rmsSeries[wIdx] = rms;
-      silenceSeries[wIdx] = silence;
+// binds
+btnMic.addEventListener("click", enableMic);
+btnStart.addEventListener("click", startCapture);
+btnPause.addEventListener("click", pauseCapture);
+btnEnd.addEventListener("click", ()=> endSession("manual"));
 
-      // overlay: linha 0 = RMS; linhas seguintes = bandas
-      overlaySeries[0][wIdx] = rms;
-      for(let i=1;i<bandsN;i++){
-        overlaySeries[i][wIdx] = bands[i-1] ?? 0;
-      }
-
-      // métrica determinística (amostragem)
-      if (now - lastSample >= SAMPLE_EVERY_MS){
-        session.metrics.push({
-          ts: Date.now(),
-          rms,
-          silence,
-          bands
-        });
-        $("kLevel").textContent = `nível: ${rms.toFixed(4)}`;
-        lastSample = now;
-      }
-
-      wIdx = (wIdx + 1) % HISTORY;
-
-      // desenha
-      drawSound(freqData);
-      drawSilence();
-      drawOverlay();
-
-      // timer
-      setKpi();
-    };
-
-    loop();
-  }
-
-  function pause(){
-    capturing = false;
-    $("kState").textContent = "estado: pausado";
-    $("btnStart").disabled = false;
-    $("btnPause").disabled = true;
-  }
-
-  function resume(){
-    capturing = true;
-    $("kState").textContent = "estado: captando";
-    $("btnStart").disabled = true;
-    $("btnPause").disabled = false;
-  }
-
-  function summarize(){
-    const m = session.metrics || [];
-    const n = Math.max(1, m.length);
-    const avgRms = m.reduce((a,b)=>a+b.rms,0)/n;
-    const avgSil = m.reduce((a,b)=>a+b.silence,0)/n;
-
-    // variabilidade RMS
-    let varSum=0;
-    for(let i=1;i<m.length;i++) varSum += Math.abs(m[i].rms - m[i-1].rms);
-    const variability = m.length>1 ? varSum/(m.length-1) : 0;
-
-    // pausas “altas”
-    const pauseRatio = m.reduce((a,b)=>a + (b.silence>0.6 ? 1 : 0),0)/n;
-
-    // bandas médias
-    const bandAvg = new Array(7).fill(0);
-    for(const p of m){
-      for(let i=0;i<7;i++) bandAvg[i] += (p.bands?.[i] || 0);
-    }
-    for(let i=0;i<7;i++) bandAvg[i] /= n;
-
-    return { samples: m.length, avgRms, avgSilence: avgSil, variability, pauseRatio, bandAvg };
-  }
-
-  function snapshotCharts(){
-    // reduz para não explodir localStorage
-    function snap(cv, maxW=900){
-      const dpr = cv._dpr || 1;
-      const w = cv.width;
-      const h = cv.height;
-      const scale = Math.min(1, maxW / (w/dpr));
-      const out = document.createElement("canvas");
-      out.width = Math.floor((w/dpr) * scale);
-      out.height = Math.floor((h/dpr) * scale);
-      const octx = out.getContext("2d");
-      // desenha "normalizando" dpr
-      octx.drawImage(cv, 0,0, w, h, 0,0, out.width, out.height);
-      return out.toDataURL("image/png", 0.92);
-    }
-    return {
-      sound: snap(cvSound),
-      silence: snap(cvSilence),
-      overlay: snap(cvOverlay)
-    };
-  }
-
-  function stopAll(){
-    try{ if(raf) cancelAnimationFrame(raf); }catch{}
-    raf=null;
-    capturing=false;
-
-    try{ stream?.getTracks()?.forEach(t=>t.stop()); }catch{}
-    try{ audioCtx?.close(); }catch{}
-    stream=null; audioCtx=null; analyser=null; srcNode=null;
-  }
-
-  function saveSession(){
-    const sessions = ELAYON.readJSON(ELAYON.KEYS.SESSIONS, []);
-    sessions.unshift(session);
-    ELAYON.writeJSON(ELAYON.KEYS.SESSIONS, sessions.slice(0, 30)); // guarda só 30
-  }
-
-  function consumeToken(){
-    const t = ELAYON.getTokens();
-    t.tokens = Math.max(0, (t.tokens||0) - 1);
-    t.updatedAt = Date.now();
-    ELAYON.setTokens(t);
-  }
-
-  function endSession(reason="manual"){
-    if(session.status !== "active" && session.status !== "paused") return;
-
-    session.status = "closed";
-    session.endedAt = Date.now();
-    session.closeReason = reason;
-
-    session.summary = summarize();
-    session.charts = snapshotCharts();
-
-    // consome token no encerramento
-    consumeToken();
-    saveSession();
-    stopAll();
-
-    location.href = `report.html?id=${encodeURIComponent(session.id)}`;
-  }
-
-  // binds
-  $("btnMic").addEventListener("click", enableMic);
-
-  $("btnStart").addEventListener("click", ()=>{
-    if(!capturing){
-      // se estava pausado e já tinha stream, resume
-      if (session.status === "active") return; // redundante
-      startCapture();
-    }else{
-      resume();
-    }
-  });
-
-  $("btnPause").addEventListener("click", ()=>{
-    session.status = "paused";
-    pause();
-  });
-
-  $("btnEnd").addEventListener("click", ()=> endSession("manual"));
-});
+updateKPIs();
+drawFFT(new Uint8Array(256));
+drawSilence();
+drawOverlay();
