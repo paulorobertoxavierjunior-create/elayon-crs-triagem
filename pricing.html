@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Elayon Health • Tokens & Ética</title>
+  <title>Elayon Health — Token & Ética</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -11,55 +11,65 @@
 
   <header class="topbar">
     <div class="brand">
-      <div class="logo"><img src="IMG-20260218-WA0016.jpg" alt="Elayon" /></div>
+      <div class="logo">
+        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon Health" />
+      </div>
       <div>
-        <div class="brand-title">Tokens & Ética</div>
-        <div class="brand-sub">Checkout simulado • transparência desde o início</div>
+        <div class="brand-title">Token & Ética</div>
+        <div class="brand-sub">Cobrança fictícia (demo) • trilho para Pix/CPF</div>
       </div>
     </div>
     <nav class="nav">
-      <a class="link" href="index.html">Painel</a>
-      <a class="link" href="dashboard.html">Config</a>
-      <a class="link" href="session.html">Sessão</a>
+      <a class="link" href="index.html">Início</a>
+      <a class="link" href="login.html">Login</a>
       <a class="link" href="report.html">Relatórios</a>
     </nav>
   </header>
 
   <main class="container">
     <section class="card">
-      <h1>Tokens (demo)</h1>
+      <h1>Tokens (Demo)</h1>
       <p class="muted">
-        Nesta fase, <b>não há cobrança real</b>. O “checkout” é simulação para validar fluxo.
-        <br/>Mais tarde: integração real de pagamento e emissão.
+        Nesta demo, o token é fluxo/ética. Na versão real, o pagamento será via Pix/CPF e a liberação poderá ser manual/automática.
       </p>
 
       <div class="row">
-        <div class="kpi" id="kTokens">tokens: --</div>
-        <div class="kpi">consumo: 1 token por sessão encerrada</div>
-        <div class="kpi">preço: R$ 0,01 (simulado)</div>
+        <div class="kpi" id="kBalance">saldo: --</div>
+        <div class="kpi">consumo: 1 token ao encerrar sessão (com evidência)</div>
       </div>
 
       <div class="actions">
-        <button class="btn primary" id="btnBuy">Simular checkout (R$ 0,01) → +10 tokens</button>
-        <button class="btn" id="btnAdd1">+1 token (demo)</button>
-        <button class="btn danger" id="btnReset">Zerar tokens (demo)</button>
+        <button class="btn" data-add="1">+1 (teste)</button>
+        <button class="btn" data-add="3">+3 (teste)</button>
+        <button class="btn" data-add="10">+10 (teste)</button>
+        <button class="btn danger" id="btnReset">Zerar saldo</button>
       </div>
 
       <hr/>
 
-      <h2>Cláusula ética (visível)</h2>
-      <ul class="list">
-        <li>O CRS não emite diagnóstico automático.</li>
-        <li>O médico registra o diagnóstico manualmente e assina.</li>
-        <li>Consentimento (TCLE) é obrigatório para captação.</li>
-        <li>O objetivo é apoio visual/métrico, não substituição clínica.</li>
-      </ul>
+      <h2>Pix/CPF (trilho real)</h2>
+      <p class="muted">
+        Para validação, você pode exibir aqui o CPF/Pix do responsável e um botão “Enviar comprovante”.
+        Nesta demo, é apenas informativo.
+      </p>
+
+      <div class="card soft">
+        <div style="font-weight:800">Exemplo (edite depois)</div>
+        <div class="muted" style="margin-top:6px">Chave Pix (CPF): <b>SEU_CPF_AQUI</b></div>
+        <div class="muted">Valor simbólico: <b>R$ 0,01</b> (teste de fluxo)</div>
+        <div class="actions" style="margin-top:10px">
+          <button class="btn primary" id="btnFakePay">Simular pagamento</button>
+        </div>
+      </div>
+
+      <hr/>
+      <p class="muted">
+        Ética: o médico é responsável pelo diagnóstico/conduta. O CRS registra evidência acústica e congela gráficos.
+      </p>
     </section>
   </main>
 
-  <footer class="footer"><span>Elayon Health • Tokens & Ética</span></footer>
-
-  <script src="assets/auth.js"></script>
+  <footer class="footer"><span>Elayon Health • Token & Ética</span></footer>
   <script src="assets/pricing.js"></script>
 </body>
 </html>
