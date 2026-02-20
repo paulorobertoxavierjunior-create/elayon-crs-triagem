@@ -279,3 +279,70 @@ hr{border:none;border-top:1px solid var(--stroke); margin:14px 0}
 @media (max-width:720px){
   .overlayRect{ height:220px; max-height:220px; }
 }
+
+/* ====== LOGIN ====== */
+.loginCard{
+  max-width: 720px;
+  margin: 0 auto;
+}
+.loginCenter{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  padding: 14px 6px;
+}
+.loginLogo{
+  width: 140px;
+  height: 140px;
+  border-radius: 18px;
+  object-fit: cover;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.10);
+}
+.loginTitle{
+  margin-top: 14px;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+}
+
+/* ====== TOPBAR LOGO (deixa visível no celular) ====== */
+.logoImg{
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* Se a sua .logo for pequena, força a caixa a comportar a imagem */
+.topbar .logo{
+  width: 48px;
+  height: 48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  border-radius: 12px;
+}
+
+/* ====== RELATÓRIO: IMAGENS "CONGELADAS" ====== */
+.snap{
+  width: 100%;
+  max-height: 220px;       /* deixa retangular */
+  object-fit: contain;     /* não distorce */
+  border-radius: 14px;
+  background: rgba(255,255,255,0.55);
+}
+
+/* Overlay costuma ser maior; dá um teto menor e retangular */
+#imgOv.snap{
+  max-height: 260px;
+}
+
+/* Textareas grandes para o médico visualizar melhor */
+.bigText{
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.35;
+  padding: 12px;
+  border-radius: 14px;
+}
