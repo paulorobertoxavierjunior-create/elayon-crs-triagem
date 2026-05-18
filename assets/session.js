@@ -1,5 +1,6 @@
 // ==================================================
-// CÓDIGO ORIGINAL FUNCIONAL (Sessões, Áudio, Gráficos)
+// SISTEMA ELAYON HEALTH • ANÁLISE E CALIBRAÇÃO VOCAL
+// Código Completo: Lógica + Áudio + IA + Gráficos
 // ==================================================
 const KEY_SESSIONS = "elayon_crs_sessions";
 const KEY_TOKENS = "elayon_demo_tokens";
@@ -95,7 +96,7 @@ const ctxO = cvOv.getContext("2d");
 let lastSampleT = 0;
 let recordedMs = Math.floor((session.recordedSec || 0) * 1000);
 
-const HISTORY = 720; // display width points
+const HISTORY = 720;
 const overlaySeries = Array.from({length: CRS_LINES}, ()=> new Array(HISTORY).fill(0));
 const silSeries = new Array(HISTORY).fill(0);
 let wIdx = 0;
@@ -133,7 +134,6 @@ function pitchProxy(freq, sampleRate){
   return max/255;
 }
 
-// drawing helpers
 function clearPanel(ctx, cv){
   ctx.clearRect(0,0,cv.width, cv.height);
   ctx.fillStyle = "rgba(245,255,255,1)";
@@ -148,29 +148,23 @@ function clearPanel(ctx, cv){
 
 function drawFFT(freq){
   clearPanel(ctxF, cvFft);
-
   const barCount = 64;
   const step = Math.max(1, Math.floor(freq.length / barCount));
   const w = cvFft.width / barCount;
-
   for(let i=0;i<barCount;i++){
     const v = freq[i*step]/255;
     const h = v * (cvFft.height*0.78);
-
-    ctxF.fillStyle = `rgba(14,165,233,${0.10 + v*0.35})`;
+    ctxF.fillStyle = `rgba(14,165,233,AAAA${0.10 + v*0.35})`;
     ctxF.fillRect(i*w, cvFft.height - h, w*0.78, h);
-
-    ctxF.fillStyle = `rgba(34,197,94,${0.06 + v*0.25})`;
+    ctxF.fillStyle = `rgba(34,197,94,AAAA${0.06 + v*0.25})`;
     ctxF.fillRect(i*w, cvFft.height - h*0.45, w*0.78, h*0.45);
   }
-
-  // linha de média acumulada (se existir)
   if(fftSum && fftCount>2){
     ctxF.strokeStyle = "rgba(10,30,40,0.55)";
     ctxF.lineWidth = 2*devicePixelRatio;
     ctxF.beginPath();
     for(let i=0;i<barCount;i++){
-      const raw = fftSum[i] / fftCount; // 0..255
+      const raw = fftSum[i] / fftCount;
       const v = raw/255;
       const x = (i/(barCount-1)) * cvFft.width;
       const y = cvFft.height*0.90 - v*(cvFft.height*0.70);
@@ -178,75 +172,55 @@ function drawFFT(freq){
     }
     ctxF.stroke();
   }
-
   ctxF.fillStyle = "rgba(0,0,0,0.45)";
-  ctxF.font = `${14*devicePixelRatio}px system-ui, -apple-system, Segoe UI, Roboto`;
-  ctxF.fillText(`FFT (som) • amostra ${sampleHz}Hz • thr silêncio ${thr.toFixed(3)}`, 12*devicePixelRatio, 20*devicePixelRatio);
+  ctxF.font = `${14*devicePixelRatio}px system-ui`;
+  ctxF.fillText(`FFT • amostra ${sampleHz}Hz • thr ${thr.toFixed(3)}`, 12*devicePixelRatio, 20*devicePixelRatio);
 }
 
 function drawSilence(){
   clearPanel(ctxS, cvSil);
-
   ctxS.strokeStyle = "rgba(10,30,40,0.55)";
   ctxS.lineWidth = 2*devicePixelRatio;
   ctxS.beginPath();
   for(let x=0;x<HISTORY;x++){
     const idx = (wIdx + x) % HISTORY;
-    const v = silSeries[idx]; // 0..1
+    const v = silSeries[idx];
     const px = (x/(HISTORY-1)) * cvSil.width;
     const py = cvSil.height*0.85 - v*(cvSil.height*0.70);
     if(x===0) ctxS.moveTo(px,py); else ctxS.lineTo(px,py);
   }
   ctxS.stroke();
-
-  // linha do threshold visual (referência)
   ctxS.strokeStyle = "rgba(245,158,11,0.35)";
   ctxS.lineWidth = 2*devicePixelRatio;
-  ctxS.beginPath();
-  ctxS.moveTo(0, cvSil.height*0.50);
-  ctxS.lineTo(cvSil.width, cvSil.height*0.50);
-  ctxS.stroke();
-
+  ctxS.beginPath(); ctxS.moveTo(0, cvSil.height*0.50); ctxS.lineTo(cvSil.width, cvSil.height*0.50); ctxS.stroke();
   ctxS.fillStyle = "rgba(0,0,0,0.45)";
-  ctxS.font = `${14*devicePixelRatio}px system-ui, -apple-system, Segoe UI, Roboto`;
-  ctxS.fillText("Silêncio (proxy temporal) • 0=falando 1=silêncio", 12*devicePixelRatio, 20*devicePixelRatio);
+  ctxS.font = `${14*devicePixelRatio}px system-ui`;
+  ctxS.fillText("Silêncio • 0=falando 1=silêncio", 12*devicePixelRatio, 20*devicePixelRatio);
 }
 
 function drawOverlay(){
   clearPanel(ctxO, cvOv);
-
   const rowH = cvOv.height / CRS_LINES;
-
   const labels = [
-    "1) RMS (energia)",
-    "2) Pausa curta",
-    "3) Pausa média",
-    "4) Pausa longa",
-    "5) Pitch proxy",
-    "6) Subgrave (20–60Hz)",
-    "7) Graves (60–250Hz)",
-    "8) Médias-altas (800–3500Hz)"
+    "1) RMS (energia)", "2) Pausa curta", "3) Pausa média", "4) Pausa longa",
+    "5) Pitch proxy", "6) Subgrave (20–60Hz)", "7) Graves (60–250Hz)", "8) Médias-altas (800–3500Hz)"
   ];
-
   for(let l=0;l<CRS_LINES;l++){
     const yMid = rowH*l + rowH*0.5;
     const amp = rowH*0.32;
-
     ctxO.strokeStyle = "rgba(0,0,0,0.70)";
     ctxO.lineWidth = 2*devicePixelRatio;
-
     ctxO.beginPath();
     for(let x=0;x<HISTORY;x++){
       const idx = (wIdx + x) % HISTORY;
-      const v = overlaySeries[l][idx]; // 0..1
+      const v = overlaySeries[l][idx];
       const px = (x/(HISTORY-1)) * cvOv.width;
       const py = yMid - (v-0.5)*2*amp;
       if(x===0) ctxO.moveTo(px,py); else ctxO.lineTo(px,py);
     }
     ctxO.stroke();
-
     ctxO.fillStyle = "rgba(0,0,0,0.42)";
-    ctxO.font = `${13*devicePixelRatio}px system-ui, -apple-system, Segoe UI, Roboto`;
+    ctxO.font = `${13*devicePixelRatio}px system-ui`;
     ctxO.fillText(labels[l], 12*devicePixelRatio, (rowH*l + 18*devicePixelRatio));
   }
 }
@@ -257,15 +231,10 @@ function updateKPIs(){
   const leftSec = Math.max(0, Math.floor(left/1000));
   kpiSess.textContent = `sessão: ${session.id} • expira em ${fmtTime(leftSec)}`;
   kpiRec.textContent = `gravado: ${fmtTime(recordedMs/1000)} / 05:00`;
-
-  if(left <= 0 && session.status === "active"){
-    endSession("expired");
-  }
+  if(left <= 0 && session.status === "active") endSession("expired");
   if(recordedMs >= RECORD_MAX_SEC*1000){
     kpiState.textContent = "estado: limite de 5 min atingido";
-    btnStart.disabled = true;
-    btnPause.disabled = true;
-    btnEnd.disabled = false;
+    btnStart.disabled = true; btnPause.disabled = true; btnEnd.disabled = false;
   }
 }
 setInterval(updateKPIs, 250);
@@ -279,35 +248,23 @@ async function enableMic(){
     analyser.smoothingTimeConstant = 0.6;
     srcNode = audioCtx.createMediaStreamSource(stream);
     srcNode.connect(analyser);
-
     enabled = true;
     kpiState.textContent = "estado: microfone ok";
-    btnStart.disabled = false;
-    btnEnd.disabled = false;
-    
-    // AVISO IA: Microfone pronto
-    iaFala("🎤 Microfone ativado! Agora é só começar a gravar que eu já analiso tudo.", true);
-  }catch(e){
-    alert("Falha ao acessar microfone. Verifique permissões do navegador.");
-  }
+    btnStart.disabled = false; btnEnd.disabled = false;
+    iaFala("🎤 Microfone ativado! Pronto para capturar e analisar.", true);
+  }catch(e){ alert("Falha ao acessar microfone. Verifique permissões."); }
 }
 
 function sampleOnce(timeData, freqData){
   analyser.getByteTimeDomainData(timeData);
   analyser.getByteFrequencyData(freqData);
-
   const rms = clamp01(rmsFromTimeDomain(timeData) * 3.0);
-
-  // silêncio proxy: 0 falando → 1 silêncio
   const silence = clamp01((thr - rms) / thr);
-
-  // pausas por suavização
   const prevMid = overlaySeries[2][(wIdx-1+HISTORY)%HISTORY] || 0;
   const prevLong = overlaySeries[3][(wIdx-1+HISTORY)%HISTORY] || 0;
   const shortPause = silence;
   const midPause = clamp01(silence*0.7 + prevMid*0.3);
   const longPause = clamp01(silence*0.5 + prevLong*0.5);
-
   const pp = clamp01(pitchProxy(freqData, audioCtx.sampleRate));
   const sub = clamp01(bandEnergy(freqData, 20, 60, audioCtx.sampleRate));
   const low = clamp01(bandEnergy(freqData, 60, 250, audioCtx.sampleRate));
@@ -321,190 +278,85 @@ function sampleOnce(timeData, freqData){
   overlaySeries[5][wIdx] = sub;
   overlaySeries[6][wIdx] = low;
   overlaySeries[7][wIdx] = midHigh;
-
   silSeries[wIdx] = silence;
 
-  // Atualiza Métricas da IA em Tempo Real (aqui liga o gráfico com a inteligência)
   atualizarMetricasIA(rms, pp, midPause, low);
 
-    // FFT avg accumulator (downsample to 64 bars)
   const barCount = 64;
   const step = Math.max(1, Math.floor(freqData.length / barCount));
   if(!fftSum) fftSum = new Array(barCount).fill(0);
-  for(let i=0;i<barCount;i++){
-    fftSum[i] += freqData[i*step];
-  }
+  for(let i=0;i<barCount;i++) fftSum[i] += freqData[i*step];
   fftCount++;
 
   wIdx = (wIdx + 1) % HISTORY;
-
-  drawFFT(freqData);
-  drawSilence();
-  drawOverlay();
+  drawFFT(freqData); drawSilence(); drawOverlay();
 }
 
 function loop(){
   raf = requestAnimationFrame(loop);
-
-  // sempre desenha com o que tiver (último estado)
-  drawSilence();
-  drawOverlay();
-
-  if(!capturing) return;
-  if(recordedMs >= RECORD_MAX_SEC*1000) return;
-
+  drawSilence(); drawOverlay();
+  if(!capturing || recordedMs >= RECORD_MAX_SEC*1000) return;
   const now = performance.now();
   if(now - lastSampleT < intervalMs) return;
   lastSampleT = now;
-
   recordedMs += intervalMs;
-
+  session.recordedSec = recordedMs/1000; arr[idx] = session; saveSessions(arr);
   const timeData = new Uint8Array(analyser.fftSize);
   const freqData = new Uint8Array(analyser.frequencyBinCount);
   sampleOnce(timeData, freqData);
-
-  // persistir progresso leve na sessão
-  session.recordedSec = recordedMs/1000;
-  arr[idx] = session;
-  saveSessions(arr);
 }
 
-function startCapture(){
-  if(!enabled || !analyser) return;
-  if(recordedMs >= RECORD_MAX_SEC*1000) return;
-
-  capturing = true;
-  kpiState.textContent = "estado: captando (demo)";
-  btnStart.disabled = true;
-  btnPause.disabled = false;
-  btnEnd.disabled = false;
-
-  if(!raf) loop();
-  
-  // IA avisa que começou
-  iaFala("🎙️ Gravação iniciada! Estou captando tudo e analisando cada detalhe da sua voz...");
-}
-
-function pauseCapture(){
-  capturing = false;
-  kpiState.textContent = "estado: pausado";
-  btnStart.disabled = false;
-  btnPause.disabled = true;
-  
-  // IA avisa pausa
-  iaFala("⏸️ Gravação pausada. Quando quiser, é só continuar ou encerrar.");
-}
-
-function summarize(){
-  // deriva de overlaySeries[0] (rms) e silSeries
-  // pega os últimos HISTORY pontos como proxy do período captado
-  let rmsSum=0, rmsN=0, varSum=0, silSum=0;
-  let prev=null;
-
-  for(let i=0;i<HISTORY;i++){
-    const idx = i; // já está circular, mas queremos média do buffer
-    const rms = overlaySeries[0][idx];
-    const sil = silSeries[idx];
-
-    rmsSum += rms; rmsN++;
-    silSum += sil;
-
-    if(prev!==null) varSum += Math.abs(rms - prev);
-    prev = rms;
-  }
-
-  const avgRms = rmsN ? rmsSum/rmsN : 0;
-  const avgSil = rmsN ? silSum/rmsN : 0;
-  const variability = (rmsN>1) ? varSum/(rmsN-1) : 0;
-
-  // “pausa ratio” proxy: silêncio > 0.5
-  let pauseCount=0;
-  for(let i=0;i<HISTORY;i++){
-    if(silSeries[i] > 0.5) pauseCount++;
-  }
-  const pauseRatio = pauseCount/HISTORY;
-
-  return { avgRms, avgSilence: avgSil, variability, pauseRatio, fftCount };
-}
-
-function snapshotAll(){
-  // garante render final
-  drawSilence(); drawOverlay();
-  return {
-    fft: cvFft.toDataURL("image/png"),
-    sil: cvSil.toDataURL("image/png"),
-    ov: cvOv.toDataURL("image/png")
-  };
-}
-
-function cleanupAudio(){
-  try{ if(raf) cancelAnimationFrame(raf); }catch{}
-  raf = null;
-
-  try{ srcNode?.disconnect(); }catch{}
-  try{ analyser?.disconnect?.(); }catch{}
-  try{ audioCtx?.close(); }catch{}
-  try{ stream?.getTracks()?.forEach(t=>t.stop()); }catch{}
-
-  enabled = false;
-  capturing = false;
-}
-
-function consumeTokenIfAny(){
-  // demo: consome 1 token ao encerrar
-  const t = loadTokens();
-  if(t > 0){
-    saveTokens(t-1);
-    return true;
-  }
-  return false;
-}
-
-function endSession(reason="manual"){
-  if(session.status === "closed") return;
-
-  // encerra captura
-  capturing = false;
-
-  // gera evidência
-  const sum = summarize();
-  const snaps = snapshotAll();
-
-  session.status = "closed";
-  session.closedAt = Date.now();
-  session.closeReason = reason;
-  session.summary = sum;
-  session.snaps = snaps;
-
-  // consome token (demo) — se não tiver token, ainda fecha (demo), mas marca no relatório
-  const consumed = consumeTokenIfAny();
-  session.tokenConsumed = consumed ? 1 : 0;
-
-  arr[idx] = session;
-  saveSessions(arr);
-
-  cleanupAudio();
-  
-  // IA finaliza
-  iaFala("✅ Sessão encerrada! Todos os dados foram salvos e analisados. Vamos ver o relatório completo?", true);
-
-  location.href = `report.html?id=${encodeURIComponent(session.id)}`;
-}
-
-// binds
+// Controles dos botões originais
 btnMic.addEventListener("click", enableMic);
-btnStart.addEventListener("click", startCapture);
-btnPause.addEventListener("click", pauseCapture);
+btnStart.addEventListener("click", ()=>{
+  if(!enabled) return alert("Ative o microfone primeiro!");
+  capturing = true;
+  btnStart.disabled = true; btnPause.disabled = false; btnEnd.disabled = false;
+  kpiState.textContent = "estado: gravando...";
+  iaFala("🎙️ Gravação iniciada! Análise em tempo real ativada.", true);
+  if(!raf) loop();
+});
+btnPause.addEventListener("click", ()=>{
+  capturing = false;
+  btnStart.disabled = false; btnPause.disabled = true;
+  kpiState.textContent = "estado: pausado";
+  iaFala("⏸️ Gravação pausada. Dados salvos até o momento.");
+});
 btnEnd.addEventListener("click", ()=> endSession("manual"));
 
-updateKPIs();
-drawFFT(new Uint8Array(256));
-drawSilence();
-drawOverlay();
+function endSession(reason="ok"){
+  capturing = false; enabled = false;
+  if(raf) cancelAnimationFrame(raf); raf = null;
+  if(audioCtx) audioCtx.close();
+  if(stream) stream.getTracks().forEach(t=>t.stop());
 
+  session.status = "closed";
+  session.endedAt = Date.now();
+  session.endReason = reason;
+  arr[idx] = session;
+  saveSessions(arr);
+
+  // Calcula métricas finais
+  const sumRms = overlaySeries[0].reduce((a,b)=>a+b,0)/HISTORY;
+  const sumPausa = overlaySeries[3].reduce((a,b)=>a+b,0)/HISTORY;
+  const sumPitch = overlaySeries[4].reduce((a,b)=>a+b,0)/HISTORY;
+  const sumGraves = overlaySeries[6].reduce((a,b)=>a+b,0)/HISTORY;
+
+  session.summary = {
+    energiaMedia: sumRms.toFixed(3),
+    pausaMedia: sumPausa.toFixed(3),
+    pitchMedio: sumPitch.toFixed(3),
+    gravesMedio: sumGraves.toFixed(3),
+    duracaoSeg: recordedMs/1000
+  };
+  saveSessions(arr);
+
+  iaFala("✅ Sessão finalizada com sucesso! Redirecionando para o relatório...", true);
+  setTimeout(()=> location.href = `report.html?id=${session.id}`, 1500);
+}
 
 // ==================================================
-// PARTE NOVA: INTELIGÊNCIA ARTIFICIAL E CALIBRAÇÃO
+// PARTE: INTELIGÊNCIA ARTIFICIAL E CALIBRAÇÃO
 // ==================================================
 
 // Variáveis globais de estado e aprendizado
@@ -540,6 +392,7 @@ const alertaConduta = document.getElementById('alertaConduta');
 // ----------------------
 
 function iaFala(texto, ehConfirmada = false){
+  if(!iaLog) return;
   const el = document.createElement('div');
   el.className = `ia-mensagem ${ehConfirmada ? 'confirmada' : ''}`;
   el.textContent = texto;
@@ -556,7 +409,7 @@ function registrarPonto(etapa, tipo, valor, status){
   historicos[etapa].appendChild(el);
 }
 
-// **AQUI A LIGAÇÃO PRINCIPAL**: Pega os dados REAIS do áudio e transforma nas métricas da IA
+// **A LIGAÇÃO PRINCIPAL**: Pega os dados REAIS do áudio e transforma nas métricas da IA
 function atualizarMetricasIA(rms, pitch, pausa, graves){
   // Convertemos os valores capturados para a escala da IA (0 a 1)
   const energia = clamp01(rms * 1.2);       // Usamos o RMS real como energia
@@ -573,23 +426,25 @@ function atualizarMetricasIA(rms, pitch, pausa, graves){
     let textoComp = `E: ${difE}% | R: ${difR}% | P: ${difP}% | C: ${difC}%`;
     
     // Atualiza caixa de métricas na tela
-    metricasBox.style.display = "block";
-    mEnergia.textContent = `Energia: ${energia.toFixed(2)}`;
-    mRitmo.textContent = `Ritmo: ${ritmo.toFixed(2)}`;
-    mPausa.textContent = `Pausa: ${pausa.toFixed(2)}`;
-    mClareza.textContent = `Clareza: ${clareza.toFixed(2)}`;
-    mComparacao.textContent = `Comparação: ${textoComp}`;
+    if(metricasBox) metricasBox.style.display = "block";
+    if(mEnergia) mEnergia.textContent = `Energia Vocal: ${energia.toFixed(2)}`;
+    if(mRitmo) mRitmo.textContent = `Ritmo/Frequência: ${ritmo.toFixed(2)}`;
+    if(mPausa) mPausa.textContent = `Índice de Pausa: ${pausa.toFixed(2)}`;
+    if(mClareza) mClareza.textContent = `Clareza/Projeção: ${clareza.toFixed(2)}`;
+    if(mComparacao) mComparacao.textContent = `<strong>Comparação com Padrão:</strong> ${textoComp}`;
 
     // --- Lógica de Alertas Inteligentes (agora com dados REAIS) ---
-    if(difE < -15 || difC < -15) {
-      alertaConduta.style.display = 'block';
-      alertaEsforco.style.display = 'none';
-    } else if(difR > 20 || difE > 25) {
-      alertaEsforco.style.display = 'block';
-      alertaConduta.style.display = 'none';
-    } else {
-      alertaEsforco.style.display = 'none';
-      alertaConduta.style.display = 'none';
+    if(alertaEsforco && alertaConduta){
+      if(difE < -15 || difC < -15) {
+        alertaConduta.style.display = 'block';
+        alertaEsforco.style.display = 'none';
+      } else if(difR > 20 || difE > 25) {
+        alertaEsforco.style.display = 'block';
+        alertaConduta.style.display = 'none';
+      } else {
+        alertaEsforco.style.display = 'none';
+        alertaConduta.style.display = 'none';
+      }
     }
   }
 }
@@ -637,73 +492,71 @@ function analisarSinal(etapa, avaliacaoUsuario){
 }
 
 // --- CONTROLE DE BOTÕES DA CALIBRAÇÃO ---
-avaliacoes.forEach((grupo, idx) => {
-  grupo.forEach(btn => {
-    btn.addEventListener('click', ()=>{
-      grupo.forEach(b=>b.classList.remove('selecionado'));
-      btn.classList.add('selecionado');
-      dadosCalibracao[idx] = btn.textContent;
-      contadores[idx].textContent = `(concluído: ${btn.textContent})`;
-      
-      analisarSinal(idx, btn.textContent);
+if(avaliacoes){
+  avaliacoes.forEach((grupo, idx) => {
+    grupo.forEach(btn => {
+      btn.addEventListener('click', ()=>{
+        grupo.forEach(b=>b.classList.remove('selecionado'));
+        btn.classList.add('selecionado');
+        dadosCalibracao[idx] = btn.textContent;
+        if(contadores[idx]) contadores[idx].textContent = `(concluído: ${btn.textContent})`;
+        
+        analisarSinal(idx, btn.textContent);
 
-      // Libera próxima etapa
-      if(idx < 2){
-        passos[idx].classList.remove('ativo');
-        passos[idx+1].classList.add('ativo');
-        botoesGrav[idx+1].disabled = false;
-        etapaAtual = idx+1;
-        iaFala(`➡️ Pronto para o próximo!`);
-      } else {
-        // Fim da calibração inicial
-        passos[idx).classList.remove('ativo');
-        document.getElementById('areaFifo').style.display = 'block';
-        iaFala(`🎉 Calibração concluída! Agora estou pronto para exercícios livres.`);
-        inicializarFifo();
+        // Libera próxima etapa
+        if(idx < 2 && passos[idx] && passos[idx+1] && botoesGrav[idx+1]){
+          passos[idx].classList.remove('ativo');
+          passos[idx+1].classList.add('ativo');
+          botoesGrav[idx+1].disabled = false;
+          etapaAtual = idx+1;
+          iaFala(`➡️ Pronto para o próximo!`);
+        } else if(idx === 2) {
+          // Fim da calibração inicial
+          passos[idx].classList.remove('ativo');
+          const areaFifo = document.getElementById('areaFifo');
+          if(areaFifo) areaFifo.style.display = 'block';
+          iaFala(`🎉 Calibração concluída! Agora estou pronto para exercícios livres.`);
+          inicializarFifo();
+        }
+      });
+    });
+  });
+}
+
+// Ações dos botões de gravação dos passos
+if(botoesGrav && botoesParar){
+  botoesGrav.forEach((btn, idx)=>{
+    btn.addEventListener('click', ()=>{
+      if(!enabled) {
+        iaFala("⚠️ Primeiro clique em 'Ativar Microfone' ali em cima!");
+        return;
+      }
+      btn.disabled = true;
+      botoesParar[idx].disabled = false;
+      if(contadores[idx]) contadores[idx].textContent = '(🔴 GRAVANDO...)';
+      // Usa a função original de captura
+      if(!capturing){
+        capturing = true;
+        btnStart.disabled = true; btnPause.disabled = false;
+        kpiState.textContent = "estado: gravando...";
+        if(!raf) loop();
       }
     });
   });
-});
 
-// Ações dos botões de gravação dos passos
-botoesGrav.forEach((btn, idx)=>{
-  btn.addEventListener('click', ()=>{
-    if(!enabled) {
-      iaFala("⚠️ Primeiro clique em 'Ativar Microfone' ali em cima!");
-      return;
-    }
-    btn.disabled = true;
-    botoesParar[idx].disabled = false;
-    contadores[idx].textContent = '(🔴 GRAVANDO...)';
-    startCapture(); // Usa a função original de captura
+  botoesParar.forEach((btn, idx)=>{
+    btn.addEventListener('click', ()=>{
+      btn.disabled = true;
+        capturing = false;
+        btnStart.disabled = false; btnPause.disabled = true;
+        kpiState.textContent = "estado: pausado";
+      if(contadores[idx]) contadores[idx].textContent = '(✅ Gravação salva. Avalie abaixo.)';
+      iaFala(`🛑 Gravação finalizada. Agora me diga: como foi a sua fala?`);
+    });
   });
-});
-
-botoesParar.forEach((btn, idx)=>{
-  btn.addEventListener('click', ()=>{
-    btn.disabled = true;
-    pauseCapture(); // Usa a função original de pausa
-    contadores[idx].textContent = '(✅ Gravação salva. Avalie abaixo.)';
-    iaFala(`🛑 Gravação finalizada. Agora me diga: como foi a sua fala?`);
-  });
-});
+}
 
 // --- SISTEMA FIFO (EXERCÍCIOS LIVRES) ---
-let qtdFeitos = 0;
-const MAX_EXERCICIOS = 10;
-const frasesExercicios = [
-  "A natureza é bela e devemos cuidar de tudo o que existe nela.",
-  "Caminhar devagar ajuda a pensar melhor e falar com mais clareza.",
-  "Ouça o seu corpo, ele sempre avisa o que precisa e quando parar.",
-  "A paciência é uma virtude que fortalece a nossa voz e a nossa mente.",
-  "Respirar fundo acalma, renova as energias e melhora toda a nossa fala.",
-  "Cada dia é uma nova chance de praticar e fazer o seu melhor.",
-  "O descanso é tão importante quanto o exercício: equilíbrio é tudo.",
-  "Sua voz é única e é muito importante para mim ouvi-la bem.",
-  "Fale com calma, sem pressa, assim sua voz sai forte e bonita.",
-  "Tudo o que praticamos com carinho fica guardado como uma grande vitória."
-];
-
 function inicializarFifo(){
   const btnGravFifo = document.getElementById('btnGravFifo');
   const btnPararFifo = document.getElementById('btnPararFifo');
@@ -715,95 +568,134 @@ function inicializarFifo(){
   const historicoFifo = document.getElementById('histFifo');
   const qtdFeitosEl = document.getElementById('qtdFeitos');
 
+  let qtdFeitos = 0;
+  const MAX_EXERCICIOS = 10;
+  const frasesExercicios = [
+    "A natureza é bela e devemos cuidar de tudo o que existe nela.",
+    "Caminhar devagar ajuda a pensar melhor e falar com mais clareza.",
+    "Ouça o seu corpo, ele sempre avisa o que precisa e quando parar.",
+    "A paciência é uma virtude que fortalece a nossa voz e a nossa mente.",
+    "Respirar fundo acalma, renova as energias e melhora toda a nossa fala.",
+    "Cada dia é uma nova chance de praticar e fazer o seu melhor.",
+    "O descanso é tão importante quanto o exercício: equilíbrio é tudo.",
+    "Sua voz é única e é muito importante para mim ouvi-la bem.",
+    "Fale com calma, sem pressa, assim sua voz sai forte e bonita.",
+    "Tudo o que praticamos com carinho fica guardado como uma grande vitória."
+  ];
+
   function proximoExercicio(){
     if(qtdFeitos >= MAX_EXERCICIOS) {
       iaFala(`🔚 Você já completou os ${MAX_EXERCICIOS} exercícios disponíveis. Se quiser continuar, é só pedir, mas por hoje já está de ótimo tamanho!`, true);
-      btnGravFifo.disabled = true;
-      btnPular.disabled = true;
+      if(btnGravFifo) btnGravFifo.disabled = true;
+      if(btnPular) btnPular.disabled = true;
       return;
     }
-    tituloFifo.textContent = `Exercício ${qtdFeitos+1}`;
-    fraseFifo.textContent = frasesExercicios[qtdFeitos];
-    btnGravFifo.disabled = false;
-    btnPararFifo.disabled = true;
-    qtdFeitosEl.textContent = qtdFeitos;
-    avaliaFifo.forEach(b=>b.classList.remove('selecionado'));
+    if(tituloFifo) tituloFifo.textContent = `Exercício ${qtdFeitos+1}`;
+    if(fraseFifo) fraseFifo.textContent = frasesExercicios[qtdFeitos];
+    if(btnGravFifo) btnGravFifo.disabled = false;
+
+
+    if(btnPararFifo) btnPararFifo.disabled = true;
+    if(qtdFeitosEl) qtdFeitosEl.textContent = qtdFeitos;
+    if(avaliaFifo) avaliaFifo.forEach(b=>b.classList.remove('selecionado'));
     
     // Limpa alertas e métricas
-    alertaEsforco.style.display = 'none';
-    alertaConduta.style.display = 'none';
+    if(alertaEsforco) alertaEsforco.style.display = 'none';
+    if(alertaConduta) alertaConduta.style.display = 'none';
   }
 
   // Começar gravação do exercício
-  btnGravFifo.addEventListener('click', ()=>{
-    if(!enabled) {
-      iaFala("⚠️ Primeiro ative o microfone no painel superior!");
-      return;
-    }
-    btnGravFifo.disabled = true;
-    btnPararFifo.disabled = false;
-    iaFala(`🎙️ Gravando exercício ${qtdFeitos+1}... Vou analisar tudo em tempo real.`);
-    startCapture(); // Usa função original
-  });
+  if(btnGravFifo){
+    btnGravFifo.addEventListener('click', ()=>{
+      if(!enabled) {
+        iaFala("⚠️ Primeiro ative o microfone no painel superior!");
+        return;
+      }
+      btnGravFifo.disabled = true;
+      btnPararFifo.disabled = false;
+      iaFala(`🎙️ Gravando exercício ${qtdFeitos+1}... Vou analisar tudo em tempo real.`);
+      // Inicia captura se ainda não estiver gravando
+      if(!capturing){
+        capturing = true;
+        btnStart.disabled = true; btnPause.disabled = false;
+        kpiState.textContent = "estado: gravando...";
+        if(!raf) loop();
+      }
+    });
+  }
 
   // Parar gravação
-  btnPararFifo.addEventListener('click', ()=>{
-    btnPararFifo.disabled = true;
-    pauseCapture(); // Usa função original
-    iaFala(`🛑 Gravação salva! Agora me conta: como você achou que foi a sua fala agora?`);
-  });
+  if(btnPararFifo){
+    btnPararFifo.addEventListener('click', ()=>{
+      btnPararFifo.disabled = true;
+      capturing = false; // Pausa a captura
+      btnStart.disabled = false; btnPause.disabled = true;
+      kpiState.textContent = "estado: pausado";
+      iaFala(`🛑 Gravação salva! Agora me conta: como você achou que foi a sua fala agora?`);
+    });
+  }
 
   // Pular exercício
-  btnPular.addEventListener('click', ()=>{
-    qtdFeitos++;
-    proximoExercicio();
-    iaFala(`⏭️ Tudo bem, pulamos esse. Vamos para o próximo!`);
-  });
-
-  // Avaliação do usuário
-  avaliaFifo.forEach(btn => {
-    btn.addEventListener('click', ()=>{
-      avaliaFifo.forEach(b=>b.classList.remove('selecionado'));
-      btn.classList.add('selecionado');
-
-      // Análise final com dados REAIS
-      const energia = overlaySeries[0][wIdx] || 0;
-      const ritmo = 1 - (overlaySeries[3][wIdx] || 0);
-      let difE = padraoBase.energia ? ((energia - padraoBase.energia)/padraoBase.energia*100).toFixed(1) : "0";
-      let difR = padraoBase.ritmo ? ((ritmo - padraoBase.ritmo)/padraoBase.ritmo*100).toFixed(1) : "0";
-
-      // Feedback inteligente
-      if(btn.textContent.includes("cansado") || btn.textContent.includes("força")) {
-        iaFala(`💡 Entendi que sentiu esforço. Analisando: sua energia foi ${difE}% e ritmo ${difR}%. Vamos tentar respirar mais fundo no próximo para ficar mais leve.`);
-      } else if(btn.textContent.includes("devagar")) {
-        iaFala(`💡 Percebeu que falou mais devagar? Comparei com o seu padrão e está ${difR}% mais calmo. Isso é ótimo para clareza!`);
-      } else {
-        iaFala(`✅ Que bom que correu bem! Os dados mostram que está ${difE}% na energia e ${difR}% no ritmo — bem dentro do seu normal.`);
-      }
-
-      // Salva no histórico
-      const el = document.createElement('div');
-      el.className = 'ponto-item';
-      el.innerHTML = `<span>Ex${qtdFeitos+1}</span><span>E:${difE}% R:${difR}%</span><span>${btn.textContent}</span>`;
-      historicoFifo.appendChild(el);
-
+  if(btnPular){
+    btnPular.addEventListener('click', ()=>{
       qtdFeitos++;
       proximoExercicio();
+      iaFala(`⏭️ Tudo bem, pulamos esse. Vamos para o próximo!`);
     });
-  });
+  }
+
+  // Avaliação do usuário
+  if(avaliaFifo){
+    avaliaFifo.forEach(btn => {
+      btn.addEventListener('click', ()=>{
+        avaliaFifo.forEach(b=>b.classList.remove('selecionado'));
+        btn.classList.add('selecionado');
+
+        // Análise final com dados REAIS
+        const energia = overlaySeries[0][wIdx] || 0;
+        const ritmo = 1 - (overlaySeries[3][wIdx] || 0);
+        let difE = padraoBase.energia ? ((energia - padraoBase.energia)/padraoBase.energia*100).toFixed(1) : "0";
+        let difR = padraoBase.ritmo ? ((ritmo - padraoBase.ritmo)/padraoBase.ritmo*100).toFixed(1) : "0";
+
+        // Feedback inteligente
+        if(btn.textContent.includes("esforço") || btn.textContent.includes("força") || btn.textContent.includes("Cansado")) {
+          iaFala(`💡 Entendi que sentiu esforço. Analisando: sua energia foi ${difE}% e ritmo ${difR}%. Vamos tentar respirar mais fundo no próximo para ficar mais leve.`);
+        } else if(btn.textContent.includes("devagar") || btn.textContent.includes("arrastada")) {
+          iaFala(`💡 Percebeu que falou mais devagar? Comparei com o seu padrão e está ${difR}% mais calmo. Isso é ótimo para clareza!`);
+        } else if(btn.textContent.includes("rápida") || btn.textContent.includes("pressa")) {
+          iaFala(`💡 Você falou um pouco mais rápido! Está ${difR}% acima do normal. Tente controlar a respiração para manter o ritmo equilibrado.`);
+        } else {
+          iaFala(`✅ Que bom que correu bem! Os dados mostram que está ${difE}% na energia e ${difR}% no ritmo — bem dentro do seu normal.`);
+        }
+
+        // Salva no histórico
+        if(historicoFifo){
+          const el = document.createElement('div');
+          el.className = 'ponto-item';
+          el.innerHTML = `<span>Ex${qtdFeitos+1}</span><span>E:${difE}% R:${difR}%</span><span>${btn.textContent}</span>`;
+          historicoFifo.appendChild(el);
+        }
+
+        qtdFeitos++;
+        proximoExercicio();
+      });
+    });
+  }
 
   // Finalizar tudo
-  btnFinalizar.addEventListener('click', ()=>{
-    if(confirm("Deseja realmente encerrar a sessão e ir para o relatório?")){
-      endSession("finalizado_por_usuario"); // Usa função original de encerramento
-    }
-  });
+  if(btnFinalizar){
+    btnFinalizar.addEventListener('click', ()=>{
+      if(confirm("Deseja realmente encerrar a sessão e ir para o relatório clínico?")){
+        endSession("finalizado_profissional"); // Usa função original de encerramento
+      }
+    });
+  }
 
   // Inicia o primeiro exercício
   proximoExercicio();
 }
 
 // Mensagem inicial da IA
-iaFala("🤖 Olá! Estou pronto. Primeiro, clique em **Ativar Microfone** no painel acima. Depois siga os passos de calibração para eu aprender a sua voz.", true);
+iaFala("🤖 Olá! Sistema pronto para protocolo clínico. Primeiro, clique em **Ativar Microfone** no painel superior. Depois siga as etapas de calibração para eu aprender o seu padrão vocal.", true);
 
 
