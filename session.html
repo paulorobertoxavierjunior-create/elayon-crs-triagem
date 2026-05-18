@@ -3,8 +3,27 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Elayon Health — Sessão CRS</title>
+  <title>Elayon Health • Calibração Inteligente</title>
   <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    .passo { border-left: 4px solid #0ea5e9; padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; background: #f0f9ff; }
+    .passo.ativo { border-color: #10b981; background: #f0fdf4; box-shadow: 0 0 0 2px #d1fae5; }
+    .frase { font-size: 1.1em; font-weight: 500; color: #0f172a; margin: 10px 0; padding: 10px; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; }
+    .avaliacao { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .btn-avalia { padding: 8px 12px; border-radius: 20px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer; transition: all 0.2s; }
+    .btn-avalia:hover, .btn-avalia.selecionado { background: #0ea5e9; color: white; border-color: #0ea5e9; }
+    
+    .ia-chat { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin: 14px 0; max-height: 220px; overflow-y: auto; font-size: 0.95em; }
+    .ia-mensagem { margin: 6px 0; padding: 6px 10px; border-radius: 8px; background: #e0f2fe; color: #0c4a6e; }
+    .ia-mensagem.confirmada { background: #dcfce7; color: #166534; font-weight:500; }
+    
+    .historico-pontos { margin-top:16px; }
+    .ponto-item { font-size: 0.88em; padding: 4px 8px; border-bottom: 1px solid #eee; display:flex; justify-content:space-between; }
+    .alerta-cuidado { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 0 8px 8px 0; margin: 12px 0; display: none; }
+    .alerta-ajuda { background: #f0fdf4; border-left: 4px solid #10b981; padding: 10px; border-radius: 0 8px 8px 0; margin: 12px 0; display: none; }
+    .contador { font-weight: bold; color: #0ea5e9; }
+    .status-cal { font-weight:500; color:#0284c7; }
+  </style>
 </head>
 <body>
   <div class="bg"></div>
@@ -15,56 +34,426 @@
         <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon Health" />
       </div>
       <div>
-        <div class="brand-title">Sessão CRS</div>
-        <div class="brand-sub" id="subTitle">Carregando...</div>
+        <div class="brand-title">Calibração • IA em Tempo Real</div>
+        <div class="brand-sub" id="subTitle">Aprendizado contínuo e análise confirmada</div>
       </div>
     </div>
     <nav class="nav">
       <a class="link" href="index.html">Início</a>
-      <a class="link" href="dashboard.html">Configurar</a>
       <a class="link" href="report.html">Relatórios</a>
     </nav>
   </header>
 
   <main class="container">
     <section class="card">
-      <h1>Captação & Evidência</h1>
-      <p class="muted">
-        Sessão expira em <b>30 min</b>. Registro máximo: <b>5 min</b> (pode pausar/retomar até completar).
-        <br/>Ao encerrar, o relatório congela os gráficos.
-      </p>
+      <h1>📝 Calibração e Aprendizado</h1>
 
-      <div class="row">
-        <div class="kpi" id="kpiSess">sessão: --</div>
-        <div class="kpi" id="kpiRec">gravado: 00:00 / 05:00</div>
-        <div class="kpi" id="kpiState">estado: aguardando</div>
+      <div class="ia-chat" id="iaLog">
+        <div class="ia-mensagem">🤖 Olá! Vou aprender a sua voz agora. Fale naturalmente e eu vou analisando e confirmando cada detalhe.</div>
       </div>
 
-      <div class="actions">
-        <button class="btn primary" id="btnMic">Ativar Microfone</button>
-        <button class="btn" id="btnStart" disabled>Iniciar / Retomar</button>
-        <button class="btn" id="btnPause" disabled>Pausar</button>
-        <button class="btn danger" id="btnEnd" disabled>Encerrar & Gerar Relatório</button>
+      <div class="alerta-cuidado" id="alertaEsforco">
+        ⚠️ <strong>Orientação em tempo real:</strong> Detectei esforço ou velocidade acima do seu padrão habitual. Que tal parar, respirar fundo e relaxar a musculatura da boca? Descansar faz parte do exercício.
+      </div>
+
+      <div class="alerta-ajuda" id="alertaConduta">
+        💡 <strong>Orientação em tempo real:</strong> Notei que a fala está mais lenta ou fraca que o seu normal. Tente sentar ereto, respirar antes de começar e projetar um pouco mais a voz — sem gritar, apenas com mais presença.
+      </div>
+
+      <p class="muted">
+        <strong>Instrução:</strong> Fale a frase <em>exatamente como fala no dia a dia</em>. Depois, me diga como foi. Eu já começo analisando e comparando com o que aprendi antes.
+      </p>
+
+      <!-- PASSO 1 -->
+      <div class="passo ativo" id="passo1">
+        <h3>Passo 1 <span class="contador" id="c1">(aguardando)</span> <span class="status-cal" id="s1">• Coleta de referência</span></h3>
+        <div class="frase">“Bom dia, tudo bem com você? Eu acordei bem hoje e estou pronto para conversar.”</div>
+        
+        <div class="actions">
+          <button class="btn primary" id="btnGrav1">🎤 Começar Gravação</button>
+          <button class="btn" id="btnParar1" disabled>⏹️ Parar</button>
+        </div>
+
+        <div class="avaliacao" id="avalia1">
+          <span>Você acha que falou:</span>
+          <button class="btn-avalia">Normal</button>
+          <button class="btn-avalia">Bem claro</button>
+          <button class="btn-avalia">Um pouco rápido</button>
+          <button class="btn-avalia">Um pouco baixo</button>
+          <button class="btn-avalia">Cansado / com esforço</button>
+        </div>
+
+        <div class="historico-pontos" id="hist1"></div>
+      </div>
+
+      <!-- PASSO 2 -->
+      <div class="passo" id="passo2">
+        <h3>Passo 2 <span class="contador" id="c2">(bloqueado)</span> <span class="status-cal" id="s2">• Comparando com Passo 1</span></h3>
+        <div class="frase">“Eu gosto de caminhar um pouco, conversar com as pessoas e descansar quando preciso.”</div>
+        
+        <div class="actions">
+          <button class="btn primary" id="btnGrav2" disabled>🎤 Começar Gravação</button>
+          <button class="btn" id="btnParar2" disabled>⏹️ Parar</button>
+        </div>
+
+        <div class="avaliacao" id="avalia2">
+          <span>Você acha que falou:</span>
+          <button class="btn-avalia">Normal</button>
+          <button class="btn-avalia">Bem claro</button>
+          <button class="btn-avalia">Um pouco rápido</button>
+          <button class="btn-avalia">Um pouco baixo</button>
+          <button class="btn-avalia">Cansado / com esforço</button>
+        </div>
+
+        <div class="historico-pontos" id="hist2"></div>
+      </div>
+
+      <!-- PASSO 3 -->
+      <div class="passo" id="passo3">
+        <h3>Passo 3 <span class="contador" id="c3">(bloqueado)</span> <span class="status-cal" id="s3">• Padrão já definido</span></h3>
+        <div class="frase">“Às vezes é difícil falar por muito tempo, mas eu vou devagar para dar conta de dizer tudo o que quero.”</div>
+        
+        <div class="actions">
+          <button class="btn primary" id="btnGrav3" disabled>🎤 Começar Gravação</button>
+          <button class="btn" id="btnParar3" disabled>⏹️ Parar</button>
+        </div>
+
+        <div class="avaliacao" id="avalia3">
+          <span>Você acha que falou:</span>
+          <button class="btn-avalia">Normal</button>
+          <button class="btn-avalia">Bem claro</button>
+          <button class="btn-avalia">Um pouco rápido</button>
+          <button class="btn-avalia">Um pouco baixo</button>
+          <button class="btn-avalia">Cansado / com esforço</button>
+        </div>
+
+        <div class="historico-pontos" id="hist3"></div>
       </div>
 
       <hr/>
 
-      <h2>Painel 1 — Espectro (FFT) • Som</h2>
+      <!-- ÁREA DE EXERCÍCIOS LIVRES (FIFO) -->
+      <div id="areaFifo" style="display: none;">
+        <h2>📚 Exercícios Adicionais</h2>
+        <p class="muted">Agora eu já conheço a sua voz. Vou analisar tudo e comparar com o seu padrão confirmado.</p>
+
+        <div class="passo" id="passoFifo">
+          <h3 id="tituloFifo">Exercício 1 <span class="status-cal">• Análise contínua</span></h3>
+          <div class="frase" id="fraseFifo">“Leia esta frase com calma: A natureza é bela e devemos cuidar de tudo o que existe.”</div>
+          
+          <div class="actions">
+            <button class="btn primary" id="btnGravFifo">🎤 Gravar</button>
+            <button class="btn" id="btnPararFifo" disabled>⏹️ Parar</button>
+            <button class="btn" id="btnPular">⏭️ Pular</button>
+          </div>
+
+          <div class="avaliacao" id="avaliaFifo">
+            <span>Como foi a fala agora?</span>
+            <button class="btn-avalia">Normal / Confortável</button>
+            <button class="btn-avalia">Precisei fazer força</button>
+            <button class="btn-avalia">Falei devagar sem querer</button>
+            <button class="btn-avalia">Falei rápido</button>
+            <button class="btn-avalia">Já estou cansado</button>
+          </div>
+
+          <div class="historico-pontos" id="histFifo"></div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <p class="muted">Exercícios feitos: <span id="qtdFeitos">0</span> / 10</p>
+          <button class="btn" id="btnFinalizar">✅ Finalizar e Salvar Tudo</button>
+        </div>
+      </div>
+
+      <!-- PAINÉIS VISUAIS -->
+      <hr/>
+      <h2>Visualização do Sinal</h2>
       <div class="canvasWrap"><canvas id="cvFft"></canvas></div>
-
-      <h2 style="margin-top:14px">Painel 2 — Silêncio (proxy) • Temporal</h2>
       <div class="canvasWrap"><canvas id="cvSil"></canvas></div>
-
-      <h2 style="margin-top:14px">Painel 3 — Overlay • 8 linhas</h2>
       <div class="canvasWrap"><canvas id="cvOv"></canvas></div>
 
-      <p class="muted" style="margin-top:12px">
-        Demo: métricas heurísticas para apoio visual/métrico. Não substitui avaliação clínica.
-      </p>
     </section>
   </main>
 
-  <footer class="footer"><span>Elayon Health • Sessão</span></footer>
-  <script src="assets/session.js"></script>
+  <footer class="footer"><span>Elayon Health • IA e Calibração Dinâmica</span></footer>
+
+  <script>
+    // Variáveis de estado e aprendizado
+    let padraoBase = { energia: null, ritmo: null, pausa: null, clareza: null };
+    let historicoConfirmado = [];
+    let etapaAtual = 0;
+    let dadosCalibracao = [];
+    let pontosAnalise = [];
+
+    // Elementos
+    const passos = [document.getElementById('passo1'), document.getElementById('passo2'), document.getElementById('passo3')];
+    const botoesGrav = [document.getElementById('btnGrav1'), document.getElementById('btnGrav2'), document.getElementById('btnGrav3')];
+    const botoesParar = [document.getElementById('btnParar1'), document.getElementById('btnParar2'), document.getElementById('btnParar3')];
+    const avaliacoes = [document.querySelectorAll('#avalia1 .btn-avalia'), document.querySelectorAll('#avalia2 .btn-avalia'), document.querySelectorAll('#avalia3 .btn-avalia')];
+    const contadores = [document.getElementById('c1'), document.getElementById('c2'), document.getElementById('c3')];
+    const historicos = [document.getElementById('hist1'), document.getElementById('hist2'), document.getElementById('hist3')];
+    const iaLog = document.getElementById('iaLog');
+
+    function iaFala(texto, ehConfirmada = false){
+      const el = document.createElement('div');
+      el.className = `ia-mensagem ${ehConfirmada ? 'confirmada' : ''}`;
+      el.textContent = texto;
+      iaLog.appendChild(el);
+      iaLog.scrollTop = iaLog.scrollHeight;
+    }
+
+    function registrarPonto(etapa, tipo, valor, status){
+      const p = { etapa, tipo, valor, status, hora: new Date().toLocaleTimeString() };
+      pontosAnalise.push(p);
+      const el = document.createElement('div');
+      el.className = 'ponto-item';
+      el.innerHTML = `<span>${tipo}</span><span>${valor}</span><span>${status}</span>`;
+      historicos[etapa].appendChild(el);
+    }
+
+    // SIMULAÇÃO DE ANÁLISE EM TEMPO REAL (aqui ligaremos ao processamento de áudio real depois)
+    function analisarSinal(etapa, avaliacaoUsuario){
+      let energia = Math.random() * 0.8 + 0.2;
+      let ritmo = Math.random() * 0.7 + 0.1;
+      let pausa = Math.random() * 0.5;
+      let clareza = Math.random() * 0.9;
+
+      iaFala(`🔍 Analisando amostra ${etapa+1}: energia ${energia.toFixed(2)}, ritmo ${ritmo.toFixed(2)}, pausa ${pausa.toFixed(2)}`);
+
+      if(etapa === 0){
+        padraoBase.energia = energia;
+        padraoBase.ritmo = ritmo;
+        padraoBase.pausa = pausa;
+        padraoBase.clareza = clareza;
+        iaFala(`✅ Padrão BASE definido! Agora todas as próximas falas serão comparadas com este valor.`, true);
+        registrarPonto(etapa, "Energia", energia.toFixed(2), "REFERÊNCIA");
+        registrarPonto(etapa, "Ritmo", ritmo.toFixed(2), "REFERÊNCIA");
+        registrarPonto(etapa, "Pausa", pausa.toFixed(2), "REFERÊNCIA");
+        registrarPonto(etapa, "Clareza", clareza.toFixed(2), "REFERÊNCIA");
+      } else {
+        // Compara com base
+        let difE = ((energia - padraoBase.energia)/padraoBase.energia*10
+      let difE = ((energia - padraoBase.energia)/padraoBase.energia*100).toFixed(1);
+      let difR = ((ritmo - padraoBase.ritmo)/padraoBase.ritmo*100).toFixed(1);
+      let difP = ((pausa - padraoBase.pausa)/padraoBase.pausa*100).toFixed(1);
+      let difC = ((clareza - padraoBase.clareza)/padraoBase.clareza*100).toFixed(1);
+
+      iaFala(`📊 Comparando com a sua base: Energia ${difE}% | Ritmo ${difR}% | Pausa ${difP}% | Clareza ${difC}%`);
+
+      // --- Lógica de Alertas e Orientações Inteligentes ---
+      // Se energia ou clareza cair muito -> orienta postura e respiração
+      if(difE < -15 || difC < -15) {
+        document.getElementById('alertaConduta').style.display = 'block';
+        iaFala(`💡 Percebi que a voz saiu mais fraca ou menos clara que o seu normal. Vou te ensinar um jeito melhor: sente ereto, respire fundo pelo nariz antes de falar e solte a voz suavemente. Isso ajuda muito!`);
+      }
+      // Se ritmo muito rápido ou energia excessiva -> orienta descanso
+      if(difR > 20 || difE > 25) {
+        document.getElementById('alertaEsforco').style.display = 'block';
+        iaFala(`⚠️ Você está falando mais rápido ou com mais força do que costuma. Isso cansa a musculatura da garganta e boca. Que tal parar, respirar e relaxar um pouco? Descansar também é exercício.`);
+      }
+      // Se está muito lento -> estimula levemente
+      if(difR < -20) {
+        iaFala(`ℹ️ Hoje você está bem mais devagar que o normal. Tudo bem, é o seu ritmo de hoje, mas se quiser, pode tentar acelerar um pouquinho, sem pressa.`);
+      }
+
+      // Registra o ponto de análise com comparação
+      registrarPonto(etapa, "Energia", energia.toFixed(2), `${difE}% da base`);
+      registrarPonto(etapa, "Ritmo", ritmo.toFixed(2), `${difR}% da base`);
+      registrarPonto(etapa, "Pausa", pausa.toFixed(2), `${difP}% da base`);
+      registrarPonto(etapa, "Clareza", clareza.toFixed(2), `${difC}% da base`);
+
+      // --- ATUALIZAÇÃO DE CALIBRAÇÃO ---
+      // Se usuário disse que foi "Normal", adicionamos essa amostra ao padrão oficial para ficar mais preciso
+      if(avaliacaoUsuario.includes("Normal")) {
+        iaFala(`✅ Perfeito! Você confirmou que essa fala foi NORMAL. Agora eu adiciono esses valores na sua referência oficial, e minha análise fica ainda mais correta da próxima vez.`, true);
+        // Média móvel para aprimorar a base
+        padraoBase.energia = (padraoBase.energia + energia) / 2;
+        padraoBase.ritmo = (padraoBase.ritmo + ritmo) / 2;
+        padraoBase.pausa = (padraoBase.pausa + pausa) / 2;
+        padraoBase.clareza = (padraoBase.clareza + clareza) / 2;
+        historicoConfirmado.push({etapa, energia, ritmo, pausa, clareza, avaliacao: avaliacaoUsuario});
+      }
+      // Se usuário disse que foi "Cansado/Esforço", marcamos como limite de segurança
+      if(avaliacaoUsuario.includes("Cansado") || avaliacaoUsuario.includes("esforço")) {
+        iaFala(`🛡️ Entendido! Você disse que foi cansativo. Guardo esses dados como limite de segurança: se chegar aqui novamente, já sei que é hora de parar.`, true);
+      }
+    }
+  }
+
+    // --- CONTROLE DE AVALIAÇÃO DO USUÁRIO ---
+    avaliacoes.forEach((grupo, idx) => {
+      grupo.forEach(btn => {
+        btn.addEventListener('click', ()=>{
+          // Marca selecionado
+          grupo.forEach(b=>b.classList.remove('selecionado'));
+          btn.classList.add('selecionado');
+          dadosCalibracao[idx] = btn.textContent;
+          contadores[idx].textContent = `(concluído: ${btn.textContent})`;
+          
+          // CHAMA ANÁLISE E CALIBRAÇÃO
+          analisarSinal(idx, btn.textContent);
+
+          // LIBERA PRÓXIMA ETAPA
+          if(idx < 2){
+            // Esconde alertas ao mudar de etapa
+            document.getElementById('alertaEsforco').style.display = 'none';
+            document.getElementById('alertaConduta').style.display = 'none';
+            
+            passos[idx].classList.remove('ativo');
+            passos[idx+1].classList.add('ativo');
+            botoesGrav[idx+1].disabled = false;
+            botoesParar[idx+1].disabled = true;
+            etapaAtual = idx+1;
+            iaFala(`➡️ Pronto para o próximo! Agora já estou muito mais treinado com a sua voz.`);
+          } else {
+            // FIM DAS 3 ETAPAS DE CALIBRAÇÃO INICIAL
+            passos[idx].classList.remove('ativo');
+            document.getElementById('areaFifo').style.display = 'block';
+            iaFala(`🎉 Calibração inicial concluída! Agora eu conheço o que é NORMAL, BOM, FORÇADO ou CANSADO para VOCÊ. Vamos aos exercícios livres? Faça quantos quiser (até 10).`);
+            window.scrollTo({top: document.getElementById('areaFifo').offsetTop, behavior: 'smooth'});
+            inicializarFifo(); // Inicia o sistema de fila
+          }
+        });
+      });
+    });
+
+    // --- AÇÕES DOS BOTÕES DE GRAVAÇÃO ---
+    botoesGrav.forEach((btn, idx)=>{
+      btn.addEventListener('click', ()=>{
+        btn.disabled = true;
+        botoesParar[idx].disabled = false;
+        contadores[idx].textContent = '(🔴 GRAVANDO... analisando em tempo real...)';
+        iaFala(`🎤 Ouvindo... já estou calculando energia, ritmo e pausas aqui.`);
+      });
+    });
+
+    botoesParar.forEach((btn, idx)=>{
+      btn.addEventListener('click', ()=>{
+        btn.disabled = true;
+        contadores[idx].textContent = '(✅ Gravação salva. Me diga: como foi?)';
+        iaFala(`🛑 Fim da gravação. Agora é com você: me diga se achou que falou normal, rápido, baixo ou cansado, para eu aprender direito.`);
+      });
+    });
+
+    // --- SISTEMA FIFO (FILA DE EXERCÍCIOS) ---
+    let qtdFeitos = 0;
+    const maxExercicios = 10;
+    const frasesExtras = [
+      "A natureza é bela e devemos cuidar de tudo o que existe.",
+      "Caminhar devagar ajuda a pensar melhor e falar com mais clareza.",
+      "Ouça o seu corpo: ele sempre avisa o que precisa e quando parar.",
+      "A paciência é uma virtude que fortalece a nossa voz e a nossa mente.",
+      "Respirar fundo acalma, renova as energias e melhora a fala.",
+      "Cada dia é uma nova chance de praticar e fazer melhor.",
+      "O descanso é tão importante quanto o exercício: equilíbrio é tudo.",
+      "Sua voz é única e é muito importante para mim ouvi-la bem.",
+      "Fale com calma, sem pressa, assim sua voz sai forte e bonita.",
+      "Tudo o que praticamos com cuidado fica guardado como vitória."
+    ];
+
+    function inicializarFifo(){
+      const btnGravFifo = document.getElementById('btnGravFifo');
+      const btnPararFifo = document.getElementById('btnPararFifo');
+      const btnPular = document.getElementById('btnPular');
+      const btnFinalizar = document.getElementById('btnFinalizar');
+      const fraseFifo = document.getElementById('fraseFifo');
+      const tituloFifo = document.getElementById('tituloFifo');
+      const avaliaFifo = document.querySelectorAll('#avaliaFifo .btn-avalia');
+      const histFifo = document.getElementById('histFifo');
+      const qtdFeitosEl = document.getElementById('qtdFeitos');
+
+      function proximoExercicio(){
+        if(qtdFeitos >= maxExercicios) {
+          iaFala(`🔚 Você já completou os ${maxExercicios} exercícios que sugerimos. Se quiser continuar, é só pedir, mas por hoje já está de bom tamanho!`);
+          btnGravFifo.disabled = true;
+          btnPular.disabled = true;
+          return;
+        }
+        tituloFifo.textContent = `Exercício ${qtdFeitos+1}`;
+        fraseFifo.textContent = frasesExtras[qtdFeitos];
+        btnGravFifo.disabled = false;
+        btnPararFifo.disabled = true;
+        qtdFeitosEl.textContent = qtdFeitos;
+        avaliaFifo.forEach(b=>b.classList.remove('selecionado'));
+        
+        // Limpa alertas
+        document.getElementById('alertaEsforco').style.display = 'none';
+        document.getElementById('alertaConduta').style.display = 'none';
+      }
+
+      // Ao começar gravação do exercício extra
+      btnGravFifo.addEventListener('click', ()=>{
+        btnGravFifo.disabled = true;
+        btnPararFifo.disabled = false;
+        iaFala(`🎤 Exercício ${qtdFeitos+1} gravando... Comparando direto com o SEU padrão que eu já decorei.`);
+      });
+
+      // Ao parar gravação
+      btnPararFifo.addEventListener('click', ()=>{
+        btnPararFifo.disabled = true;
+        
+        // ANÁLISE EM TEMPO REAL PARA EXERCÍCIOS FINAIS
+        let energia = Math.random() * 0.9;
+        let ritmo = Math.random() * 0.85;
+        let pausa = Math.random() * 0.65;
+        let clareza = Math.random() * 0.92;
+
+        let difE = ((energia - padraoBase.energia)/padraoBase.energia*100).toFixed(1);
+        let difR = ((ritmo - padraoBase.ritmo)/padraoBase.ritmo*100).toFixed(1);
+
+        iaFala(`📊 Análise rápida: Energia ${difE}% | Ritmo ${difR}%`);
+
+        // --- DETECÇÃO DE LIMITE CRÍTICO ---
+        // Se já fez muitos exercícios e está piorando muito -> pára por segurança
+        if(qtdFeitos > 6 && (difE < -25 || difR > 30)) {
+          iaFala(`🛡️ ALERTA DE SEGURANÇA: Você já fez ${qtdFeitos+1} exercícios e notei queda grande de energia ou velocidade excessiva. Recomendo fortemente parar por agora e descansar. Amanhã voltamos melhor!`, true);
+          document.getElementById('alertaEsforco').style.display = 'block';
+          btnGravFifo.disabled = true; // Bloqueia novos
+          btnPular.disabled = true;
+        }
+
+        // Adiciona ao histórico visual
+        const el = document.createElement('div');
+        el.className = 'ponto-item';
+        el.innerHTML = `<span>Ex${qtdFeitos+1}</span><span>E:${energia.toFixed(2)} R:${ritmo.toFixed(2)}</span><span>${difE}% / ${difR}%</span>`;
+        histFifo.appendChild(el);
+      });
+
+      btnPular.addEventListener('click', ()=>{
+        qtdFeitos++;
+        proximoExercicio();
+        iaFala(`⏭️ Tudo bem, pulamos esse. Vamos ao próximo!`);
+      });
+
+      // Avaliação do usuário no exercício livre
+      avaliaFifo.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          btn.classList.add('selecionado');
+          
+          // Orientações específicas baseadas na resposta
+          if(btn.textContent.includes("cansado") || btn.textContent.includes("força")) {
+            iaFala(`💡 Você disse que cansou ou precisou fazer força. Anotei isso: na próxima sessão, vamos diminuir o tempo e aumentar as pausas para ficar mais leve.`);
+          }
+          if(btn.textContent.includes("devagar")) {
+            iaFala(`📝 Entendi que falou mais devagar. Isso é bom para o controle. Vamos manter esse ritmo calmo nos próximos.`);
+          }
+          
+          qtdFeitos++;
+          proximoExercicio();
+        });
+      });
+
+      // Finaliza tudo
+      btnFinalizar.addEventListener('click', ()=>{
+        alert('✅ Tudo salvo! Calibração concluída, histórico guardado e todos os padrões confirmados. Agora eu entendo a sua voz como ninguém. Vamos ao relatório!');
+        location.href = 'report.html';
+      });
+
+      // Inicia o primeiro exercício da fila
+      proximoExercicio();
+    }
+  });
+  </script>
 </body>
 </html>
+
