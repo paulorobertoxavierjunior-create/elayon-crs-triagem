@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Elayon Health • Sistema de Análise e Calibração Vocal</title>
+  <title>Elayon Health • Calibração Inteligente</title>
   <link rel="stylesheet" href="assets/styles.css" />
   <style>
     :root {
@@ -211,6 +211,28 @@
       font-size: 0.9em;
       margin-top: 30px;
     }
+
+    /* PAINEL DE CONTROLE PRINCIPAL */
+    .controle-principal {
+      background: #f0f9ff;
+      border: 2px solid var(--cor-institucional);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+    }
+    .kpi {
+      background: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85em;
+      font-weight: 500;
+      color: var(--cor-neutra);
+    }
   </style>
 </head>
 <body>
@@ -247,6 +269,18 @@
       <div class="info-projeto">
         <strong>Objetivo do Procedimento:</strong> Definir o padrão vocal basal do paciente por meio de inteligência artificial, permitindo comparações precisas ao longo do tratamento e detecção precoce de alterações, fadiga ou esforço vocal. <br>
         <strong>Metodologia:</strong> Amostragem contínua, análise espectral (FFT) e comparação estatística em tempo real.
+      </div>
+
+      <!-- 🟢 PAINEL DE CONTROLE PRINCIPAL -->
+      <div class="controle-principal">
+        <button class="btn primary" id="btnMic">🎤 Ativar Microfone</button>
+        <button class="btn" id="btnStart" disabled>▶️ Iniciar</button>
+        <button class="btn" id="btnPause" disabled>⏸️ Pausar</button>
+        <button class="btn primary" id="btnEnd" disabled>✅ Encerrar Sessão</button>
+        
+        <span class="kpi" id="kpiSess">sessão: -</span>
+        <span class="kpi" id="kpiRec">gravado: 00:00 / 05:00</span>
+        <span class="kpi" id="kpiState">estado: aguardando</span>
       </div>
 
       <!-- Área onde a IA fala -->
@@ -393,7 +427,7 @@
       <h2>📈 Visualização Técnica do Sinal</h2>
       
       <div class="info-projeto">
-        <strong>Legenda Técnica:</strong> Estes gráficos apresentam a análise quantitativa da emissão vocal. <br>
+        <strong>Legenda Técnica:</strong> These gráficos apresentam a análise quantitativa da emissão vocal. <br>
         • <strong>FFT (Espectro de Frequência):</strong> Distribuição de energia por frequência, indicando ressonância e qualidade tonal. <br>
         • <strong>Silêncio / Pausa:</strong> Identificação de períodos de repouso, fundamental para avaliar ritmo e respiração. <br>
         • <strong>Parâmetros Multidimensionais:</strong> Monitoramento simultâneo de energia, pitch, intensidade e bandas de frequência (graves, médias e agudas).
@@ -422,7 +456,7 @@
       <p style="margin: 0 0 8px 0; font-weight: 500;">Elayon Health • Sistema Inteligente de Avaliação e Reabilitação Vocal</p>
       <p style="margin: 0; font-size: 0.85em; opacity: 0.9;">
         Projeto Acadêmico desenvolvido em parceria com a Faculdade de Fonoaudiologia e Hospital Regional. <br>
-        Todos os dados são confidenciais e seguem as normas de ética e privacidade em saúde (LGPD / HIPAA). <br>
+        Todos os dados são confidenciais e seguem as normas de ética e privacidade em saúde (LGPD). <br>
         Versão 2.1 • Manaus - Amazonas • 2026
       </p>
     </div>
