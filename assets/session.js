@@ -47,7 +47,7 @@ if(!session){
   location.href = "index.html";
 }
 
-// UI - Elementos Originais
+// UI - Elementos Principais
 const subTitle = document.getElementById("subTitle");
 const kpiSess = document.getElementById("kpiSess");
 const kpiRec = document.getElementById("kpiRec");
@@ -167,7 +167,7 @@ function drawFFT(freq){
       const raw = fftSum[i] / fftCount;
       const v = raw/255;
       const x = (i/(barCount-1)) * cvFft.width;
-      const y = cvFft.height*0.90 - v*(cvFft.height*0.70);
+      const y = cvFft.height*0.90 -  v*(cvFft.height*0.70);
       if(i===0) ctxF.moveTo(x,y); else ctxF.lineTo(x,y);
     }
     ctxF.stroke();
@@ -306,7 +306,7 @@ function loop(){
   sampleOnce(timeData, freqData);
 }
 
-// Controles dos botões originais
+// Controles dos botões principais
 btnMic.addEventListener("click", enableMic);
 btnStart.addEventListener("click", ()=>{
   if(!enabled) return alert("Ative o microfone primeiro!");
@@ -356,17 +356,15 @@ function endSession(reason="ok"){
 }
 
 // ==================================================
-// PARTE: INTELIGÊNCIA ARTIFICIAL E CALIBRAÇÃO
+// INTELIGÊNCIA ARTIFICIAL E CALIBRAÇÃO
 // ==================================================
 
-// Variáveis globais de estado e aprendizado
 let padraoBase = { energia: null, ritmo: null, pausa: null, clareza: null };
 let historicoConfirmado = [];
 let etapaAtual = 0;
 let dadosCalibracao = [];
 let pontosAnalise = [];
 
-// Elementos da Interface
 const passos = [document.getElementById('passo1'), document.getElementById('passo2'), document.getElementById('passo3')];
 const botoesGrav = [document.getElementById('btnGrav1'), document.getElementById('btnGrav2'), document.getElementById('btnGrav3')];
 const botoesParar = [document.getElementById('btnParar1'), document.getElementById('btnParar2'), document.getElementById('btnParar3')];
@@ -375,7 +373,6 @@ const contadores = [document.getElementById('c1'), document.getElementById('c2')
 const historicos = [document.getElementById('hist1'), document.getElementById('hist2'), document.getElementById('hist3')];
 const iaLog = document.getElementById('iaLog');
 
-// Elementos das Métricas
 const metricasBox = document.getElementById('metricasBox');
 const mEnergia = document.getElementById('mEnergia');
 const mRitmo = document.getElementById('mRitmo');
@@ -383,13 +380,8 @@ const mPausa = document.getElementById('mPausa');
 const mClareza = document.getElementById('mClareza');
 const mComparacao = document.getElementById('mComparacao');
 
-// Elementos de Alerta
 const alertaEsforco = document.getElementById('alertaEsforco');
 const alertaConduta = document.getElementById('alertaConduta');
-
-// ----------------------
-// FUNÇÕES DE INTERAÇÃO IA
-// ----------------------
 
 function iaFala(texto, ehConfirmada = false){
   if(!iaLog) return;
@@ -409,14 +401,11 @@ function registrarPonto(etapa, tipo, valor, status){
   historicos[etapa].appendChild(el);
 }
 
-// **A LIGAÇÃO PRINCIPAL**: Pega os dados REAIS do áudio e transforma nas métricas da IA
 function atualizarMetricasIA(rms, pitch, pausa, graves){
-  // Convertemos os valores capturados para a escala da IA (0 a 1)
-  const energia = clamp01(rms * 1.2);       // Usamos o RMS real como energia
-  const ritmo = clamp01(1 - (pausa * 0.8)); // Menos pausa = mais rápido/ritmo alto
-  const clareza = clamp01(pitch * 0.9 + graves * 0.3); // Pitch + graves = clareza
+  const energia = clamp01(rms * 1.2);
+  const ritmo = clamp01(1 - (pausa * 0.8));
+  const clareza = clamp01(pitch * 0.9 + graves * 0.3);
 
-  // Se já tem padrão base, compara
   if(padraoBase.energia !== null){
     let difE = ((energia - padraoBase.energia)/padraoBase.energia*100).toFixed(1);
     let difR = ((ritmo - padraoBase.ritmo)/padraoBase.ritmo*100).toFixed(1);
@@ -425,15 +414,13 @@ function atualizarMetricasIA(rms, pitch, pausa, graves){
     
     let textoComp = `E: ${difE}% | R: ${difR}% | P: ${difP}% | C: ${difC}%`;
     
-    // Atualiza caixa de métricas na tela
     if(metricasBox) metricasBox.style.display = "block";
     if(mEnergia) mEnergia.textContent = `Energia Vocal: ${energia.toFixed(2)}`;
     if(mRitmo) mRitmo.textContent = `Ritmo/Frequência: ${ritmo.toFixed(2)}`;
     if(mPausa) mPausa.textContent = `Índice de Pausa: ${pausa.toFixed(2)}`;
     if(mClareza) mClareza.textContent = `Clareza/Projeção: ${clareza.toFixed(2)}`;
-    if(mComparacao) mComparacao.textContent = `<strong>Comparação com Padrão:</strong> ${textoComp}`;
+    if(mComparacao) mComparacao.innerHTML = `<strong>Comparação com Padrão:</strong> ${textoComp}`;
 
-    // --- Lógica de Alertas Inteligentes (agora com dados REAIS) ---
     if(alertaEsforco && alertaConduta){
       if(difE < -15 || difC < -15) {
         alertaConduta.style.display = 'block';
@@ -449,18 +436,15 @@ function atualizarMetricasIA(rms, pitch, pausa, graves){
   }
 }
 
-// Função de análise que USA OS DADOS REAIS para criar o padrão
 function analisarSinal(etapa, avaliacaoUsuario){
-  // Pegamos os dados reais do último ciclo de captura
-  const energia = overlaySeries[0][wIdx] || 0; // RMS
-  const ritmo = 1 - (overlaySeries[3][wIdx] || 0); // Inverte pausa longa
+  const energia = overlaySeries[0][wIdx] || 0;
+  const ritmo = 1 - (overlaySeries[3][wIdx] || 0);
   const pausa = overlaySeries[3][wIdx] || 0;
-  const clareza = (overlaySeries[4][wIdx] + overlaySeries[6][wIdx])/2 || 0; // Pitch + Graves
+  const clareza = (overlaySeries[4][wIdx] + overlaySeries[6][wIdx])/2 || 0;
 
   iaFala(`🔍 Análise final da amostra ${etapa+1}: Energia ${energia.toFixed(2)}, Ritmo ${ritmo.toFixed(2)}`);
 
   if(etapa === 0){
-    // Definindo o padrão base com dados REAIS
     padraoBase.energia = energia;
     padraoBase.ritmo = ritmo;
     padraoBase.pausa = pausa;
@@ -471,7 +455,6 @@ function analisarSinal(etapa, avaliacaoUsuario){
     registrarPonto(etapa, "Pausa", pausa.toFixed(2), "REFERÊNCIA");
     registrarPonto(etapa, "Clareza", clareza.toFixed(2), "REFERÊNCIA");
   } else {
-    // Comparação REAL com a base
     let difE = ((energia - padraoBase.energia)/padraoBase.energia*100).toFixed(1);
     let difR = ((ritmo - padraoBase.ritmo)/padraoBase.ritmo*100).toFixed(1);
     let difP = ((pausa - padraoBase.pausa)/padraoBase.pausa*100).toFixed(1);
@@ -481,17 +464,20 @@ function analisarSinal(etapa, avaliacaoUsuario){
 
     registrarPonto(etapa, "Energia", energia.toFixed(2), `${difE}%`);
     registrarPonto(etapa, "Ritmo", ritmo.toFixed(2), `${difR}%`);
+    registrarPonto(etapa, "Pausa", pausa.toFixed(2), `${difP}%`);
+    registrarPonto(etapa, "Clareza", clareza.toFixed(2), `${difC}%`);
 
-    // Atualiza base se usuário confirmar como normal
     if(avaliacaoUsuario.includes("Normal")) {
       padraoBase.energia = (padraoBase.energia + energia) / 2;
       padraoBase.ritmo = (padraoBase.ritmo + ritmo) / 2;
-      iaFala(`💾 Perfeito! Atualizei o padrão com essa amostra que você achou normal.`);
+      padraoBase.pausa = (padraoBase.pausa + pausa) / 2;
+      padraoBase.clareza = (padraoBase.clareza + clareza) / 2;
+      iaFala(`💾 Perfeito! Atualizei o padrão com essa amostra que você classificou como normal.`);
     }
   }
 }
 
-// --- CONTROLE DE BOTÕES DA CALIBRAÇÃO ---
+// Controle das avaliações
 if(avaliacoes){
   avaliacoes.forEach((grupo, idx) => {
     grupo.forEach(btn => {
@@ -503,19 +489,17 @@ if(avaliacoes){
         
         analisarSinal(idx, btn.textContent);
 
-        // Libera próxima etapa
         if(idx < 2 && passos[idx] && passos[idx+1] && botoesGrav[idx+1]){
           passos[idx].classList.remove('ativo');
           passos[idx+1].classList.add('ativo');
           botoesGrav[idx+1].disabled = false;
           etapaAtual = idx+1;
-          iaFala(`➡️ Pronto para o próximo!`);
+          iaFala(`➡️ Pronto para a próxima etapa!`);
         } else if(idx === 2) {
-          // Fim da calibração inicial
           passos[idx].classList.remove('ativo');
           const areaFifo = document.getElementById('areaFifo');
           if(areaFifo) areaFifo.style.display = 'block';
-          iaFala(`🎉 Calibração concluída! Agora estou pronto para exercícios livres.`);
+          iaFala(`🎉 Calibração concluída! Perfil vocal definido. Agora iniciamos os exercícios terapêuticos.`, true);
           inicializarFifo();
         }
       });
@@ -523,18 +507,17 @@ if(avaliacoes){
   });
 }
 
-// Ações dos botões de gravação dos passos
+// Ações dos botões de gravação das etapas
 if(botoesGrav && botoesParar){
   botoesGrav.forEach((btn, idx)=>{
     btn.addEventListener('click', ()=>{
       if(!enabled) {
-        iaFala("⚠️ Primeiro clique em 'Ativar Microfone' ali em cima!");
+        iaFala("⚠️ Primeiro clique em 'Ativar Microfone' no painel superior!");
         return;
       }
       btn.disabled = true;
       botoesParar[idx].disabled = false;
       if(contadores[idx]) contadores[idx].textContent = '(🔴 GRAVANDO...)';
-      // Usa a função original de captura
       if(!capturing){
         capturing = true;
         btnStart.disabled = true; btnPause.disabled = false;
@@ -547,16 +530,16 @@ if(botoesGrav && botoesParar){
   botoesParar.forEach((btn, idx)=>{
     btn.addEventListener('click', ()=>{
       btn.disabled = true;
-        capturing = false;
-        btnStart.disabled = false; btnPause.disabled = true;
-        kpiState.textContent = "estado: pausado";
+      capturing = false;
+      btnStart.disabled = false; btnPause.disabled = true;
+      kpiState.textContent = "estado: pausado";
       if(contadores[idx]) contadores[idx].textContent = '(✅ Gravação salva. Avalie abaixo.)';
-      iaFala(`🛑 Gravação finalizada. Agora me diga: como foi a sua fala?`);
+      iaFala(`🛑 Gravação finalizada. Agora me diga: como você classifica essa emissão?`);
     });
   });
 }
 
-// --- SISTEMA FIFO (EXERCÍCIOS LIVRES) ---
+// --- SISTEMA DE EXERCÍCIOS LIVRES ---
 function inicializarFifo(){
   const btnGravFifo = document.getElementById('btnGravFifo');
   const btnPararFifo = document.getElementById('btnPararFifo');
@@ -585,26 +568,22 @@ function inicializarFifo(){
 
   function proximoExercicio(){
     if(qtdFeitos >= MAX_EXERCICIOS) {
-      iaFala(`🔚 Você já completou os ${MAX_EXERCICIOS} exercícios disponíveis. Se quiser continuar, é só pedir, mas por hoje já está de ótimo tamanho!`, true);
+      iaFala(`🔚 Você já completou os ${MAX_EXERCICIOS} exercícios do protocolo. Desempenho registrado com sucesso!`, true);
       if(btnGravFifo) btnGravFifo.disabled = true;
       if(btnPular) btnPular.disabled = true;
       return;
     }
-    if(tituloFifo) tituloFifo.textContent = `Exercício ${qtdFeitos+1}`;
+    if(tituloFifo) tituloFifo.textContent = `Sequência ${qtdFeitos+1}`;
     if(fraseFifo) fraseFifo.textContent = frasesExercicios[qtdFeitos];
     if(btnGravFifo) btnGravFifo.disabled = false;
-
-
     if(btnPararFifo) btnPararFifo.disabled = true;
     if(qtdFeitosEl) qtdFeitosEl.textContent = qtdFeitos;
     if(avaliaFifo) avaliaFifo.forEach(b=>b.classList.remove('selecionado'));
     
-    // Limpa alertas e métricas
     if(alertaEsforco) alertaEsforco.style.display = 'none';
     if(alertaConduta) alertaConduta.style.display = 'none';
   }
 
-  // Começar gravação do exercício
   if(btnGravFifo){
     btnGravFifo.addEventListener('click', ()=>{
       if(!enabled) {
@@ -613,8 +592,7 @@ function inicializarFifo(){
       }
       btnGravFifo.disabled = true;
       btnPararFifo.disabled = false;
-      iaFala(`🎙️ Gravando exercício ${qtdFeitos+1}... Vou analisar tudo em tempo real.`);
-      // Inicia captura se ainda não estiver gravando
+      iaFala(`🎙️ Gravando sequência ${qtdFeitos+1}... Análise em tempo real ativa.`);
       if(!capturing){
         capturing = true;
         btnStart.disabled = true; btnPause.disabled = false;
@@ -624,55 +602,49 @@ function inicializarFifo(){
     });
   }
 
-  // Parar gravação
   if(btnPararFifo){
     btnPararFifo.addEventListener('click', ()=>{
       btnPararFifo.disabled = true;
-      capturing = false; // Pausa a captura
+      capturing = false;
       btnStart.disabled = false; btnPause.disabled = true;
       kpiState.textContent = "estado: pausado";
-      iaFala(`🛑 Gravação salva! Agora me conta: como você achou que foi a sua fala agora?`);
+      iaFala(`🛑 Gravação salva. Qual a sua percepção sobre essa fala?`);
     });
   }
 
-  // Pular exercício
   if(btnPular){
     btnPular.addEventListener('click', ()=>{
       qtdFeitos++;
       proximoExercicio();
-      iaFala(`⏭️ Tudo bem, pulamos esse. Vamos para o próximo!`);
+      iaFala(`⏭️ Exercício pulado. Seguimos para o próximo.`);
     });
   }
 
-  // Avaliação do usuário
   if(avaliaFifo){
     avaliaFifo.forEach(btn => {
       btn.addEventListener('click', ()=>{
         avaliaFifo.forEach(b=>b.classList.remove('selecionado'));
         btn.classList.add('selecionado');
 
-        // Análise final com dados REAIS
         const energia = overlaySeries[0][wIdx] || 0;
         const ritmo = 1 - (overlaySeries[3][wIdx] || 0);
         let difE = padraoBase.energia ? ((energia - padraoBase.energia)/padraoBase.energia*100).toFixed(1) : "0";
         let difR = padraoBase.ritmo ? ((ritmo - padraoBase.ritmo)/padraoBase.ritmo*100).toFixed(1) : "0";
 
-        // Feedback inteligente
-        if(btn.textContent.includes("esforço") || btn.textContent.includes("força") || btn.textContent.includes("Cansado")) {
-          iaFala(`💡 Entendi que sentiu esforço. Analisando: sua energia foi ${difE}% e ritmo ${difR}%. Vamos tentar respirar mais fundo no próximo para ficar mais leve.`);
+        if(btn.textContent.includes("esforço") || btn.textContent.includes("Cansado") || btn.textContent.includes("Fadiga")) {
+          iaFala(`💡 Entendi que houve esforço/fadiga. Dados: Energia ${difE}% | Ritmo ${difR}%. Sugestão: repouso vocal e respiração.`);
         } else if(btn.textContent.includes("devagar") || btn.textContent.includes("arrastada")) {
-          iaFala(`💡 Percebeu que falou mais devagar? Comparei com o seu padrão e está ${difR}% mais calmo. Isso é ótimo para clareza!`);
+          iaFala(`💡 Fala mais lenta que o padrão (${difR}%). Isso pode ajudar na clareza, mantenha o conforto.`);
         } else if(btn.textContent.includes("rápida") || btn.textContent.includes("pressa")) {
-          iaFala(`💡 Você falou um pouco mais rápido! Está ${difR}% acima do normal. Tente controlar a respiração para manter o ritmo equilibrado.`);
+          iaFala(`💡 Velocidade acima do padrão (${difR}%). Tente controlar a respiração para manter equilíbrio.`);
         } else {
-          iaFala(`✅ Que bom que correu bem! Os dados mostram que está ${difE}% na energia e ${difR}% no ritmo — bem dentro do seu normal.`);
+          iaFala(`✅ Registro normal. Parâmetros: Energia ${difE}% | Ritmo ${difR}%. Dentro do perfil esperado.`);
         }
 
-        // Salva no histórico
         if(historicoFifo){
           const el = document.createElement('div');
           el.className = 'ponto-item';
-          el.innerHTML = `<span>Ex${qtdFeitos+1}</span><span>E:${difE}% R:${difR}%</span><span>${btn.textContent}</span>`;
+          el.innerHTML = `<span>Seq${qtdFeitos+1}</span><span>E:${difE}% R:${difR}%</span><span>${btn.textContent}</span>`;
           historicoFifo.appendChild(el);
         }
 
@@ -682,20 +654,18 @@ function inicializarFifo(){
     });
   }
 
-  // Finalizar tudo
   if(btnFinalizar){
     btnFinalizar.addEventListener('click', ()=>{
-      if(confirm("Deseja realmente encerrar a sessão e ir para o relatório clínico?")){
-        endSession("finalizado_profissional"); // Usa função original de encerramento
+      if(confirm("Deseja encerrar a sessão e gerar o relatório clínico?")){
+        endSession("finalizado_profissional");
       }
     });
   }
 
-  // Inicia o primeiro exercício
   proximoExercicio();
 }
 
-// Mensagem inicial da IA
-iaFala("🤖 Olá! Sistema pronto para protocolo clínico. Primeiro, clique em **Ativar Microfone** no painel superior. Depois siga as etapas de calibração para eu aprender o seu padrão vocal.", true);
+// Mensagem inicial
+iaFala("🤖 Sistema pronto! Primeiro clique em **Ativar Microfone** no painel superior, depois siga as etapas de calibração para eu aprender o seu padrão vocal.", true);
 
 
