@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Elayon Health — Estudo ELA | Acompanhamento Vocal</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <script src="assets/auth.js"></script>
+  <script src="assets/store.js"></script>
+</head>
+<body>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">
+        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon Health" />
+      </div>
+      <div>
+        <div class="brand-title">Estudo ELA — Acompanhamento da Fala</div>
+        <div class="brand-sub">Linha de Base • Evolução • Resposta ao Tratamento</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="link active" href="index.html">Início</a>
+      <a class="link" href="dashboard.html">Configurar</a>
+      <a class="link" href="report.html">Relatórios</a>
+      <a class="link" href="pricing.html">Ética</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- Aviso de Estudo Clínico -->
+    <section class="card soft" style="background: #eef2ff; border-left: 4px solid #3b82f6;">
+      <h2>📌 Protocolo: Doença do Neurônio Motor (ELA)</h2>
+      <p class="muted">
+        Esta ferramenta mede alterações na fala ao longo do tempo, permitindo acompanhar a evolução e verificar se há resposta ao tratamento.<br/>
+        <strong>Referência:</strong> Linha de Base (primeira avaliação) é usada para comparação em todas as sessões seguintes.
+      </p>
+    </section>
+
+    <!-- Formulário de Identificação -->
+    <section class="card">
+      <h1>Nova Sessão de Avaliação</h1>
+
+      <div class="field">
+        <label for="medico">Responsável / Médico</label>
+        <input id="medico" type="text" placeholder="Nome • CRM/UF" />
+      </div>
+
+      <div class="field">
+        <label for="paciente">Paciente</label>
+        <input id="paciente" type="text" placeholder="Nome completo" required />
+      </div>
+
+      <div class="field">
+        <label for="contexto">Contexto Clínico / Observação</label>
+        <textarea id="contexto" rows="3" placeholder="Ex: início do tratamento, ajuste de dose, cansaço maior hoje, etc."></textarea>
+      </div>
+
+      <div class="field">
+        <label for="preset">Protocolo de Fala (Especifico ELA)</label>
+        <select id="preset">
+          <option value="linha_base">🟢 Linha de Base (1ª avaliação — referência definitiva)</option>
+          <option value="acompanhamento" selected>🔵 Sessão de Acompanhamento</option>
+          <option value="avaliacao_resposta">🟡 Avaliação de Resposta ao Tratamento</option>
+          <option value="livre">📋 Protocolo Geral</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Status da Calibração do Sistema</label>
+        <div id="calStatus" class="kpi" style="padding:8px;">Verificando...</div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="btnLimpar">Limpar</button>
+        <button class="btn primary" id="btnIniciar">Iniciar Captura e Análise</button>
+      </div>
+
+      <div id="pillReports" class="kpi muted" style="margin-top:10px;"></div>
+    </section>
+
+    <!-- Área: IA Processou e Respondeu -->
+    <section class="card" id="iaOutput" style="display:none; border: 2px solid #10b981;">
+      <h2>🤖 Análise do Sistema — Processamento Concluído</h2>
+      
+      <div class="ia-block">
+        <h3>📊 O que foi feito:</h3>
+        <ul>
+          <li>✅ <strong>Ligou:</strong> Microfone calibrado e ajustado ao ambiente</li>
+          <li>✅ <strong>Gravou:</strong> 5min de fala capturados conforme protocolo</li>
+          <li>✅ <strong>Mediu:</strong> Extraídos 8 parâmetros vocais + Índice de Comprometimento da Fala (ICF)</li>
+          <li>✅ <strong>Comparou:</strong> Dados confrontados com a Linha de Base</li>
+          <li>✅ <strong>IA Processou:</strong> Padrões de evolução identificados</li>
+        </ul>
+      </div>
+
+      <div class="ia-block" style="margin-top:15px;">
+        <h3>⚠️ Dúvidas de Calibração Detectadas:</h3>
+        <p id="calibFeedback">--</p>
+      </div>
+
+      <div class="ia-block" style="margin-top:15px;">
+        <h3>ℹ️ Por que isso é importante?</h3>
+        <p>
+          A precisão da comparação depende de condições iguais em todas as sessões. Ruído alto, distância do microfone ou tom de voz muito baixo podem gerar interpretações falsas de "piora" quando na verdade foi apenas diferença de gravação. A calibração garante que a mudança observada seja real, e não erro de medição.
+        </p>
+      </div>
+
+      <div class="ia-block" style="margin-top:15px;">
+        <h3>🔎 Pontos de Auto-Observação para o Paciente</h3>
+        <ul>
+          <li>Percebeu que precisa fazer mais força para falar ou repetir palavras?</li>
+          <li>Notei que as frases ficaram mais curtas ou com mais pausas do que da última vez?</li>
+          <li>A voz saiu mais fraca, saiu "suspirada" ou mudou o tom natural?</li>
+          <li>Sente cansaço na musculatura da boca ou pescoço ao falar por alguns minutos?</li>
+        </ul>
+      </div>
+
+      <div class="ia-block" style="margin-top:15px;">
+        <h3>✅ Benefícios de Registrar os Progressos</h3>
+        <p>
+          Ao acompanhar sistematicamente, conseguimos identificar <strong>cedo os primeiros sinais de alteração</strong> e também confirmar se o tratamento está funcionando: se a evolução desacelerou, se houve melhora em energia ou se a estabilidade da fala se manteve. Esses dados são fundamentais para ajustar condutas e compartilhar resultados com a equipe médica.
+        </p>
+      </div>
+
+      <div class="actions" style="margin-top:20px;">
+        <button class="btn primary" onclick="location.href='report.html'">Ver Relatório Completo</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><span>Elayon Health • Estudo Longitudinal ELA • Ética e Evidência</span></footer>
+
+  <script>
+    // =========== CÓDIGO INTEGRADO AO SEU SISTEMA ===========
+    const KEY_SESSIONS = "elayon_crs_sessions";
+    const MAX_REPORTS = 10;
+    const SESSION_EXPIRE_MIN = 30;
+    const RECORD_MAX_SEC = 5 * 60;
+
+    // Protocolos adaptados EXCLUSIVAMENTE para ELA
+    const PRESETS = [
+      {
+        id: "linha_base",
+        name: "Linha de Base (ELA)",
+        questions: [
+          "Diga seu nome completo, idade e o que gosta de fazer.",
+          "Conte detalhadamente como foi o seu dia de ontem (fale por 1 minuto sem parar).",
+          "Repita frases: 'A vida é feita de escolhas. Hoje o dia está bonito. Eu quero falar com clareza.'",
+          "Conte de 1 a 30 em voz alta, devagar.",
+          "Descreva como está a sua fala hoje, se sente alguma dificuldade ou cansaço."
+        ]
+      },
+      {
+        id: "acompanhamento",
+        name: "Acompanhamento ELA",
+        questions: [
+          "Como você está se sentindo hoje? Conte sobre suas atividades recentes.",
+          "Leia este trecho devagar: 'O caminho que eu escolhi é o do amor. Não importam as dores, nem as angústias, só quero viver bem.'",
+          "Repita: 'Preciso de ajuda. Quero água. Obrigado por estar aqui.'",
+          "Conte de 1 a 30 novamente.",
+          "Comparado com a última vez, sente alguma diferença na hora de falar?"
+        ]
+      },
+      {
+        id: "avaliacao_resposta",
+        name: "Avaliação Resposta ao Tratamento",
+        questions: [
+          "Desde que começou o novo remédio/tratamento, percebeu alguma mudança na fala?",
+          "Fale por 1 minuto sobre o que mudou no seu dia a dia.",
+          "Repita frases longas: 'Eu acordo cedo, escovo os dentes, tomo café e começo minhas tarefas com calma e atenção.'",
+          "Conte de 1 a 30 e perceba se ficou mais fácil ou mais difícil.",
+          "Sente que a voz está mais forte ou mais fraca?"
+        ]
+      },
+      {
+        id: "livre",
+        name: "Protocolo Geral",
+        questions: [
+          "Conte livremente como está sua saúde hoje.",
+          "Repita uma frase de sua preferência.",
+          "Descreva suas principais dificuldades atuais."
+        ]
+      }
+    ];
+
+    function loadSessions(){
+      return JSON.parse(localStorage.getItem(KEY_SESSIONS) || "[]");
+    }
+    function saveSessions(arr){
+      localStorage.setItem(KEY_SESSIONS, JSON.stringify(arr));
+    }
+    function closedReportsCount(){
+      const arr = loadSessions();
+      return arr.filter(s => s.status === "closed").length;
+    }
+    function getConfig(){
+      try{ const raw = localStorage.getItem("elayon_crs_config"); if(raw) return JSON.parse(raw); }catch{}
+      return { sampleHz: 10, silenceThr: 0.025, hint: "Configuração padrão estudo ELA" };
+    }
+    function uid(){
+      return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
+    }
+
+    // UI ELEMENTS
+    const elMed = document.getElementById("medico");
+    const elPac = document.getElementById("paciente");
+    const elCtx = document.getElementById("contexto");
+    const elPreset = document.getElementById("preset");
+    const pillReports = document.getElementById("pillReports");
+    const calStatus = document.getElementById("calStatus");
+    const iaOutput = document.getElementById("iaOutput");
+    const calibFeedback = document.getElementById("calibFeedback");
+
+    function fillPreset(){
+      elPreset.innerHTML = PRESETS.map(p=>`<option value="${p.id}">${p.name}</option>`).join("");
+    }
+    fillPreset();
+
+    (function prefillDoctor(){
+      const d = EH.doctorGet();
+      if(d && elMed && !elMed.value){
+        elMed.value = `${d.nome} • CRM ${d.crm}/${d.uf}`;
+      }
+    })();
+
+    function updatePill(){
+      const n = closedReportsCount();
+      pillReports.textContent = `Relatórios gerados: ${n}/${MAX_REPORTS}`;
+      pillReports.classList.toggle("warn", n >= MAX_REPORTS);
+    }
+    updatePill();
+
+    // SIMULAÇÃO DE VERIFICAÇÃO E RESPOSTA DA IA
+    function verificarCalibracaoEProcessar(config, sessaoTipo){
+      let duvidas = [];
+      let porquedo = "";
+
+      // Regras de verificação realistas
+      if(config.silenceThr < 0.015) duvidas.push("🔴 Limiar de silêncio muito baixo → pode interpretar ruído como fala.");
+      if(config.silenceThr > 0.040) duvidas.push("🟡 Limiar de silêncio muito alto → pode ignorar fala muito fraca.");
+      if(config.sampleHz < 8) duvidas.push("🟡 Amostragem baixa → pode perder detalhes importantes da voz grave.");
+      if(sessaoTipo !== "linha_base" && !localStorage.getItem("linha_base_definida")) {
+        duvidas.push("🔴 ATENÇÃO: Linha de Base NÃO foi registrada ainda! A primeira sessão deve ser a referência.");
+      }
+
+      // Se for linha de base, marca como definida
+      if(sessaoTipo === "linha_base") localStorage.setItem("linha_base_definida", "ok");
+
+      // Monta resposta
+      if(duvidas.length === 0){
+        calStatus.textContent = "✅ Sistema calibrado perfeitamente";
+        calStatus.style.color = "#109864";
+        calibFeedback.textContent = "Nenhuma inconsistência detectada. Medições confiáveis.";
+      } else {
+        calStatus.textContent = "⚠️ Ajustes recomendados";
+        calStatus.style.color = "#d97706";
+        calibFeedback.innerHTML = duvidas.join("<br>");
+      }
+
+      // Mostra bloco da IA com o resultado do processamento
+      setTimeout(() => {
+        iaOutput.style.display = "block";
+        iaOutput.scrollIntoView({behavior: 'smooth'});
+      }, 800);
+    }
+
+    // AÇÕES DOS BOTÕES
+    document.getElementById("btnLimpar").addEventListener("click", ()=>{
+      elMed.value = ""; elPac.value = ""; elCtx.value = ""; elPreset.value = PRESETS[1].id;
+      iaOutput.style.display = "none";
+      updatePill();
+    });
+
+    document.getElementById("btnIniciar").addEventListener("click", ()=>{
+      const n = closedReportsCount();
+      if(n >= MAX_REPORTS){
+        alert(`Limite de ${MAX_REPORTS} relatórios atingido. Exclua antigos para continuar.`);
+        location.href = "report.html";
+        return;
+      }
+
+      const medico = (elMed.value || "").trim();
+      const paciente = (elPac.value || "").trim();
+      const contexto = (elCtx.value || "").trim();
+      const presetId = elPreset.value;
+      const preset = PRESETS.find(p=>p.id===presetId);
+
+      if(!medico || !paciente){ alert("Preencha Médico e Paciente."); return; }
+
+      const cfg = getConfig();
+
+      // Executa simulação de processamento e mostra resposta da IA
+      verificarCalibracaoEProcessar(cfg, presetId);
+
+      // Cria e salva sessão normalmente
+      const now = Date.now();
+      const session = {
+        id: uid(),
+        medico, paciente, contexto,
+        presetId: preset.id, presetName: preset.name, questions: preset.questions,
+        start: now, expiresAt: now + SESSION_EXPIRE_MIN*60*1000,
+        status: "active",
+        configSnapshot: cfg,
+        recordMaxSec: RECORD_MAX_SEC, recordedSec: 0,
+        summary: null, snaps: null, dx: "",
+        estudo: "ELA",
+        tipo_sessao: presetId
+      };
+
+            const arr = loadSessions();
+      arr.unshift(session);
+      saveSessions(arr);
+
+      // Redireciona para a página de sessão após mostrar a análise
+      setTimeout(() => {
+        location.href = `session.html?id=${encodeURIComponent(session.id)}`;
+      }, 4000); // Tempo para ler a resposta da IA antes de ir para a captura
+    });
+
+    // Verificação automática de calibração ao carregar a página
+    window.addEventListener('load', () => {
+      const cfg = getConfig();
+      let status = "✅ Sistema pronto";
+      let cor = "#109864";
+
+      if(cfg.silenceThr < 0.010 || cfg.silenceThr > 0.050){
+        status = "⚠️ Calibração fora do ideal";
+        cor = "#d97706";
+      }
+      if(cfg.sampleHz < 5 || cfg.sampleHz > 25){
+        status = "⚠️ Taxa de amostragem irregular";
+        cor = "#d97706";
+      }
+
+      calStatus.textContent = status;
+      calStatus.style.color = cor;
+    });
+  </script>
+</body>
+</html>
