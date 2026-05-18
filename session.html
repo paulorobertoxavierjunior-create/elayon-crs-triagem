@@ -3,119 +3,322 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Elayon Health • Calibração Inteligente</title>
+  <title>Elayon Health • Sistema de Análise e Calibração Vocal</title>
   <link rel="stylesheet" href="assets/styles.css" />
   <style>
-    .passo { border-left: 4px solid #0ea5e9; padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; background: #f0f9ff; }
-    .passo.ativo { border-color: #10b981; background: #f0fdf4; box-shadow: 0 0 0 2px #d1fae5; }
-    .frase { font-size: 1.1em; font-weight: 500; color: #0f172a; margin: 10px 0; padding: 10px; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; }
-    .avaliacao { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-    .btn-avalia { padding: 8px 12px; border-radius: 20px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer; transition: all 0.2s; }
-    .btn-avalia:hover, .btn-avalia.selecionado { background: #0ea5e9; color: white; border-color: #0ea5e9; }
-    
-    .ia-chat { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin: 14px 0; max-height: 220px; overflow-y: auto; font-size: 0.95em; }
-    .ia-mensagem { margin: 6px 0; padding: 6px 10px; border-radius: 8px; background: #e0f2fe; color: #0c4a6e; }
-    .ia-mensagem.confirmada { background: #dcfce7; color: #166534; font-weight:500; }
-    
-    .historico-pontos { margin-top:16px; }
-    .ponto-item { font-size: 0.88em; padding: 4px 8px; border-bottom: 1px solid #eee; display:flex; justify-content:space-between; }
-    .alerta-cuidado { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 0 8px 8px 0; margin: 12px 0; display: none; }
-    .alerta-ajuda { background: #f0fdf4; border-left: 4px solid #10b981; padding: 10px; border-radius: 0 8px 8px 0; margin: 12px 0; display: none; }
-    .contador { font-weight: bold; color: #0ea5e9; }
-    .status-cal { font-weight:500; color:#0284c7; }
+    :root {
+      --cor-institucional: #005B96; /* Azul hospitalar */
+      --cor-segundaria: #008891;     /* Verde médico */
+      --cor-alerta: #E67E22;         /* Laranja cuidado */
+      --cor-perigo: #C0392B;         /* Vermelho alerta */
+      --cor-neutra: #34495E;         /* Cinza institucional */
+      --fundo-padrao: #f8fafc;
+      --borda-padrao: #e2e8f0;
+    }
 
-    .metricas-atuais { background: #fef3c7; padding: 10px; border-radius: 8px; margin: 10px 0; display: none; }
+    body {
+      background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+    }
+
+    .passo { 
+      border-left: 4px solid var(--cor-institucional); 
+      padding: 16px 20px; 
+      margin: 16px 0; 
+      border-radius: 0 10px 10px 0; 
+      background: #ffffff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+    }
+    .passo.ativo { 
+      border-color: var(--cor-segundaria); 
+      background: #f8fffe; 
+      box-shadow: 0 0 0 3px rgba(0,136,145,0.1), 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .frase { 
+      font-size: 1.15em; 
+      font-weight: 500; 
+      color: var(--cor-neutra); 
+      margin: 12px 0; 
+      padding: 14px; 
+      background: #f0f9ff; 
+      border-radius: 8px; 
+      border: 1px solid var(--cor-institucional);
+      font-style: italic;
+    }
+
+    .avaliacao { 
+      display: flex; 
+      gap: 10px; 
+      flex-wrap: wrap; 
+      margin-top: 12px; 
+    }
+    .btn-avalia { 
+      padding: 10px 14px; 
+      border-radius: 22px; 
+      border: 1px solid var(--borda-padrao); 
+      background: #ffffff; 
+      color: var(--cor-neutra);
+      cursor: pointer; 
+      transition: all 0.25s ease;
+      font-size: 0.9em;
+    }
+    .btn-avalia:hover, .btn-avalia.selecionado { 
+      background: var(--cor-institucional); 
+      color: white; 
+      border-color: var(--cor-institucional);
+      transform: translateY(-1px);
+    }
+    
+    .ia-chat { 
+      background: #ffffff; 
+      border: 1px solid var(--borda-padrao); 
+      border-radius: 12px; 
+      padding: 16px; 
+      margin: 16px 0; 
+      max-height: 240px; 
+      overflow-y: auto; 
+      font-size: 0.95em; 
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+    }
+    .ia-mensagem { 
+      margin: 8px 0; 
+      padding: 10px 14px; 
+      border-radius: 10px; 
+      background: #eaf4f9; 
+      color: var(--cor-institucional);
+      line-height: 1.5;
+    }
+    .ia-mensagem.confirmada { 
+      background: #e8f5f2; 
+      color: var(--cor-segundaria); 
+      font-weight: 500;
+      border-left: 3px solid var(--cor-segundaria);
+    }
+    
+    .historico-pontos { 
+      margin-top:18px;
+      background: #f9fafb;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .ponto-item { 
+      font-size: 0.88em; 
+      padding: 6px 10px; 
+      border-bottom: 1px solid #e5e7eb; 
+      display:flex; 
+      justify-content:space-between;
+      align-items: center;
+    }
+    .ponto-item:last-child { border-bottom: none; }
+
+    .alerta-cuidado { 
+      background: #fef6e9; 
+      border-left: 4px solid var(--cor-alerta); 
+      padding: 14px; 
+      border-radius: 0 8px 8px 0; 
+      margin: 16px 0; 
+      display: none;
+      color: #92400e;
+    }
+    .alerta-ajuda { 
+      background: #eef8f6; 
+      border-left: 4px solid var(--cor-segundaria); 
+      padding: 14px; 
+      border-radius: 0 8px 8px 0; 
+      margin: 16px 0; 
+      display: none;
+      color: #065f56;
+    }
+
+    .contador { 
+      font-weight: bold; 
+      color: var(--cor-institucional); 
+      background: #eaf4f9;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.85em;
+    }
+    .status-cal { 
+      font-weight:500; 
+      color:var(--cor-segundaria); 
+      font-size: 0.9em;
+    }
+
+    .metricas-atuais { 
+      background: #fffbeb; 
+      padding: 14px; 
+      border-radius: 10px; 
+      margin: 16px 0; 
+      display: none; 
+      border: 1px solid #fbbf24;
+      box-shadow: 0 2px 6px rgba(251, 191, 36, 0.15);
+    }
+
+    .header-institucional {
+      background: var(--cor-institucional);
+      color: white;
+      padding: 8px 20px;
+      font-size: 0.85em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .info-projeto {
+      background: #ffffff;
+      border: 1px solid var(--cor-institucional);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 16px 0;
+      font-size: 0.9em;
+      color: var(--cor-neutra);
+    }
+
+    h1, h2, h3 {
+      color: var(--cor-neutra);
+      font-weight: 600;
+    }
+
+    .topbar {
+      border-bottom: 3px solid var(--cor-institucional);
+    }
+
+    .btn.primary {
+      background-color: var(--cor-institucional);
+      border-color: var(--cor-institucional);
+    }
+    .btn.primary:hover {
+      background-color: #004a7c;
+      border-color: #004a7c;
+    }
+
+    .canvasWrap {
+      border: 1px solid var(--borda-padrao);
+      border-radius: 8px;
+      padding: 10px;
+      background: white;
+      margin: 12px 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+
+    .footer {
+      background: var(--cor-neutra);
+      color: white;
+      padding: 16px;
+      text-align: center;
+      font-size: 0.9em;
+      margin-top: 30px;
+    }
   </style>
 </head>
 <body>
+
+  <!-- FAIXA INSTITUCIONAL SUPERIOR -->
+  <div class="header-institucional">
+    <div><strong>Projeto Acadêmico:</strong> Sistema Inteligente de Avaliação e Reabilitação Vocal</div>
+    <div><strong>Parceiros:</strong> Faculdade de Fonoaudiologia • Hospital Regional</div>
+  </div>
+
   <div class="bg"></div>
 
   <header class="topbar">
     <div class="brand">
       <div class="logo">
-        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon Health" />
+        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon Health - Saúde e Tecnologia" />
       </div>
       <div>
-        <div class="brand-title">Calibração • IA em Tempo Real</div>
-        <div class="brand-sub" id="subTitle">Aprendizado contínuo e análise confirmada</div>
+        <div class="brand-title">Elayon Health • Plataforma Clínica</div>
+        <div class="brand-sub" id="subTitle">Calibração, Análise e Acompanhamento Contínuo</div>
       </div>
     </div>
     <nav class="nav">
       <a class="link" href="index.html">Início</a>
-      <a class="link" href="report.html">Relatórios</a>
+      <a class="link" href="report.html">Prontuário / Relatórios</a>
     </nav>
   </header>
 
   <main class="container">
     <section class="card">
-      <h1>📝 Calibração e Aprendizado</h1>
+      <h1>📋 Protocolo de Calibração e Aprendizado</h1>
+
+      <!-- INFORMAÇÕES DO PROTOCOLO -->
+      <div class="info-projeto">
+        <strong>Objetivo do Procedimento:</strong> Definir o padrão vocal basal do paciente por meio de inteligência artificial, permitindo comparações precisas ao longo do tratamento e detecção precoce de alterações, fadiga ou esforço vocal. <br>
+        <strong>Metodologia:</strong> Amostragem contínua, análise espectral (FFT) e comparação estatística em tempo real.
+      </div>
 
       <!-- Área onde a IA fala -->
       <div class="ia-chat" id="iaLog">
-        <div class="ia-mensagem">🤖 Olá! Vou aprender a sua voz agora. Fale naturalmente e eu vou analisando e confirmando cada detalhe.</div>
+        <div class="ia-mensagem">🤖 <strong>Sistema:</strong> Olá, profissional e paciente. Iniciaremos o protocolo de coleta de referência. Fale naturalmente, como em uma conversa cotidiana. Todos os dados serão armazenados de forma segura e integrada ao prontuário.</div>
       </div>
 
       <!-- Área que vai mostrar as métricas AO VIVO -->
       <div class="metricas-atuais" id="metricasBox">
-        <h4>📊 Métricas em Tempo Real</h4>
-        <span id="mEnergia">Energia: -</span> | 
-        <span id="mRitmo">Ritmo: -</span> | 
-        <span id="mPausa">Pausa: -</span> | 
-        <span id="mClareza">Clareza: -</span>
-        <div id="mComparacao">Comparação: -</div>
+        <h4>📊 Métricas Quantitativas em Tempo Real</h4>
+        <span id="mEnergia">Energia Vocal: -</span> | 
+        <span id="mRitmo">Ritmo/Frequência: -</span> | 
+        <span id="mPausa">Índice de Pausa: -</span> | 
+        <span id="mClareza">Clareza/Projeção: -</span>
+        <div id="mComparacao"><strong>Comparação com Padrão:</strong> -</div>
       </div>
 
       <div class="alerta-cuidado" id="alertaEsforco">
-        ⚠️ <strong>Orientação em tempo real:</strong> Detectei esforço ou velocidade acima do seu padrão habitual. Que tal parar, respirar fundo e relaxar a musculatura da boca? Descansar faz parte do exercício.
+        ⚠️ <strong>Alerta Clínico / Orientação:</strong> Detectado esforço excessivo, velocidade elevada ou tensão muscular acima do padrão basal. <br>
+        <strong>Conduta sugerida:</strong> Pausa para repouso vocal, respiração diafragmática e relaxamento da região orofacial. Evitar forçar a emissão.
       </div>
 
       <div class="alerta-ajuda" id="alertaConduta">
-        💡 <strong>Orientação em tempo real:</strong> Notei que a fala está mais lenta ou fraca que o seu normal. Tente sentar ereto, respirar antes de começar e projetar um pouco mais a voz — sem gritar, apenas com mais presença.
+        💡 <strong>Orientação Terapêutica:</strong> Verificou-se redução de intensidade, projeção diminuída ou fala excessivamente lenta em comparação ao perfil do paciente. <br>
+        <strong>Conduta sugerida:</strong> Verificar postura corporal, realizar aquecimento leve e incentivar a ressonância. Observar nível de fadiga.
       </div>
 
-      <p class="muted">
-        <strong>Instrução:</strong> Fale a frase <em>exatamente como fala no dia a dia</em>. Depois, me diga como foi. Eu já começo analisando e comparando com o que aprendi antes.
+      <p class="muted" style="background:#f1f5f9; padding:12px; border-radius:8px; border-left:4px solid #94a3b8;">
+        <strong>Procedimento Padrão:</strong> O paciente deve ler ou falar a frase <em>exatamente como se expressa no dia a dia</em>. Após a gravação, o profissional ou paciente deve classificar a emissão para validação do sistema. Os dados são comparados com a referência já aprendida.
       </p>
 
       <!-- PASSO 1 -->
       <div class="passo ativo" id="passo1">
-        <h3>Passo 1 <span class="contador" id="c1">(aguardando)</span> <span class="status-cal" id="s1">• Coleta de referência</span></h3>
-        <div class="frase">“Bom dia, tudo bem com você? Eu acordei bem hoje e estou pronto para conversar.”</div>
+        <h3>Etapa 1 <span class="contador" id="c1">(Aguardando coleta)</span> <span class="status-cal" id="s1">• Definição de Linha de Base</span></h3>
+        <div class="frase">“Bom dia, tudo bem com você? Eu acordei bem hoje e estou pronto para conversar e contar como foi o meu dia.”</div>
         
         <div class="actions">
-          <button class="btn primary" id="btnGrav1">🎤 Começar Gravação</button>
-          <button class="btn" id="btnParar1" disabled>⏹️ Parar</button>
+          <button class="btn primary" id="btnGrav1">🎤 Iniciar Gravação</button>
+          <button class="btn" id="btnParar1" disabled>⏹️ Finalizar Gravação</button>
         </div>
 
         <div class="avaliacao" id="avalia1">
-          <span>Você acha que falou:</span>
-          <button class="btn-avalia">Normal</button>
-          <button class="btn-avalia">Bem claro</button>
-          <button class="btn-avalia">Um pouco rápido</button>
-          <button class="btn-avalia">Um pouco baixo</button>
-          <button class="btn-avalia">Cansado / com esforço</button>
+          <span><strong>Classificação da emissão:</strong></span>
+          <button class="btn-avalia">Padrão Normal</button>
+          <button class="btn-avalia">Clara e Projetada</button>
+          <button class="btn-avalia">Rápida / Veloz</button>
+          <button class="btn-avalia">Fraca / Baixa Intensidade</button>
+          <button class="btn-avalia">Esforçada / Cansada</button>
         </div>
 
-        <div class="historico-pontos" id="hist1"></div>
+        <div class="historico-pontos" id="hist1">
+          <em style="font-size:0.85em; padding: 4px 10px;">Histórico e métricas desta etapa aparecerão aqui...</em>
+        </div>
       </div>
 
       <!-- PASSO 2 -->
       <div class="passo" id="passo2">
-        <h3>Passo 2 <span class="contador" id="c2">(bloqueado)</span> <span class="status-cal" id="s2">• Comparando com Passo 1</span></h3>
-        <div class="frase">“Eu gosto de caminhar um pouco, conversar com as pessoas e descansar quando preciso.”</div>
+        <h3>Etapa 2 <span class="contador" id="c2">(Bloqueado)</span> <span class="status-cal" id="s2">• Validação e Comparação</span></h3>
+        <div class="frase">“Eu gosto de caminhar um pouco ao ar livre, conversar com as pessoas e descansar quando o corpo pede um tempo para se recuperar.”</div>
         
         <div class="actions">
-          <button class="btn primary" id="btnGrav2" disabled>🎤 Começar Gravação</button>
-          <button class="btn" id="btnParar2" disabled>⏹️ Parar</button>
+          <button class="btn primary" id="btnGrav2" disabled>🎤 Iniciar Gravação</button>
+          <button class="btn" id="btnParar2" disabled>⏹️ Finalizar Gravação</button>
         </div>
 
         <div class="avaliacao" id="avalia2">
-          <span>Você acha que falou:</span>
-          <button class="btn-avalia">Normal</button>
-          <button class="btn-avalia">Bem claro</button>
-          <button class="btn-avalia">Um pouco rápido</button>
-          <button class="btn-avalia">Um pouco baixo</button>
-          <button class="btn-avalia">Cansado / com esforço</button>
+          <span><strong>Classificação da emissão:</strong></span>
+          <button class="btn-avalia">Padrão Normal</button>
+          <button class="btn-avalia">Clara e Projetada</button>
+          <button class="btn-avalia">Rápida / Veloz</button>
+          <button class="btn-avalia">Fraca / Baixa Intensidade</button>
+          <button class="btn-avalia">Esforçada / Cansada</button>
         </div>
 
         <div class="historico-pontos" id="hist2"></div>
@@ -123,74 +326,110 @@
 
       <!-- PASSO 3 -->
       <div class="passo" id="passo3">
-        <h3>Passo 3 <span class="contador" id="c3">(bloqueado)</span> <span class="status-cal" id="s3">• Padrão já definido</span></h3>
-        <div class="frase">“Às vezes é difícil falar por muito tempo, mas eu vou devagar para dar conta de dizer tudo o que quero.”</div>
+        <h3>Etapa 3 <span class="contador" id="c3">(Bloqueado)</span> <span class="status-cal" id="s3">• Consolidação do Perfil</span></h3>
+        <div class="frase">“Às vezes é difícil falar por muito tempo sem parar, mas eu vou devagar para dar conta de dizer tudo o que quero e me fazer entender bem.”</div>
         
         <div class="actions">
-          <button class="btn primary" id="btnGrav3" disabled>🎤 Começar Gravação</button>
-          <button class="btn" id="btnParar3" disabled>⏹️ Parar</button>
+          <button class="btn primary" id="btnGrav3" disabled>🎤 Iniciar Gravação</button>
+          <button class="btn" id="btnParar3" disabled>⏹️ Finalizar Gravação</button>
         </div>
 
         <div class="avaliacao" id="avalia3">
-          <span>Você acha que falou:</span>
-          <button class="btn-avalia">Normal</button>
-          <button class="btn-avalia">Bem claro</button>
-          <button class="btn-avalia">Um pouco rápido</button>
-          <button class="btn-avalia">Um pouco baixo</button>
-          <button class="btn-avalia">Cansado / com esforço</button>
+          <span><strong>Classificação da emissão:</strong></span>
+          <button class="btn-avalia">Padrão Normal</button>
+          <button class="btn-avalia">Clara e Projetada</button>
+          <button class="btn-avalia">Rápida / Veloz</button>
+          <button class="btn-avalia">Fraca / Baixa Intensidade</button>
+          <button class="btn-avalia">Esforçada / Cansada</button>
         </div>
 
         <div class="historico-pontos" id="hist3"></div>
       </div>
 
-      <hr/>
+      <hr style="border-color: var(--borda-padrao); margin: 24px 0;" />
 
       <!-- ÁREA DE EXERCÍCIOS LIVRES (FIFO) -->
       <div id="areaFifo" style="display: none;">
-        <h2>📚 Exercícios Adicionais</h2>
-        <p class="muted">Agora eu já conheço a sua voz. Vou analisar tudo e comparar com o seu padrão confirmado.</p>
+        <h2>📚 Protocolo de Exercícios Terapêuticos</h2>
+        
+        <div class="info-projeto">
+          <strong>Descrição:</strong> Exercícios práticos para avaliação contínua e treinamento vocal. O sistema compara cada emissão com o perfil já aprendido e validado nas etapas anteriores, emitindo orientações clínicas em tempo real.
+          <br><strong>Meta:</strong> Realizar até 10 sequências, respeitando os limites de conforto e fadiga do paciente.
+        </div>
 
         <div class="passo" id="passoFifo">
-          <h3 id="tituloFifo">Exercício 1 <span class="status-cal">• Análise contínua</span></h3>
-          <div class="frase" id="fraseFifo">“Leia esta frase com calma: A natureza é bela e devemos cuidar de tudo o que existe.”</div>
+          <h3 id="tituloFifo">Sequência 1 <span class="status-cal">• Monitoramento Contínuo</span></h3>
+          <div class="frase" id="fraseFifo">“Leia esta frase com calma e entonação natural: A natureza é bela e devemos cuidar de tudo o que existe ao nosso redor.”</div>
           
           <div class="actions">
-            <button class="btn primary" id="btnGravFifo">🎤 Gravar</button>
-            <button class="btn" id="btnPararFifo" disabled>⏹️ Parar</button>
-            <button class="btn" id="btnPular">⏭️ Pular</button>
+            <button class="btn primary" id="btnGravFifo">🎤 Gravar Sequência</button>
+            <button class="btn" id="btnPararFifo" disabled>⏹️ Encerrar Gravação</button>
+            <button class="btn" id="btnPular">⏭️ Pular Exercício</button>
           </div>
 
           <div class="avaliacao" id="avaliaFifo">
-            <span>Como foi a fala agora?</span>
+            <span><strong>Classificação do momento:</strong></span>
             <button class="btn-avalia">Normal / Confortável</button>
-            <button class="btn-avalia">Precisei fazer força</button>
-            <button class="btn-avalia">Falei devagar sem querer</button>
-            <button class="btn-avalia">Falei rápido</button>
-            <button class="btn-avalia">Já estou cansado</button>
+            <button class="btn-avalia">Esforço / Tensão</button>
+            <button class="btn-avalia">Fala Lenta / Arrastada</button>
+            <button class="btn-avalia">Fala Rápida / Pressa</button>
+            <button class="btn-avalia">Sinal de Fadiga</button>
           </div>
 
-          <div class="historico-pontos" id="histFifo"></div>
+          <div class="historico-pontos" id="histFifo">
+            <em style="font-size:0.85em; padding: 4px 10px;">Registro das sequências realizadas aparecerão aqui...</em>
+          </div>
         </div>
 
-        <div style="margin-top:14px;">
-          <p class="muted">Exercícios feitos: <span id="qtdFeitos">0</span> / 10</p>
-          <button class="btn" id="btnFinalizar">✅ Finalizar e Salvar Tudo</button>
+        <div style="margin-top:18px; padding: 14px; background: #f8fafc; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <p class="muted" style="margin:0;">Progresso do protocolo: <strong id="qtdFeitos">0</strong> / 10 exercícios concluídos</p>
+          <button class="btn primary" id="btnFinalizar">✅ Finalizar Sessão e Gerar Prontuário</button>
         </div>
       </div>
 
-      <!-- PAINÉIS VISUAIS -->
-      <hr/>
-      <h2>Visualização do Sinal</h2>
-      <div class="canvasWrap"><canvas id="cvFft"></canvas></div>
-      <div class="canvasWrap"><canvas id="cvSil"></canvas></div>
-      <div class="canvasWrap"><canvas id="cvOv"></canvas></div>
+      <hr style="border-color: var(--borda-padrao); margin: 24px 0;" />
+
+      <!-- PAINÉIS VISUAIS DE ANÁLISE -->
+      <h2>📈 Visualização Técnica do Sinal</h2>
+      
+      <div class="info-projeto">
+        <strong>Legenda Técnica:</strong> Estes gráficos apresentam a análise quantitativa da emissão vocal. <br>
+        • <strong>FFT (Espectro de Frequência):</strong> Distribuição de energia por frequência, indicando ressonância e qualidade tonal. <br>
+        • <strong>Silêncio / Pausa:</strong> Identificação de períodos de repouso, fundamental para avaliar ritmo e respiração. <br>
+        • <strong>Parâmetros Multidimensionais:</strong> Monitoramento simultâneo de energia, pitch, intensidade e bandas de frequência (graves, médias e agudas).
+      </div>
+
+      <div class="canvasWrap">
+        <h4 style="margin: 0 0 8px 0; color: var(--cor-institucional);">Análise Espectral (FFT)</h4>
+        <canvas id="cvFft"></canvas>
+      </div>
+
+      <div class="canvasWrap">
+        <h4 style="margin: 0 0 8px 0; color: var(--cor-institucional);">Detector de Silêncio e Ritmo</h4>
+        <canvas id="cvSil"></canvas>
+      </div>
+
+      <div class="canvasWrap">
+        <h4 style="margin: 0 0 8px 0; color: var(--cor-institucional);">Monitoramento Multidimensional</h4>
+        <canvas id="cvOv"></canvas>
+      </div>
 
     </section>
   </main>
 
-  <footer class="footer"><span>Elayon Health • IA e Calibração Dinâmica</span></footer>
+  <footer class="footer">
+    <div style="max-width: 1200px; margin: 0 auto;">
+      <p style="margin: 0 0 8px 0; font-weight: 500;">Elayon Health • Sistema Inteligente de Avaliação e Reabilitação Vocal</p>
+      <p style="margin: 0; font-size: 0.85em; opacity: 0.9;">
+        Projeto Acadêmico desenvolvido em parceria com a Faculdade de Fonoaudiologia e Hospital Regional. <br>
+        Todos os dados são confidenciais e seguem as normas de ética e privacidade em saúde (LGPD / HIPAA). <br>
+        Versão 2.1 • Manaus - Amazonas • 2026
+      </p>
+    </div>
+  </footer>
 
-  <!-- AQUI A LIGAÇÃO COM O JS -->
+  <!-- Importação do Sistema de Lógica e Inteligência Artificial -->
   <script src="session.js"></script>
 </body>
 </html>
+
