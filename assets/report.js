@@ -1,3 +1,8 @@
+/**
+ * REPORT.JS — FASE 2
+ * Exibição de relatório + Botão para validação
+ */
+
 const KEY_SESSIONS = "elayon_crs_sessions";
 
 function getParam(name) {
@@ -41,7 +46,10 @@ const jsonStr = JSON.stringify({
 
 document.getElementById("jsonData").value = jsonStr;
 
-// Botões
+// ============================================
+// BOTÕES: COPIAR E BAIXAR JSON
+// ============================================
+
 document.getElementById("btnCopy").addEventListener("click", async () => {
   await navigator.clipboard.writeText(jsonStr);
   alert("✅ Copiado!");
@@ -56,7 +64,18 @@ document.getElementById("btnDownload").addEventListener("click", () => {
   a.click();
 });
 
-// Lista de relatórios
+// ============================================
+// BOTÃO: IR PARA VALIDAÇÃO
+// ============================================
+
+document.getElementById("btnValidacao").addEventListener("click", () => {
+  location.href = `validation.html?id=${encodeURIComponent(id)}`;
+});
+
+// ============================================
+// LISTA DE RELATÓRIOS
+// ============================================
+
 const closed = sessions.filter(s => s.status === "closed");
 const list = document.getElementById("reportsList");
 
@@ -74,3 +93,4 @@ if (closed.length === 0) {
   `).join("");
 }
 
+console.log("✅ report.js carregado");
