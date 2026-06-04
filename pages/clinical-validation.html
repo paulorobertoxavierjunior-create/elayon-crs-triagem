@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Elayon Health — Validação Clínica CRS</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">
+        <img class="logoImg" src="../IMG-20260218-WA0016.jpg" alt="Elayon Health" />
+      </div>
+      <div>
+        <div class="brand-title">Validação Clínica — CRS</div>
+        <div class="brand-sub">Pareamento de Avaliação + Métricas Temporais</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="link" href="../index.html">Início</a>
+      <a class="link" href="session.html">Sessão</a>
+      <a class="link active" href="clinical-validation.html">Validação</a>
+      <a class="link" href="crs-dashboard.html">Dashboard</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- Aviso de Validação -->
+    <section class="card soft" style="background: #fef3c7; border-left: 4px solid #f59e0b;">
+      <h2>📋 Protocolo de Validação Clínica</h2>
+      <p class="muted">
+        Este módulo permite pareamento de avaliação clínica neurológica com métricas CRS.
+        <br/><strong>Objetivo:</strong> Validar fidedignidade das métricas temporais.
+        <br/><strong>Responsabilidade:</strong> Médico especialista (neurologista).
+      </p>
+    </section>
+
+    <!-- Seleção de Sessão -->
+    <section class="card">
+      <h1>1. Selecionar Sessão CRS</h1>
+      <p class="muted">Escolha uma sessão já concluída para associar avaliação clínica:</p>
+
+      <div class="field">
+        <label for="sessionSelect">Sessão CRS</label>
+        <select id="sessionSelect">
+          <option value="">-- Carregando sessões --</option>
+        </select>
+      </div>
+
+      <div id="sessionInfo" style="display:none; margin-top: 16px;">
+        <div class="card soft">
+          <div style="font-weight: 800; margin-bottom: 8px;">Dados da Sessão</div>
+          <div class="muted" style="margin-top: 6px;">
+            <strong>Paciente:</strong> <span id="infoPatient">--</span><br/>
+            <strong>Médico:</strong> <span id="infoDoctor">--</span><br/>
+            <strong>Data:</strong> <span id="infoDate">--</span><br/>
+            <strong>Contexto:</strong> <span id="infoContext">--</span><br/>
+            <strong>Confiança CRS:</strong> <span id="infoConfidence">--</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions" style="margin-top: 16px;">
+        <button class="btn primary" id="btnLoadSession">Carregar Sessão</button>
+      </div>
+    </section>
+
+    <!-- Avaliação Clínica -->
+    <section class="card" id="assessmentSection" style="display:none;">
+      <h1>2. Avaliação Clínica Neurológica</h1>
+      <p class="muted">Preencha sua avaliação clínica especializada:</p>
+
+      <!-- ESCALAS NUMÉRICAS -->
+      <div style="margin-top: 24px;">
+        <h2>Escalas Clínicas (0-10)</h2>
+
+        <div class="field">
+          <label for="severity">Severidade da Afasia (0=sem | 10=severa)</label>
+          <input id="severity" type="range" min="0" max="10" value="5" />
+          <span id="severityLabel" style="font-weight: 800; color: var(--cor-institucional);">5</span>
+        </div>
+
+        <div class="field">
+          <label for="intelligibility">Inteligibilidade da Fala (0=incompreensível | 100=clara) %</label>
+          <input id="intelligibility" type="range" min="0" max="100" value="50" />
+          <span id="intelligibilityLabel" style="font-weight: 800; color: var(--cor-institucional);">50%</span>
+        </div>
+
+        <div class="field">
+          <label for="effort">Esforço para Falar (0=sem | 10=extremo)</label>
+          <input id="effort" type="range" min="0" max="10" value="5" />
+          <span id="effortLabel" style="font-weight: 800; color: var(--cor-institucional);">5</span>
+        </div>
+
+        <div class="field">
+          <label for="fluency">Fluência da Fala (0=muito fluida | 10=muito não-fluida)</label>
+          <input id="fluency" type="range" min="0" max="10" value="5" />
+          <span id="fluencyLabel" style="font-weight: 800; color: var(--cor-institucional);">5</span>
+        </div>
+
+        <div class="field">
+          <label for="pauses">Frequência de Pausas (0=raras | 10=constantes)</label>
+          <input id="pauses" type="range" min="0" max="10" value="5" />
+          <span id="pausesLabel" style="font-weight: 800; color: var(--cor-institucional);">5</span>
+        </div>
+      </div>
+
+      <!-- ACHADOS QUALITATIVOS -->
+      <div style="margin-top: 24px;">
+        <h2>Achados Qualitativos</h2>
+
+        <div class="field">
+          <label for="afasiaType">Tipo de Afasia (se aplicável)</label>
+          <select id="afasiaType">
+            <option value="">-- Selecione --</option>
+            <option value="broca">Afasia de Broca</option>
+            <option value="wernicke">Afasia de Wernicke</option>
+            <option value="conducao">Afasia de Condução</option>
+            <option value="global">Afasia Global</option>
+            <option value="anomia">Anomia</option>
+            <option value="nenhuma">Nenhuma alteração</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Características da Fala (marque as aplicáveis)</label>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" name="speechChar" value="lenta" /> Lenta
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" name="speechChar" value="rapida" /> Rápida
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" name="speechChar" value="entrecortada" /> Entrecortada
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" name="speechChar" value="monotona" /> Monótona
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" name="speechChar" value="arrastada" /> Arrastada
+            </label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="comprehension">Compreensão</label>
+          <select id="comprehension">
+            <option value="">-- Selecione --</option>
+            <option value="preservada">Preservada</option>
+            <option value="prejudicada">Prejudicada</option>
+            <option value="severa">Severa</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="repetition">Repetição</label>
+          <select id="repetition">
+            <option value="">-- Selecione --</option>
+            <option value="normal">Normal</option>
+            <option value="prejudicada">Prejudicada</option>
+            <option value="severa">Severa</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="naming">Nomeação</label>
+          <select id="naming">
+            <option value="">-- Selecione --</option>
+            <option value="normal">Normal</option>
+            <option value="prejudicada">Prejudicada</option>
+            <option value="severa">Severa</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- OBSERVAÇÕES CLÍNICAS -->
+      <div style="margin-top: 24px;">
+        <h2>Observações Clínicas</h2>
+
+        <div class="field">
+          <label for="contextualFactors">Fatores Contextuais (fadiga, medicação, estado emocional, etc)</label>
+          <textarea id="contextualFactors" rows="3" placeholder="Descreva fatores que podem ter influenciado a avaliação..."></textarea>
+        </div>
+
+        <div class="field">
+          <label for="patientBehavior">Comportamento do Paciente (cooperação, motivação, etc)</label>
+          <textarea id="patientBehavior" rows="3" placeholder="Descreva comportamento observado..."></textarea>
+        </div>
+
+        <div class="field">
+          <label for="additionalNotes">Observações Adicionais</label>
+          <textarea id="additionalNotes" rows="3" placeholder="Qualquer outra observação relevante..."></textarea>
+        </div>
+      </div>
+
+      <!-- DIAGNÓSTICO -->
+      <div style="margin-top: 24px;">
+        <h2>Hipótese Diagnóstica (Obrigatório)</h2>
+
+        <div class="field">
+          <label for="hypothesis">Sua Hipótese Clínica</label>
+          <textarea id="hypothesis" rows="4" placeholder="Descreva sua interpretação clínica, baseada na avaliação realizada..." required></textarea>
+        </div>
+
+        <div class="field">
+          <label for="confidence">Confiança na Avaliação (%)</label>
+          <input id="confidence" type="range" min="0" max="100" value="75" />
+          <span id="confidenceLabel" style="font-weight: 800; color: var(--cor-institucional);">75%</span>
+        </div>
+
+        <div class="field">
+          <label for="differentialDiagnosis">Diagnósticos Diferenciais</label>
+          <textarea id="differentialDiagnosis" rows="3" placeholder="Outras possibilidades diagnósticas consideradas..."></textarea>
+        </div>
+      </div>
+
+      <!-- RECOMENDAÇÕES -->
+      <div style="margin-top: 24px;">
+        <h2>Recomendações</h2>
+
+        <div class="field">
+          <label for="followUp">Acompanhamento (quando reavaliar?)</label>
+          <input id="followUp" type="text" placeholder="Ex: 2 semanas, 1 mês, 3 meses" />
+        </div>
+
+        <div class="field">
+          <label>Intervenções Recomendadas (marque as aplicáveis)</label>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" name="interventions" value="fonoaudiologia" /> Fonoaudiologia
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" name="interventions" value="neuropsicologia" /> Neuropsicologia
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" name="interventions" value="fisioterapia" /> Fisioterapia
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" name="interventions" value="medicacao" /> Medicação
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" name="interventions" value="outro" /> Outro
+            </label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="additionalTests">Testes Complementares Sugeridos</label>
+          <textarea id="additionalTests" rows="2" placeholder="Ex: Ressonância, EEG, Neuropsicológico, etc..."></textarea>
+        </div>
+      </div>
+
+      <hr/>
+
+      <div class="actions">
+        <button class="btn primary" id="btnSaveAssessment">✅ Salvar Avaliação Clínica</button>
+        <button class="btn" id="btnCancel">Cancelar</button>
+      </div>
+    </section>
+
+    <!-- Resultado de Pareamento -->
+    <section class="card" id="resultSection" style="display:none;">
+      <h1>3. Pareamento Realizado</h1>
+      <p class="muted">Avaliação clínica associada com sucesso à sessão CRS.</p>
+
+      <div class="card soft" style="margin-top: 16px;">
+        <div style="font-weight: 800; margin-bottom: 8px;">✅ Pareamento Concluído</div>
+        <div class="muted" style="margin-top: 6px;">
+          <strong>ID do Pareamento:</strong> <span id="pairingId">--</span><br/>
+          <strong>Sessão CRS:</strong> <span id="pairingSession">--</span><br/>
+          <strong>Avaliação Clínica:</strong> <span id="pairingAssessment">--</span><br/>
+          <strong>Data/Hora:</strong> <span id="pairingTime">--</span>
+        </div>
+      </div>
+
+      <div class="actions" style="margin-top: 16px;">
+        <button class="btn primary" id="btnNewPairing">Novo Pareamento</button>
+        <button class="btn" id="btnViewDashboard">Ver Dashboard de Validação</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><span>Elayon Health • Validação Clínica CRS</span></footer>
+
+  <script src="../assets/store.js"></script>
+  <script src="../core/clinical-validation/neurologist-assessment.js"></script>
+  <script>
+    // Instanciar módulo de avaliação
+    const assessmentModule = new NeurologistAssessment();
+
+    // Carregar sessões disponíveis
+    function loadSessions() {
+      const sessions = EH.sessions.all();
+      const closedSessions = sessions.filter(s => s.status === "closed");
+      const select = document.getElementById("sessionSelect");
+
+      select.innerHTML = '<option value="">-- Selecione uma sessão --</option>';
+      closedSessions.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s.id;
+        opt.textContent = `${s.paciente} (${new Date(s.start).toLocaleString("pt-BR")})`;
+        select.appendChild(opt);
+      });
+    }
+
+    loadSessions();
+
+    // Carregar dados da sessão
+    document.getElementById("btnLoadSession").addEventListener("click", () => {
+      const sessionId = document.getElementById("sessionSelect").value;
+      if (!sessionId) {
+        alert("Selecione uma sessão");
+        return;
+      }
+
+      const session = EH.sessions.get(sessionId);
+      if (!session) {
+        alert("Sessão não encontrada");
+        return;
+      }
+
+      // Preencher info
+      document.getElementById("infoPatient").textContent = session.paciente || "--";
+      document.getElementById("infoDoctor").textContent = session.medico || "--";
+      document.getElementById("infoDate").textContent = new Date(session.start).toLocaleString("pt-BR");
+      document.getElementById("infoContext").textContent = session.contexto || "--";
+      document.getElementById("infoConfidence").textContent = session.crsConfidence ? `${(session.crsConfidence * 100).toFixed(1)}%` : "--";
+
+      document.getElementById("sessionInfo").style.display = "block";
+      document.getElementById("assessmentSection").style.display = "block";
+
+      // Armazenar ID da sessão
+      window.currentSessionId = sessionId;
+    });
+
+    // Atualizar labels dos ranges
+    document.getElementById("severity").addEventListener("input", (e) => {
+      document.getElementById("severityLabel").textContent = e.target.value;
+    });
+    document.getElementById("intelligibility").addEventListener("input", (e) => {
+      document.getElementById("intelligibilityLabel").textContent = e.target.value + "%";
+    });
+    document.getElementById("effort").addEventListener("input", (e) => {
+      document.getElementById("effortLabel").textContent = e.target.value;
+    });
+    document.getElementById("fluency").addEventListener("input", (e) => {
+      document.getElementById("fluencyLabel").textContent = e.target.value;
+    });
+    document.getElementById("pauses").addEventListener("input", (e) => {
+      document.getElementById("pausesLabel").textContent = e.target.value;
+    });
+    document.getElementById("confidence").addEventListener("input", (e) => {
+      document.getElementById("confidenceLabel").textContent = e.target.value + "%";
+    });
+
+    // Salvar avaliação
+    document.getElementById("btnSaveAssessment").addEventListener("click", () => {
+      const hypothesis = document.getElementById("hypothesis").value.trim();
+      if (!hypothesis) {
+        alert("Hipótese diagnóstica é obrigatória");
+        return;
+      }
+
+      // Criar avaliação
+      const assessment = assessmentModule.createAssessment(window.currentSessionId, EH.doctor.get().nome);
+
+      // Preencher escalas
+      assessmentModule.fillScales(assessment.id, {
+        severity: parseInt(document.getElementById("severity").value),
+        intelligibility: parseInt(document.getElementById("intelligibility").value),
+        effort: parseInt(document.getElementById("effort").value),
+        fluency: parseInt(document.getElementById("fluency").value),
+        pauses: parseInt(document.getElementById("pauses").value)
+      });
+
+      // Preencher achados qualitativos
+      const speechChars = Array.from(document.querySelectorAll("input[name='speechChar']:checked")).map(e => e.value);
+      const interventions = Array.from(document.querySelectorAll("input[name='interventions']:checked")).map(e => e.value);
+
+      assessment.qualitativeFindings = {
+        afasiaType: document.getElementById("afasiaType").value || null,
+        speechCharacteristics: speechChars,
+        comprehension: document.getElementById("comprehension").value || null,
+        repetition: document.getElementById("repetition").value || null,
+        naming: document.getElementById("naming").value || null
+      };
+
+      assessment.clinicalObservations = {
+        contextualFactors: document.getElementById("contextualFactors").value,
+        patientBehavior: document.getElementById("patientBehavior").value,
+        additionalNotes: document.getElementById("additionalNotes").value
+      };
+
+      assessment.diagnosis = {
+        hypothesis: hypothesis,
+        confidence: parseInt(document.getElementById("confidence").value),
+        differentialDiagnosis: document.getElementById("differentialDiagnosis").value.split("\n").filter(x => x.trim())
+      };
+
+      assessment.recommendations = {
+        followUp: document.getElementById("followUp").value,
+        interventions: interventions,
+        additionalTests: document.getElementById("additionalTests").value.split("\n").filter(x => x.trim())
+      };
+
+      // Marcar como completa
+      assessment.completed = true;
+      assessment.completedAt = Date.now();
+
+      // Salvar
+      assessmentModule.assessments[assessmentModule.assessments.findIndex(a => a.id === assessment.id)] = assessment;
+
+      // Mostrar resultado
+      document.getElementById("assessmentSection").style.display = "none";
+      document.getElementById("resultSection").style.display = "block";
+
+      document.getElementById("pairingId").textContent = assessment.id;
+      document.getElementById("pairingSession").textContent = window.currentSessionId;
+      document.getElementById("pairingAssessment").textContent = assessment.id;
+      document.getElementById("pairingTime").textContent = new Date(assessment.timestamp).toLocaleString("pt-BR");
+
+      alert("✅ Avaliação clínica salva com sucesso!");
+    });
+
+    document.getElementById("btnCancel").addEventListener("click", () => {
+      location.reload();
+    });
+
+    document.getElementById("btnNewPairing").addEventListener("click", () => {
+      location.reload();
+    });
+
+    document.getElementById("btnViewDashboard").addEventListener("click", () => {
+      location.href = "crs-dashboard.html";
+    });
+  </script>
+</body>
+</html>
