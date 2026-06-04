@@ -4,24 +4,230 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Elayon — Relatório</title>
-  <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      background: #ffffff;
+      color: #1a1a1a;
+      line-height: 1.6;
+    }
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #e5e5e5;
+    }
+
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 16px;
+      color: #1a1a1a;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: #666666;
+    }
+
+    nav {
+      display: flex;
+      gap: 16px;
+    }
+
+    nav a {
+      font-size: 13px;
+      color: #0284c7;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    nav a:hover {
+      color: #0ea5e9;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 24px 16px 80px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      color: #1a1a1a;
+    }
+
+    .card.soft {
+      background: #f9f9f9;
+      box-shadow: none;
+    }
+
+    h2 {
+      color: #0284c7;
+    }
+
+    .snap {
+      width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      background: #f5f5f5;
+    }
+
+    .muted {
+      color: #666666;
+      font-size: 13px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 12px;
+      border: 1px solid #cccccc;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      resize: vertical;
+      line-height: 1.4;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #0284c7;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .btn {
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 200ms;
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      color: white;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+    }
+
+    .btn.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+    }
+
+    .btn.secondary {
+      background: #e5e5e5;
+      color: #1a1a1a;
+      border: 1px solid #cccccc;
+    }
+
+    .btn.secondary:hover {
+      background: #d5d5d5;
+    }
+
+    .reports-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .report-item {
+      padding: 12px;
+      background: #f9f9f9;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      border-left: 3px solid #0284c7;
+    }
+
+    .report-item strong {
+      color: #0284c7;
+      font-size: 13px;
+    }
+
+    .report-item small {
+      color: #999999;
+      font-size: 11px;
+    }
+
+    .report-item a {
+      color: #0284c7;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .report-item a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-  <div class="bg"></div>
-
-  <header class="topbar">
+  <header>
     <div class="brand">
       <div class="logo">
-        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon" />
+        <img src="IMG-20260218-WA0016.jpg" alt="Elayon" />
       </div>
       <div>
         <div class="brand-title">Relatório</div>
         <div class="brand-sub" id="subTitle">--</div>
       </div>
     </div>
-    <nav class="nav">
-      <a class="link" href="index.html">Início</a>
-      <a class="link" href="report.html">Relatórios</a>
+    <nav>
+      <a href="index.html">Início</a>
+      <a href="report.html">Relatórios</a>
     </nav>
   </header>
 
@@ -30,17 +236,17 @@
     <section class="card">
       <h2>📊 Gráficos Capturados</h2>
 
-      <div style="display: grid; gap: 16px; margin-top: 16px;">
+      <div style="display: grid; gap: 20px; margin-top: 16px;">
         <div>
-          <div class="muted" style="font-size: 12px; margin-bottom: 8px;">Espectro (FFT)</div>
+          <div class="muted" style="margin-bottom: 8px;">Espectro de Frequência (FFT)</div>
           <img id="imgFft" class="snap" />
         </div>
         <div>
-          <div class="muted" style="font-size: 12px; margin-bottom: 8px;">Silêncio</div>
+          <div class="muted" style="margin-bottom: 8px;">Detecção de Silêncio</div>
           <img id="imgSil" class="snap" />
         </div>
         <div>
-          <div class="muted" style="font-size: 12px; margin-bottom: 8px;">CRS (8 dimensões)</div>
+          <div class="muted" style="margin-bottom: 8px;">Dimensões CRS (8 linhas)</div>
           <img id="imgOv" class="snap" />
         </div>
       </div>
@@ -49,8 +255,9 @@
     <!-- JSON -->
     <section class="card">
       <h2>📋 Dados Brutos (JSON)</h2>
-      <textarea id="jsonData" class="bigText" readonly style="min-height: 200px;"></textarea>
-      <div class="actions" style="margin-top: 12px;">
+      <p class="muted">Dados estruturados da sessão para análise e integração.</p>
+      <textarea id="jsonData" readonly></textarea>
+      <div class="actions">
         <button class="btn primary" id="btnCopy">
           📋 Copiar JSON
         </button>
@@ -63,7 +270,7 @@
     <!-- LISTA DE RELATÓRIOS -->
     <section class="card soft">
       <h2>📄 Todos os Relatórios</h2>
-      <div id="reportsList" style="display: grid; gap: 8px; margin-top: 12px;"></div>
+      <div id="reportsList" class="reports-list"></div>
     </section>
   </main>
 
