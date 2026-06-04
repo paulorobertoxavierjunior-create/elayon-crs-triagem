@@ -3,61 +3,455 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Elayon Health — Configuração CRS</title>
-  <link rel="stylesheet" href="assets/styles.css" />
-</head>
-<body> 
-  <div class="bg"></div>
+  <title>Elayon — Dashboard de Correlações</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  <header class="topbar">
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      background: #ffffff;
+      color: #1a1a1a;
+      line-height: 1.6;
+    }
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #e5e5e5;
+    }
+
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 16px;
+      color: #1a1a1a;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: #666666;
+    }
+
+    nav {
+      display: flex;
+      gap: 16px;
+    }
+
+    nav a {
+      font-size: 13px;
+      color: #0284c7;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    nav a:hover {
+      color: #0ea5e9;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 16px 80px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      color: #0284c7;
+    }
+
+    .card h3 {
+      font-size: 14px;
+      margin-top: 20px;
+      margin-bottom: 12px;
+      color: #1a1a1a;
+      font-weight: 700;
+      border-bottom: 2px solid #e5e5e5;
+      padding-bottom: 8px;
+    }
+
+    .card.soft {
+      background: #f9f9f9;
+      box-shadow: none;
+    }
+
+    .muted {
+      color: #666666;
+      font-size: 13px;
+    }
+
+    /* KPIs */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .kpi-box {
+      padding: 20px;
+      background: linear-gradient(135deg, #f0f8ff, #e0f2fe);
+      border: 1px solid #bae6fd;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      color: #666666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .kpi-value {
+      font-size: 32px;
+      font-weight: 900;
+      color: #0284c7;
+    }
+
+    .kpi-desc {
+      font-size: 11px;
+      color: #999999;
+      margin-top: 6px;
+    }
+
+    /* STATUS */
+    .status-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-validated {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+
+    .status-partial {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fcd34d;
+    }
+
+    .status-invalid {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    /* MATRIZ DE CORRELAÇÕES */
+    .correlation-matrix {
+      overflow-x: auto;
+      margin-top: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #e5e5e5;
+    }
+
+    th {
+      background: #f5f5f5;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    td {
+      background: #ffffff;
+    }
+
+    .corr-cell {
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+    }
+
+    .corr-strong {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .corr-moderate {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .corr-weak {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    /* TOP CORRELAÇÕES */
+    .top-corr-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .top-corr-item {
+      padding: 12px;
+      background: #f9f9f9;
+      border: 1px solid #e5e5e5;
+      border-left: 4px solid #0284c7;
+      border-radius: 8px;
+    }
+
+    .top-corr-title {
+      font-weight: 700;
+      color: #0284c7;
+      font-size: 13px;
+    }
+
+    .top-corr-value {
+      font-size: 20px;
+      font-weight: 900;
+      color: #1a1a1a;
+      margin: 6px 0;
+      font-family: 'Courier New', monospace;
+    }
+
+    .top-corr-desc {
+      font-size: 11px;
+      color: #999999;
+    }
+
+    /* BOTÕES */
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .actions.full {
+      grid-template-columns: 1fr;
+    }
+
+    .btn {
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 200ms;
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      color: white;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+    }
+
+    .btn.primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+    }
+
+    .btn.secondary {
+      background: #e5e5e5;
+      color: #1a1a1a;
+      border: 1px solid #cccccc;
+    }
+
+    .btn.secondary:hover:not(:disabled) {
+      background: #d5d5d5;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .session-info {
+      background: #f9f9f9;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+      font-size: 12px;
+    }
+
+    .session-info strong {
+      color: #0284c7;
+    }
+
+    canvas {
+      width: 100%;
+      height: auto;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header>
     <div class="brand">
       <div class="logo">
-        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon Health" />
+        <img src="IMG-20260218-WA0016.jpg" alt="Elayon" />
       </div>
       <div>
-        <div class="brand-title">Configurar CRS</div>
-        <div class="brand-sub">Parâmetros do demo (não clínicos)</div>
+        <div class="brand-title">Dashboard CRS</div>
+        <div class="brand-sub">Correlações e Validação</div>
       </div>
     </div>
-    <nav class="nav">
-      <a class="link" href="index.html">Início</a>
-      <a class="link" href="report.html">Relatórios</a>
-      <a class="link" href="pricing.html">Token & Ética</a>
+    <nav>
+      <a href="index.html">Início</a>
+      <a href="report.html">Relatórios</a>
     </nav>
   </header>
 
   <main class="container">
+    <!-- INFORMAÇÕES DA SESSÃO -->
     <section class="card">
-      <h1>Painel de Configuração</h1>
-      <p class="muted">Sessão expira em 30 min, mas o registro máximo é 5 min (fixo). Aqui você controla a taxa de amostragem e sensibilidade do silêncio.</p>
+      <h2>📋 Sessão e Validação</h2>
+      <div class="session-info">
+        <strong>Médico:</strong> <span id="infoMedico">--</span><br/>
+        <strong>Paciente:</strong> <span id="infoPaciente">--</span><br/>
+        <strong>Data Sessão:</strong> <span id="infoDataSessao">--</span><br/>
+        <strong>Diagnóstico:</strong> <span id="infoDiagnostico">--</span><br/>
+        <strong>Confiança:</strong> <span id="infoConfianca">--</span>
+      </div>
+    </section>
 
-      <div class="grid2">
-        <div class="field">
-          <label for="sampleHz">Amostragem (Hz)</label>
-          <input id="sampleHz" type="number" min="1" max="30" />
+    <!-- KPIs -->
+    <section class="card">
+      <h2>📊 Métricas de Validação</h2>
+      <div class="kpi-grid">
+        <div class="kpi-box">
+          <div class="kpi-label">Total de Correlações</div>
+          <div class="kpi-value" id="kpiTotal">0</div>
+          <div class="kpi-desc">Escalas × Métricas CRS</div>
         </div>
-        <div class="field">
-          <label for="silenceThr">Limiar de silêncio (proxy)</label>
-          <input id="silenceThr" type="number" min="0.005" max="0.10" step="0.001" />
+        <div class="kpi-box">
+          <div class="kpi-label">Correlações Significativas</div>
+          <div class="kpi-value" id="kpiSignificant">0</div>
+          <div class="kpi-desc">r > 0.5 (p < 0.05)</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-label">Taxa de Validação</div>
+          <div class="kpi-value" id="kpiRate">0%</div>
+          <div class="kpi-desc">Significativas / Total</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-label">Status</div>
+          <div id="kpiStatus" style="margin-top: 8px;"></div>
         </div>
       </div>
+    </section>
 
-      <div class="field">
-        <label for="hint">Observação interna (aparece no relatório)</label>
-        <textarea id="hint" rows="4" placeholder="Ex: repetir captação com melhor isolamento se ruído..."></textarea>
+    <!-- MATRIZ DE CORRELAÇÕES -->
+    <section class="card">
+      <h2>🔗 Matriz de Correlações (Pearson)</h2>
+      <p class="muted">Correlação entre Escalas Clínicas e Métricas CRS</p>
+      <div class="correlation-matrix">
+        <table id="correlationTable">
+          <thead>
+            <tr>
+              <th>Escala Clínica</th>
+              <th>RMS</th>
+              <th>Silêncio</th>
+              <th>Sub</th>
+              <th>Low</th>
+              <th>Mid</th>
+              <th>High</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="7" style="text-align: center; color: #999999;">Carregando...</td></tr>
+          </tbody>
+        </table>
       </div>
+    </section>
 
+    <!-- TOP CORRELAÇÕES -->
+    <section class="card">
+      <h2>⭐ Top 5 Correlações Mais Fortes</h2>
+      <div class="top-corr-list" id="topCorrList">
+        <p class="muted">Carregando...</p>
+      </div>
+    </section>
+
+    <!-- GRÁFICO DE VALIDAÇÃO -->
+    <section class="card">
+      <h2>📈 Visualização de Correlações</h2>
+      <canvas id="cvCorrelations" width="800" height="300"></canvas>
+    </section>
+
+    <!-- CONCLUSÕES -->
+    <section class="card soft">
+      <h2>💡 Conclusões</h2>
+      <div id="conclusions" style="font-size: 13px; line-height: 1.8; color: #1a1a1a;">
+        <p style="margin-bottom: 12px;">Carregando análise...</p>
+      </div>
+    </section>
+
+    <!-- BOTÕES -->
+    <section class="card">
+      <div class="actions full">
+        <button class="btn primary" id="btnAssinatura">
+          ✍️ Ir para Assinatura
+        </button>
+      </div>
       <div class="actions">
-        <button class="btn primary" id="btnSave">Salvar</button>
-        <button class="btn" id="btnReset">Restaurar padrão</button>
+        <button class="btn secondary" id="btnExportJSON">
+          📥 Exportar Correlações (JSON)
+        </button>
+        <button class="btn secondary" id="btnVoltar">
+          ← Voltar
+        </button>
       </div>
-
-      <hr/>
-      <p class="muted">Recomendação demo: 10 Hz e limiar 0.020–0.030 (depende do microfone/ruído).</p>
     </section>
   </main>
 
-  <footer class="footer"><span>Elayon Health • Config</span></footer>
   <script src="assets/dashboard.js"></script>
 </body>
 </html>
