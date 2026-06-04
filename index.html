@@ -4,57 +4,240 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Elayon Health — CRS</title>
-  <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 50%, #0f2a1f 100%);
+      color: #f1f5f9;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-top: 20px;
+    }
+
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      background: rgba(14, 165, 233, 0.1);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
+      font-weight: 900;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(14, 165, 233, 0.2);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .card h2 {
+      font-size: 18px;
+      margin-bottom: 12px;
+      color: #0ea5e9;
+    }
+
+    .card p {
+      color: #cbd5e1;
+      font-size: 13px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 12px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(14, 165, 233, 0.2);
+      border-radius: 8px;
+      color: #f1f5f9;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: all 200ms;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: #0ea5e9;
+      background: rgba(15, 23, 42, 0.95);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .actions {
+      display: grid;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 200ms;
+      text-align: center;
+      display: block;
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      color: white;
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #0ea5e9;
+      border: 1px solid rgba(14, 165, 233, 0.3);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(14, 165, 233, 0.1);
+      border-color: #0ea5e9;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 8px 12px;
+      background: rgba(14, 165, 233, 0.1);
+      border: 1px solid rgba(14, 165, 233, 0.2);
+      border-radius: 20px;
+      font-size: 12px;
+      color: #0ea5e9;
+      margin-bottom: 8px;
+      margin-right: 8px;
+    }
+
+    .debug-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(14, 165, 233, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 16px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .debug-line {
+      margin-bottom: 4px;
+    }
+
+    .debug-ok {
+      color: #10b981;
+    }
+
+    .debug-error {
+      color: #ef4444;
+    }
+
+    .debug-info {
+      color: #0ea5e9;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #64748b;
+      font-size: 12px;
+    }
+  </style>
 </head>
 <body>
-  <div class="bg"></div>
-
-  <header class="topbar">
-    <div class="brand">
-      <div class="logo">
-        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon" />
-      </div>
-      <div>
-        <div class="brand-title">Elayon Health</div>
-        <div class="brand-sub">CRS • Análise Vocal em Tempo Real</div>
-      </div>
-    </div>
-    <nav class="nav">
-      <a class="link active" href="index.html">Início</a>
-      <a class="link" href="report.html">Relatórios</a>
-    </nav>
-  </header>
-
-  <main class="container">
-    <!-- HERO -->
-    <section class="centerHero">
-      <div class="heroCard">
-        <div class="heroLogo">
-          <img src="IMG-20260218-WA0016.jpg" alt="Logo" />
-        </div>
-        <h1 class="heroTitle">Elayon Health</h1>
-        <p class="heroSub">
-          Captura de Ritmo e Sinais Temporais Cognitivos
-          <br/>
-          <strong>Análise Vocal em Tempo Real</strong>
-        </p>
-      </div>
-    </section>
+  <div class="container">
+    <!-- HEADER -->
+    <header>
+      <div class="logo">🎙️</div>
+      <h1>Elayon Health</h1>
+      <p class="subtitle">CRS • Análise Vocal em Tempo Real</p>
+    </header>
 
     <!-- FORMULÁRIO -->
-    <section class="card primary">
-      <h2>🎙️ Iniciar Sessão</h2>
-      <p class="muted">Preencha os dados e comece a capturar áudio.</p>
+    <div class="card">
+      <h2>🎤 Iniciar Sessão</h2>
+      <p>Preencha os dados e comece a capturar áudio.</p>
 
-      <div class="grid2">
-        <div class="field">
-          <label for="medico">Médico</label>
-          <input id="medico" type="text" placeholder="Dra. Ana Silva" />
-        </div>
-        <div class="field">
-          <label for="paciente">Paciente</label>
-          <input id="paciente" type="text" placeholder="João Santos" />
-        </div>
+      <div class="field">
+        <label for="medico">Médico</label>
+        <input id="medico" type="text" placeholder="Dra. Ana Silva" value="Dra. Ana Silva" />
+      </div>
+
+      <div class="field">
+        <label for="paciente">Paciente</label>
+        <input id="paciente" type="text" placeholder="João Santos" value="João Santos" />
       </div>
 
       <div class="field">
@@ -63,30 +246,207 @@
       </div>
 
       <div class="actions">
-        <button class="btn primary" id="btnStart">
+        <button class="btn btn-primary" id="btnStart">
           ▶️ Iniciar Sessão
         </button>
-        <button class="btn" id="btnClear">
-          🔄 Limpar
+        <button class="btn btn-secondary" id="btnClear">
+          🔄 Limpar Formulário
         </button>
       </div>
 
       <div style="margin-top: 16px;">
-        <div class="badge info" id="pillReports">
-          📊 Relatórios: 0/10
-        </div>
+        <div class="badge" id="pillReports">📊 Relatórios: 0/10</div>
       </div>
-    </section>
+    </div>
 
     <!-- ÚLTIMAS SESSÕES -->
-    <section class="card soft">
+    <div class="card">
       <h2>📄 Últimas Sessões</h2>
-      <div id="recentSessions" style="display: grid; gap: 8px; margin-top: 12px;">
-        <p class="muted" style="text-align: center;">Nenhuma sessão ainda.</p>
+      <div id="recentSessions">
+        <p style="color: #64748b; text-align: center; padding: 20px 0;">Nenhuma sessão ainda.</p>
       </div>
-    </section>
-  </main>
+    </div>
 
-  <script src="assets/app.js"></script>
+    <!-- DEBUG -->
+    <div class="card">
+      <h2>🔧 Debug</h2>
+      <div class="debug-box" id="debugBox">
+        <div class="debug-line debug-info">Verificando sistema...</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Elayon Health • CRS Demo • 2026</p>
+  </footer>
+
+  <script>
+    // ============================================
+    // CONSTANTES
+    // ============================================
+
+    const KEY_SESSIONS = "elayon_crs_sessions";
+    const MAX_REPORTS = 10;
+
+    // ============================================
+    // UTILITÁRIOS
+    // ============================================
+
+    function log(msg, type = "info") {
+      const box = document.getElementById("debugBox");
+      if (!box) return;
+
+      const line = document.createElement("div");
+      line.className = `debug-line debug-${type}`;
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      box.appendChild(line);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function uid() {
+      return "sess_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+    }
+
+    function loadSessions() {
+      try {
+        const data = localStorage.getItem(KEY_SESSIONS);
+        return data ? JSON.parse(data) : [];
+      } catch (e) {
+        log(`❌ Erro ao carregar sessões: ${e.message}`, "error");
+        return [];
+      }
+    }
+
+    function saveSessions(arr) {
+      try {
+        localStorage.setItem(KEY_SESSIONS, JSON.stringify(arr));
+        log(`✅ ${arr.length} sessão(ões) salva(s)`, "ok");
+      } catch (e) {
+        log(`❌ Erro ao salvar: ${e.message}`, "error");
+      }
+    }
+
+    // ============================================
+    // ELEMENTOS DOM
+    // ============================================
+
+    const elMed = document.getElementById("medico");
+    const elPac = document.getElementById("paciente");
+    const elCtx = document.getElementById("contexto");
+    const btnStart = document.getElementById("btnStart");
+    const btnClear = document.getElementById("btnClear");
+    const pillReports = document.getElementById("pillReports");
+    const recentSessions = document.getElementById("recentSessions");
+
+    // ============================================
+    // VERIFICAÇÃO INICIAL
+    // ============================================
+
+    (function checkSystem() {
+      log("✅ DOM carregado", "ok");
+      log(`✅ localStorage disponível: ${typeof Storage !== "undefined"}`, "ok");
+      log(`✅ Sessões encontradas: ${loadSessions().length}`, "info");
+      updateCounters();
+    })();
+
+    // ============================================
+    // ATUALIZAR CONTADORES
+    // ============================================
+
+    function updateCounters() {
+      const sessions = loadSessions();
+      const closed = sessions.filter(s => s.status === "closed").length;
+
+      if (pillReports) {
+        pillReports.textContent = `📊 Relatórios: ${closed}/${MAX_REPORTS}`;
+      }
+
+      if (recentSessions) {
+        const recent = sessions.slice(0, 3);
+        if (recent.length === 0) {
+          recentSessions.innerHTML = `<p style="color: #64748b; text-align: center; padding: 20px 0;">Nenhuma sessão ainda.</p>`;
+        } else {
+          recentSessions.innerHTML = recent
+            .map(s => `
+              <div style="padding: 12px; background: rgba(14, 165, 233, 0.05); border-radius: 8px; margin-bottom: 8px;">
+                <strong style="color: #0ea5e9;">${s.medico} → ${s.paciente}</strong><br/>
+                <small style="color: #64748b;">
+                  ${new Date(s.start).toLocaleString("pt-BR")}
+                </small>
+              </div>
+            `)
+            .join("");
+        }
+      }
+    }
+
+    // ============================================
+    // BOTÕES
+    // ============================================
+
+    if (btnStart) {
+      btnStart.addEventListener("click", () => {
+        const medico = (elMed.value || "").trim();
+        const paciente = (elPac.value || "").trim();
+        const contexto = (elCtx.value || "").trim();
+
+        log(`📝 Validando: Médico="${medico}", Paciente="${paciente}"`, "info");
+
+        if (!medico || !paciente) {
+          log("❌ Médico e Paciente são obrigatórios", "error");
+          alert("Preencha Médico e Paciente");
+          return;
+        }
+
+        const sessions = loadSessions();
+        const closed = sessions.filter(s => s.status === "closed").length;
+
+        if (closed >= MAX_REPORTS) {
+          log(`❌ Limite atingido (${closed}/${MAX_REPORTS})`, "error");
+          alert(`Limite atingido. Exclua relatórios para continuar.`);
+          return;
+        }
+
+        const now = Date.now();
+        const session = {
+          id: uid(),
+          medico,
+          paciente,
+          contexto,
+          start: now,
+          status: "active",
+          recordedSec: 0,
+          audioBuffer: [],
+          snaps: null,
+          dx: ""
+        };
+
+        sessions.unshift(session);
+        saveSessions(sessions);
+
+        log(`✅ Sessão criada: ${session.id}`, "ok");
+        log(`➡️ Redirecionando para session.html...`, "info");
+
+        setTimeout(() => {
+          location.href = `session.html?id=${encodeURIComponent(session.id)}`;
+        }, 500);
+      });
+    }
+
+    if (btnClear) {
+      btnClear.addEventListener("click", () => {
+        elMed.value = "";
+        elPac.value = "";
+        elCtx.value = "";
+        log("🔄 Formulário limpo", "info");
+      });
+    }
+
+    // ============================================
+    // ATUALIZAR A CADA 5 SEGUNDOS
+    // ============================================
+
+    setInterval(updateCounters, 5000);
+  </script>
 </body>
 </html>
