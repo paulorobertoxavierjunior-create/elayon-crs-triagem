@@ -3,568 +3,90 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Elayon Health — CRS Engine + Validação Clínica Integrada" />
-  <title>Elayon Health — CRS (Início)</title>
+  <title>Elayon Health — CRS</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
   <div class="bg"></div>
 
-  <!-- ============================================
-       TOPBAR
-       ============================================ -->
   <header class="topbar">
     <div class="brand">
       <div class="logo">
-        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon Health" />
+        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon" />
       </div>
       <div>
         <div class="brand-title">Elayon Health</div>
-        <div class="brand-sub">CRS + Validação Clínica (Demo)</div>
+        <div class="brand-sub">CRS • Análise Vocal em Tempo Real</div>
       </div>
     </div>
     <nav class="nav">
       <a class="link active" href="index.html">Início</a>
-      <a class="link" href="session.html">Sessão</a>
-      <a class="link" href="clinical-validation.html">Validação</a>
-      <a class="link" href="crs-dashboard.html">Dashboard</a>
       <a class="link" href="report.html">Relatórios</a>
     </nav>
   </header>
 
-  <!-- ============================================
-       HERO SECTION
-       ============================================ -->
-  <section class="centerHero">
-    <div class="heroCard">
-      <div class="heroLogo">
-        <img src="IMG-20260218-WA0016.jpg" alt="Elayon Health Logo" />
-      </div>
-      <h1 class="heroTitle">Elayon Health</h1>
-      <p class="heroSub">
-        Camada de Ritmo e Sinais Temporais Cognitivos (CRS)
-        <br/>
-        <strong>Automação Procedural + Validação Clínica Integrada</strong>
-      </p>
-    </div>
-  </section>
-
-  <!-- ============================================
-       CONTAINER PRINCIPAL
-       ============================================ -->
   <main class="container">
+    <!-- HERO -->
+    <section class="centerHero">
+      <div class="heroCard">
+        <div class="heroLogo">
+          <img src="IMG-20260218-WA0016.jpg" alt="Logo" />
+        </div>
+        <h1 class="heroTitle">Elayon Health</h1>
+        <p class="heroSub">
+          Captura de Ritmo e Sinais Temporais Cognitivos
+          <br/>
+          <strong>Análise Vocal em Tempo Real</strong>
+        </p>
+      </div>
+    </section>
 
-    <!-- SEÇÃO 1: INICIAR SESSÃO CRS -->
+    <!-- FORMULÁRIO -->
     <section class="card primary">
-      <h2>🎙️ Iniciar Sessão de Análise CRS</h2>
-      <p class="muted">
-        Captura de áudio com análise temporal cognitiva em tempo real.
-        <br/>
-        <strong>Duração:</strong> até 5 minutos | <strong>Expiração:</strong> 30 minutos
-      </p>
+      <h2>🎙️ Iniciar Sessão</h2>
+      <p class="muted">Preencha os dados e comece a capturar áudio.</p>
 
       <div class="grid2">
         <div class="field">
-          <label for="medico">Médico Responsável</label>
-          <input 
-            id="medico" 
-            type="text"
-            placeholder="Ex: Dra. Ana Silva" 
-            autocomplete="name" 
-          />
+          <label for="medico">Médico</label>
+          <input id="medico" type="text" placeholder="Dra. Ana Silva" />
         </div>
-
         <div class="field">
           <label for="paciente">Paciente</label>
-          <input 
-            id="paciente" 
-            type="text"
-            placeholder="Ex: João Santos" 
-            autocomplete="name" 
-          />
+          <input id="paciente" type="text" placeholder="João Santos" />
         </div>
       </div>
 
       <div class="field">
-        <label for="preset">Protocolo Clínico</label>
-        <select id="preset">
-          <option value="">-- Selecionar --</option>
-          <option value="afasia">Afasia (CRS + Validação)</option>
-          <option value="pos_avc">Pós-AVC (CRS + Validação)</option>
-          <option value="ansiedade">Ansiedade/Respiração (CRS + Validação)</option>
-          <option value="livre">Protocolo Geral (CRS + Validação)</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="contexto">Contexto Clínico (opcional)</label>
-        <textarea 
-          id="contexto" 
-          placeholder="Ex: triagem neurológica pós-AVC, queixa principal de dificuldade na fala..."
-        ></textarea>
+        <label for="contexto">Contexto (opcional)</label>
+        <textarea id="contexto" placeholder="Ex: triagem neurológica..."></textarea>
       </div>
 
       <div class="actions">
-        <button class="btn primary" id="btnIniciar">
-          ▶️ Iniciar Sessão CRS
+        <button class="btn primary" id="btnStart">
+          ▶️ Iniciar Sessão
         </button>
-        <button class="btn secondary" id="btnPresetInfo">
-          ℹ️ Informações do Protocolo
-        </button>
-        <button class="btn" id="btnLimpar">
-          🔄 Limpar Formulário
+        <button class="btn" id="btnClear">
+          🔄 Limpar
         </button>
       </div>
 
-      <div style="margin-top: 16px; display: grid; gap: 8px;">
-        <div class="badge primary" id="pillReports">
+      <div style="margin-top: 16px;">
+        <div class="badge info" id="pillReports">
           📊 Relatórios: 0/10
         </div>
-        <div class="badge info">
-          ✅ Sem diagnóstico automático
-        </div>
-        <div class="badge warning">
-          🎤 Microfone será solicitado na sessão
-        </div>
       </div>
     </section>
 
-    <!-- SEÇÃO 2: VALIDAÇÃO CLÍNICA -->
-    <section class="card">
-      <h2>🔬 Validação Clínica (Pareamento CRS)</h2>
-      <p class="muted">
-        Correlacione avaliação clínica especializada com métricas CRS para validação científica.
-      </p>
-
-      <div style="display: grid; gap: 12px; margin-top: 16px;">
-        <div style="padding: 12px; background: rgba(16, 185, 129, 0.08); border-radius: 12px; border-left: 4px solid var(--secondary);">
-          <strong>📋 Protocolo de Validação:</strong>
-          <p class="muted" style="margin-top: 6px; font-size: 13px;">
-            1. Selecione uma sessão CRS concluída<br/>
-            2. Preencha avaliação clínica estruturada<br/>
-            3. Sistema calcula correlações automáticas<br/>
-            4. Gere relatório de validação científica
-          </p>
-        </div>
-      </div>
-
-      <div class="actions" style="margin-top: 16px;">
-        <button class="btn secondary" id="btnValidacao">
-          🔗 Ir para Validação Clínica
-        </button>
-      </div>
-    </section>
-
-    <!-- SEÇÃO 3: DASHBOARD DE CORRELAÇÕES -->
-    <section class="card">
-      <h2>📈 Dashboard de Validação CRS</h2>
-      <p class="muted">
-        Acompanhe correlações entre métricas CRS e avaliações clínicas em tempo real.
-      </p>
-
-      <div style="display: grid; gap: 12px; margin-top: 16px;">
-        <div class="row" style="justify-content: space-around;">
-          <div style="text-align: center;">
-            <div style="font-size: 24px; font-weight: 900; color: var(--primary);" id="totalPairings">
-              0
-            </div>
-            <div class="muted" style="font-size: 12px;">Pareamentos</div>
-          </div>
-          <div style="text-align: center;">
-            <div style="font-size: 24px; font-weight: 900; color: var(--secondary);" id="significantCorrs">
-              0
-            </div>
-            <div class="muted" style="font-size: 12px;">Correlações Significativas</div>
-          </div>
-          <div style="text-align: center;">
-            <div style="font-size: 24px; font-weight: 900; color: var(--warning);" id="validationStatus">
-              ⚠️
-            </div>
-            <div class="muted" style="font-size: 12px;">Status Validação</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="actions" style="margin-top: 16px;">
-        <button class="btn secondary" id="btnDashboard">
-          📊 Abrir Dashboard Completo
-        </button>
-      </div>
-    </section>
-
-    <!-- SEÇÃO 4: RELATÓRIOS -->
+    <!-- ÚLTIMAS SESSÕES -->
     <section class="card soft">
-      <h2>📄 Histórico de Relatórios</h2>
-      <p class="muted">
-        Sessões concluídas com análise CRS embedada e validação clínica.
-      </p>
-
-      <div id="reportsPreview" style="margin-top: 16px; display: grid; gap: 8px;">
-        <p class="muted" style="text-align: center; padding: 20px;">
-          Nenhum relatório ainda. Inicie uma sessão para começar.
-        </p>
-      </div>
-
-      <div class="actions" style="margin-top: 16px;">
-        <button class="btn" id="btnRelatorios">
-          📋 Ver Todos os Relatórios
-        </button>
+      <h2>📄 Últimas Sessões</h2>
+      <div id="recentSessions" style="display: grid; gap: 8px; margin-top: 12px;">
+        <p class="muted" style="text-align: center;">Nenhuma sessão ainda.</p>
       </div>
     </section>
-
-    <!-- SEÇÃO 5: INFORMAÇÕES DO SISTEMA -->
-    <section class="card soft">
-      <h2>ℹ️ Sobre o Sistema</h2>
-
-      <div style="display: grid; gap: 16px; margin-top: 16px;">
-        <div>
-          <h3>🔬 CRS Engine (Camada de Ritmo e Sinais Temporais Cognitivos)</h3>
-          <p class="muted">
-            Análise em tempo real de padrões temporais, pausas, ritmo e variações cognitivas 
-            durante interação humano-máquina. Vetorização em 8 dimensões com validação científica.
-          </p>
-        </div>
-
-        <div>
-          <h3>🏥 Validação Clínica Integrada</h3>
-          <p class="muted">
-            Pareamento automático de avaliação clínica especializada com métricas CRS. 
-            Cálculo de correlações de Pearson/Spearman com geração de relatórios científicos.
-          </p>
-        </div>
-
-        <div>
-          <h3>⚖️ Conformidade Ética e Legal</h3>
-          <p class="muted">
-            ✅ LGPD • ✅ GDPR • ✅ Dados Anonimizados • ✅ Sem Diagnóstico Automático
-            <br/>
-            Uso exclusivamente operacional e de pesquisa. Supervisão médica obrigatória.
-          </p>
-        </div>
-
-        <div>
-          <h3>📚 Documentação</h3>
-          <p class="muted">
-            <a href="#" style="color: var(--primary); text-decoration: none;">
-              📖 Relatório Descritivo da Invenção
-            </a>
-            <br/>
-            <a href="#" style="color: var(--primary); text-decoration: none;">
-              📄 Artigo: Modelagem de Sistemas Temporais Cognitivos
-            </a>
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- SEÇÃO 6: DICA DO DIA -->
-    <section class="card soft" style="background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(16, 185, 129, 0.08));">
-      <h3>💡 Dica do Dia</h3>
-      <p class="muted" id="dailyTip" style="font-style: italic; margin-top: 8px;">
-        Carregando dica...
-      </p>
-    </section>
-
   </main>
 
-  <!-- ============================================
-       FOOTER
-       ============================================ -->
-  <footer style="padding: 24px 16px; text-align: center; border-top: 1px solid var(--border); margin-top: 40px;">
-    <p class="muted" style="font-size: 12px;">
-      Elayon Health • CRS Engine v2.0 • 
-      <span id="systemInfo">Carregando...</span>
-    </p>
-    <p class="muted" style="font-size: 11px; margin-top: 8px;">
-      © 2026 Paulo Roberto Xavier Júnior • Manaus, AM, Brasil
-      <br/>
-      Pesquisa independente em Automação Inteligente e Cognição Temporal
-    </p>
-  </footer>
-
-  <!-- ============================================
-       SCRIPTS
-       ============================================ -->
-  <script src="assets/auth.js"></script>
   <script src="assets/app.js"></script>
-
-  <script>
-    /**
-     * INDEX.JS — INICIALIZAÇÃO E EVENTOS
-     * 
-     * Integração completa: CRS Engine + Clinical Validation + Dashboard
-     */
-
-    // ============================================
-    // CONSTANTES
-    // ============================================
-
-    const KEY_SESSIONS = "elayon_crs_sessions";
-    const MAX_REPORTS = 10;
-    const SESSION_EXPIRE_MIN = 30;
-    const RECORD_MAX_SEC = 5 * 60;
-
-    // ============================================
-    // UTILITÁRIOS
-    // ============================================
-
-    function loadSessions() {
-      return JSON.parse(localStorage.getItem(KEY_SESSIONS) || "[]");
-    }
-
-    function saveSessions(arr) {
-      localStorage.setItem(KEY_SESSIONS, JSON.stringify(arr));
-    }
-
-    function closedReportsCount() {
-      const arr = loadSessions();
-      return arr.filter(s => s.status === "closed").length;
-    }
-
-    function uid() {
-      return `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    }
-
-    // ============================================
-    // ELEMENTOS DOM
-    // ============================================
-
-    const elMed = document.getElementById("medico");
-    const elPac = document.getElementById("paciente");
-    const elCtx = document.getElementById("contexto");
-    const elPreset = document.getElementById("preset");
-
-    const btnIniciar = document.getElementById("btnIniciar");
-    const btnLimpar = document.getElementById("btnLimpar");
-    const btnPresetInfo = document.getElementById("btnPresetInfo");
-    const btnValidacao = document.getElementById("btnValidacao");
-    const btnDashboard = document.getElementById("btnDashboard");
-    const btnRelatorios = document.getElementById("btnRelatorios");
-
-    const pillReports = document.getElementById("pillReports");
-    const reportsPreview = document.getElementById("reportsPreview");
-
-    // ============================================
-    // ATUALIZAR CONTADORES
-    // ============================================
-
-    function updateCounters() {
-      const count = closedReportsCount();
-      if (pillReports) {
-        pillReports.textContent = `📊 Relatórios: ${count}/${MAX_REPORTS}`;
-        if (count >= MAX_REPORTS) {
-          pillReports.style.background = "rgba(239, 68, 68, 0.12)";
-          pillReports.style.borderColor = "rgba(239, 68, 68, 0.25)";
-          pillReports.style.color = "#991b1b";
-        }
-      }
-
-      // Atualizar preview de relatórios
-      const sessions = loadSessions();
-      const closed = sessions.filter(s => s.status === "closed").slice(0, 3);
-
-      if (closed.length === 0) {
-        reportsPreview.innerHTML = `
-          <p class="muted" style="text-align: center; padding: 20px;">
-            Nenhum relatório ainda. Inicie uma sessão para começar.
-          </p>
-        `;
-      } else {
-        reportsPreview.innerHTML = closed
-          .map(s => `
-            <div style="padding: 12px; background: rgba(14, 165, 233, 0.04); border-radius: 8px; border-left: 3px solid var(--primary);">
-              <div style="font-weight: 700; font-size: 13px;">
-                ${s.medico} → ${s.paciente}
-              </div>
-              <div class="muted" style="font-size: 12px; margin-top: 4px;">
-                ID: ${s.id.substring(0, 12)}... • ${new Date(s.closedAt || s.start).toLocaleString("pt-BR")}
-              </div>
-              <div style="margin-top: 6px;">
-                <a href="report.html?id=${encodeURIComponent(s.id)}" style="color: var(--primary); text-decoration: none; font-size: 12px;">
-                  📄 Abrir Relatório →
-                </a>
-              </div>
-            </div>
-          `)
-          .join("");
-      }
-    }
-
-    updateCounters();
-    setInterval(updateCounters, 5000);
-
-    // ============================================
-    // EVENTOS DOS BOTÕES
-    // ============================================
-
-    if (btnLimpar) {
-      btnLimpar.addEventListener("click", () => {
-        elMed.value = "";
-        elPac.value = "";
-        elCtx.value = "";
-        elPreset.value = "";
-      });
-    }
-
-    if (btnPresetInfo) {
-      btnPresetInfo.addEventListener("click", () => {
-        const presetId = elPreset.value;
-        if (!presetId) {
-          alert("Selecione um protocolo primeiro.");
-          return;
-        }
-
-        const presets = {
-          afasia: {
-            name: "Afasia",
-            desc: "Triagem de afasia com análise temporal cognitiva",
-            duration: 8
-          },
-          pos_avc: {
-            name: "Pós-AVC",
-            desc: "Avaliação pós-acidente vascular cerebral",
-            duration: 10
-          },
-          ansiedade: {
-            name: "Ansiedade/Respiração",
-            desc: "Avaliação de padrões respiratórios e fala em ansiedade",
-            duration: 7
-          },
-          livre: {
-            name: "Protocolo Geral",
-            desc: "Protocolo flexível para avaliação geral",
-            duration: 6
-          }
-        };
-
-        const p = presets[presetId];
-        if (p) {
-          alert(
-            `📋 ${p.name}\n\n${p.desc}\n\nDuração estimada: ${p.duration} minutos\n\n✅ CRS Ativado\n✅ Validação Clínica Ativada`
-          );
-        }
-      });
-    }
-
-    if (btnIniciar) {
-      btnIniciar.addEventListener("click", () => {
-        const n = closedReportsCount();
-        if (n >= MAX_REPORTS) {
-          alert(`Limite atingido (${MAX_REPORTS}/${MAX_REPORTS}). Exclua relatórios para continuar.`);
-          location.href = "report.html";
-          return;
-        }
-
-        const medico = (elMed.value || "").trim();
-        const paciente = (elPac.value || "").trim();
-        const contexto = (elCtx.value || "").trim();
-        const presetId = elPreset.value;
-
-        if (!medico || !paciente) {
-          alert("Preencha Médico e Paciente.");
-          return;
-        }
-
-        if (!presetId) {
-          alert("Selecione um protocolo.");
-          return;
-        }
-
-        const now = Date.now();
-        const session = {
-          id: uid(),
-          medico,
-          paciente,
-          contexto,
-          presetId,
-          presetName: { afasia: "Afasia", pos_avc: "Pós-AVC", ansiedade: "Ansiedade/Respiração", livre: "Protocolo Geral" }[presetId],
-          start: now,
-          expiresAt: now + SESSION_EXPIRE_MIN * 60 * 1000,
-          status: "active",
-          recordMaxSec: RECORD_MAX_SEC,
-          recordedSec: 0,
-          // CRS embedado
-          crsVector: null,
-          crsValidation: null,
-          crsConfidence: 0,
-          // Validação clínica
-          assessment: null,
-          // Sumário
-          summary: null,
-          snaps: null,
-          dx: ""
-        };
-
-        const arr = loadSessions();
-        arr.unshift(session);
-        saveSessions(arr);
-
-        location.href = `session.html?id=${encodeURIComponent(session.id)}`;
-      });
-    }
-
-    if (btnValidacao) {
-      btnValidacao.addEventListener("click", () => {
-        location.href = "clinical-validation.html";
-      });
-    }
-
-    if (btnDashboard) {
-      btnDashboard.addEventListener("click", () => {
-        location.href = "crs-dashboard.html";
-      });
-    }
-
-    if (btnRelatorios) {
-      btnRelatorios.addEventListener("click", () => {
-        location.href = "report.html";
-      });
-    }
-
-    // ============================================
-    // DICA DO DIA
-    // ============================================
-
-    (function displayDailyTip() {
-      const tips = [
-        "💡 Use fones de ouvido para melhor qualidade de áudio.",
-        "💡 Escolha um ambiente com pouco ruído de fundo.",
-        "💡 Verifique se o microfone está funcionando antes de iniciar.",
-        "💡 Siga as instruções do protocolo clínico selecionado.",
-        "💡 Salve os relatórios regularmente para não perder dados.",
-        "💡 Use a validação clínica para correlacionar com CRS.",
-        "💡 Consulte o dashboard para acompanhar a validação.",
-        "💡 Cada pareamento aumenta a confiança estatística do modelo."
-      ];
-
-      const tipElement = document.getElementById("dailyTip");
-      if (tipElement) {
-        const randomTip = tips[Math.floor(Math.random() * tips.length)];
-        tipElement.textContent = randomTip;
-      }
-    })();
-
-    // ============================================
-    // INFORMAÇÕES DO SISTEMA
-    // ============================================
-
-    (function displaySystemInfo() {
-      const version = "2.0.0-CRS";
-      const buildDate = "2026-06";
-      const infoElement = document.getElementById("systemInfo");
-
-      if (infoElement) {
-        infoElement.innerHTML = `
-          v${version} • Build ${buildDate} • CRS Engine + Clinical Validation
-        `;
-      }
-    })();
-
-    console.log("✅ INDEX.JS carregado com sucesso");
-    console.log("📊 CRS Engine integrado");
-    console.log("🔬 Clinical Validation disponível");
-    console.log("📈 Dashboard de correlações ativo");
-  </script>
-
 </body>
 </html>
