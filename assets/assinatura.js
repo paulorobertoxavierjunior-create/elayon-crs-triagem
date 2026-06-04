@@ -264,7 +264,7 @@ document.getElementById("btnVoltar").addEventListener("click", () => {
 console.log("✅ assinatura.js carregado (PARTE 1/2)");
 
 // ============================================
-// EXPORTAR PDF
+// EXPORTAR PDF (VERSÃO CORRIGIDA)
 // ============================================
 
 document.getElementById("btnExportPDF").addEventListener("click", () => {
@@ -275,32 +275,32 @@ document.getElementById("btnExportPDF").addEventListener("click", () => {
     return;
   }
 
-  generatePDF(signatureData);
+  generatePDFSimple(signatureData);
 });
 
 // ============================================
-// GERAR PDF (Usando Canvas2PDF)
+// GERAR PDF SIMPLES E FUNCIONAL
 // ============================================
 
-function generatePDF(signatureData) {
-  // Criar elemento canvas para PDF
+function generatePDFSimple(signatureData) {
   const pdfCanvas = document.createElement("canvas");
   const pdfCtx = pdfCanvas.getContext("2d");
   
-  const pageWidth = 210; // mm
-  const pageHeight = 297; // mm
-  const dpi = 300;
-  const scale = dpi / 25.4; // conversão mm para pixels
+  // Configurações A4
+  const A4_WIDTH = 210;
+  const A4_HEIGHT = 297;
+  const DPI = 150;
+  const SCALE = DPI / 25.4;
   
-  pdfCanvas.width = pageWidth * scale;
-  pdfCanvas.height = pageHeight * scale;
+  pdfCanvas.width = A4_WIDTH * SCALE;
+  pdfCanvas.height = A4_HEIGHT * SCALE;
   
   // Fundo branco
   pdfCtx.fillStyle = "#ffffff";
   pdfCtx.fillRect(0, 0, pdfCanvas.width, pdfCanvas.height);
   
-  // Margem
-  const margin = 20 * scale;
+  const margin = 15 * SCALE;
+  const contentWidth = pdfCanvas.width - 2 * margin;
   let y = margin;
   
   // ============================================
@@ -308,32 +308,32 @@ function generatePDF(signatureData) {
   // ============================================
   
   pdfCtx.fillStyle = "#0284c7";
-  pdfCtx.font = `bold ${24 * scale}px Arial`;
+  pdfCtx.font = `bold ${20 * SCALE}px Arial`;
   pdfCtx.fillText("ELAYON HEALTH", margin, y);
-  y += 40 * scale;
+  y += 30 * SCALE;
   
   pdfCtx.fillStyle = "#1a1a1a";
-  pdfCtx.font = `${14 * scale}px Arial`;
+  pdfCtx.font = `${12 * SCALE}px Arial`;
   pdfCtx.fillText("Relatório de Avaliação Clínica CRS", margin, y);
-  y += 30 * scale;
+  y += 25 * SCALE;
   
   // Linha separadora
-  pdfCtx.strokeStyle = "#e5e5e5";
-  pdfCtx.lineWidth = 2;
+  pdfCtx.strokeStyle = "#cccccc";
+  pdfCtx.lineWidth = 1;
   pdfCtx.beginPath();
   pdfCtx.moveTo(margin, y);
   pdfCtx.lineTo(pdfCanvas.width - margin, y);
   pdfCtx.stroke();
-  y += 20 * scale;
+  y += 20 * SCALE;
   
   // ============================================
   // INFORMAÇÕES GERAIS
   // ============================================
   
   pdfCtx.fillStyle = "#1a1a1a";
-  pdfCtx.font = `bold ${12 * scale}px Arial`;
+  pdfCtx.font = `${11 * SCALE}px Arial`;
   
-  const infoLines = [
+  const info = [
     `Médico: ${session.medico}`,
     `Paciente: ${session.paciente}`,
     `Data da Sessão: ${formatDate(session.start)}`,
@@ -341,143 +341,143 @@ function generatePDF(signatureData) {
     `ID do Relatório: ${session.id}`
   ];
   
-  infoLines.forEach(line => {
+  info.forEach(line => {
     pdfCtx.fillText(line, margin, y);
-    y += 18 * scale;
+    y += 16 * SCALE;
   });
   
-  y += 15 * scale;
+  y += 15 * SCALE;
   
   // ============================================
   // DIAGNÓSTICO
   // ============================================
   
   pdfCtx.fillStyle = "#0284c7";
-  pdfCtx.font = `bold ${14 * scale}px Arial`;
+  pdfCtx.font = `bold ${12 * SCALE}px Arial`;
   pdfCtx.fillText("DIAGNÓSTICO CLÍNICO", margin, y);
-  y += 20 * scale;
+  y += 18 * SCALE;
   
   pdfCtx.fillStyle = "#1a1a1a";
-  pdfCtx.font = `${11 * scale}px Arial`;
+  pdfCtx.font = `${10 * SCALE}px Arial`;
   
   const diagnostico = validation.diagnostic.diagnostico || "Não especificado";
-  const diagnosticoLines = wrapText(pdfCtx, diagnostico, pdfCanvas.width - 2 * margin, 11 * scale);
-  diagnosticoLines.forEach(line => {
+  const diagLines = wrapTextPDF(pdfCtx, diagnostico, contentWidth, 10 * SCALE);
+  diagLines.forEach(line => {
     pdfCtx.fillText(line, margin, y);
-    y += 16 * scale;
+    y += 14 * SCALE;
   });
   
-  y += 10 * scale;
+  y += 12 * SCALE;
   
   // ============================================
   // ESCALAS CLÍNICAS
   // ============================================
   
   pdfCtx.fillStyle = "#0284c7";
-  pdfCtx.font = `bold ${14 * scale}px Arial`;
+  pdfCtx.font = `bold ${12 * SCALE}px Arial`;
   pdfCtx.fillText("ESCALAS DE AVALIAÇÃO", margin, y);
-  y += 20 * scale;
+  y += 18 * SCALE;
   
   pdfCtx.fillStyle = "#1a1a1a";
-  pdfCtx.font = `${11 * scale}px Arial`;
+  pdfCtx.font = `${10 * SCALE}px Arial`;
   
   const scales = [
-    { label: "Severidade da Afasia", value: validation.scales.severidade },
-    { label: "Inteligibilidade da Fala", value: validation.scales.inteligibilidade },
-    { label: "Esforço Vocal", value: validation.scales.esforco },
-    { label: "Fluência", value: validation.scales.fluencia },
-    { label: "Índice de Pausa", value: validation.scales.pausa }
+    `Severidade da Afasia: ${validation.scales.severidade}/10`,
+    `Inteligibilidade da Fala: ${validation.scales.inteligibilidade}/10`,
+    `Esforço Vocal: ${validation.scales.esforco}/10`,
+    `Fluência: ${validation.scales.fluencia}/10`,
+    `Índice de Pausa: ${validation.scales.pausa}/10`,
+    `Confiança no Diagnóstico: ${validation.diagnostic.confianca}%`
   ];
   
-  scales.forEach(scale => {
-    pdfCtx.fillText(`${scale.label}: ${scale.value}/10`, margin, y);
-    y += 16 * scale;
+  scales.forEach(line => {
+    pdfCtx.fillText(line, margin, y);
+    y += 14 * SCALE;
   });
   
-  y += 10 * scale;
+  y += 12 * SCALE;
   
   // ============================================
   // TIPO DE AFASIA
   // ============================================
   
-  if (validation.qualitative.tipoAfasia) {
+  if (validation.qualitative.tipoAfasia && validation.qualitative.tipoAfasia !== "") {
     pdfCtx.fillStyle = "#0284c7";
-    pdfCtx.font = `bold ${14 * scale}px Arial`;
+    pdfCtx.font = `bold ${12 * SCALE}px Arial`;
     pdfCtx.fillText("TIPO DE AFASIA", margin, y);
-    y += 20 * scale;
+    y += 18 * SCALE;
     
     pdfCtx.fillStyle = "#1a1a1a";
-    pdfCtx.font = `${11 * scale}px Arial`;
+    pdfCtx.font = `${10 * SCALE}px Arial`;
     pdfCtx.fillText(validation.qualitative.tipoAfasia, margin, y);
-    y += 16 * scale;
-    y += 10 * scale;
+    y += 14 * SCALE;
+    y += 12 * SCALE;
   }
   
   // ============================================
   // RECOMENDAÇÕES
   // ============================================
   
-  if (validation.diagnostic.recomendacoes) {
+  if (validation.diagnostic.recomendacoes && validation.diagnostic.recomendacoes !== "") {
     pdfCtx.fillStyle = "#0284c7";
-    pdfCtx.font = `bold ${14 * scale}px Arial`;
+    pdfCtx.font = `bold ${12 * SCALE}px Arial`;
     pdfCtx.fillText("RECOMENDAÇÕES", margin, y);
-    y += 20 * scale;
+    y += 18 * SCALE;
     
     pdfCtx.fillStyle = "#1a1a1a";
-    pdfCtx.font = `${11 * scale}px Arial`;
+    pdfCtx.font = `${10 * SCALE}px Arial`;
     
-    const recomLines = wrapText(pdfCtx, validation.diagnostic.recomendacoes, pdfCanvas.width - 2 * margin, 11 * scale);
+    const recomLines = wrapTextPDF(pdfCtx, validation.diagnostic.recomendacoes, contentWidth, 10 * SCALE);
     recomLines.forEach(line => {
       pdfCtx.fillText(line, margin, y);
-      y += 16 * scale;
+      y += 14 * SCALE;
     });
     
-    y += 10 * scale;
+    y += 12 * SCALE;
   }
   
   // ============================================
-  // ASSINATURA
+  // ESPAÇO PARA ASSINATURA
   // ============================================
   
-  y = pdfCanvas.height - 120 * scale;
+  y = pdfCanvas.height - 100 * SCALE;
   
   // Linha para assinatura
   pdfCtx.strokeStyle = "#1a1a1a";
   pdfCtx.lineWidth = 1;
   pdfCtx.beginPath();
   pdfCtx.moveTo(margin, y);
-  pdfCtx.lineTo(margin + 150 * scale, y);
+  pdfCtx.lineTo(margin + 120 * SCALE, y);
   pdfCtx.stroke();
   
-  // Desenhar assinatura no PDF
+  // Desenhar assinatura
   const signatureImg = new Image();
   signatureImg.onload = () => {
-    pdfCtx.drawImage(signatureImg, margin, y - 80 * scale, 150 * scale, 60 * scale);
+    pdfCtx.drawImage(signatureImg, margin, y - 60 * SCALE, 120 * SCALE, 50 * SCALE);
     
-    // Texto abaixo da assinatura
+    // Texto abaixo
     pdfCtx.fillStyle = "#1a1a1a";
-    pdfCtx.font = `${10 * scale}px Arial`;
-    pdfCtx.fillText(`${session.medico}`, margin, y + 20 * scale);
-    pdfCtx.fillText(`${formatDate(Date.now())}`, margin, y + 35 * scale);
+    pdfCtx.font = `${9 * SCALE}px Arial`;
+    pdfCtx.fillText(`${session.medico}`, margin, y + 15 * SCALE);
+    pdfCtx.fillText(`${formatDate(Date.now())}`, margin, y + 28 * SCALE);
     
     // Rodapé
     pdfCtx.fillStyle = "#999999";
-    pdfCtx.font = `${9 * scale}px Arial`;
-    pdfCtx.fillText("Documento gerado digitalmente pelo sistema ELAYON HEALTH", margin, pdfCanvas.height - 15 * scale);
+    pdfCtx.font = `${8 * SCALE}px Arial`;
+    pdfCtx.fillText("Documento gerado digitalmente pelo sistema ELAYON HEALTH", margin, pdfCanvas.height - 8 * SCALE);
     
-    // Converter para PDF
-    const pdfData = pdfCanvas.toDataURL("image/png");
-    downloadPDF(pdfData);
+    // Converter e baixar
+    downloadPDFImage(pdfCanvas);
   };
   
   signatureImg.src = signatureData;
 }
 
 // ============================================
-// FUNÇÃO AUXILIAR: QUEBRA DE TEXTO
+// QUEBRA DE TEXTO
 // ============================================
 
-function wrapText(ctx, text, maxWidth, lineHeight) {
+function wrapTextPDF(ctx, text, maxWidth, lineHeight) {
   const words = text.split(" ");
   const lines = [];
   let currentLine = "";
@@ -502,10 +502,9 @@ function wrapText(ctx, text, maxWidth, lineHeight) {
 // DOWNLOAD PDF
 // ============================================
 
-function downloadPDF(imageData) {
-  // Criar link para download
+function downloadPDFImage(canvas) {
   const link = document.createElement("a");
-  link.href = imageData;
+  link.href = canvas.toDataURL("image/png");
   link.download = `elayon-relatorio-${session.id}.png`;
   link.click();
   
@@ -516,7 +515,7 @@ function downloadPDF(imageData) {
 // INICIALIZAÇÃO
 // ============================================
 
-console.log("✅ assinatura.js carregado (PARTE 2/2)");
+console.log("✅ assinatura.js carregado (PARTE 2/2 - CORRIGIDO)");
 console.log("📋 Sessão:", session);
 console.log("✍️ Validação:", validation);
 console.log("📊 Relatório:", report);
