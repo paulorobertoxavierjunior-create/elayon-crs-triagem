@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Elayon Health — Relatórios</title>
+  <title>Elayon — Relatório</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -12,78 +12,61 @@
   <header class="topbar">
     <div class="brand">
       <div class="logo">
-        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon Health" />
-      </div> 
+        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon" />
+      </div>
       <div>
-        <div class="brand-title">Relatórios</div>
-        <div class="brand-sub">Gráficos congelados + texto do médico</div>
+        <div class="brand-title">Relatório</div>
+        <div class="brand-sub" id="subTitle">--</div>
       </div>
     </div>
     <nav class="nav">
       <a class="link" href="index.html">Início</a>
-      <a class="link" href="dashboard.html">Configurar</a>
-      <a class="link" href="pricing.html">Token & Ética</a>
+      <a class="link" href="report.html">Relatórios</a>
     </nav>
   </header>
 
   <main class="container">
-    <section class="card" id="single" style="display:none">
-      <h1>Relatório de Sessão</h1>
-      <p class="muted" id="meta"></p>
+    <!-- GRÁFICOS CONGELADOS -->
+    <section class="card">
+      <h2>📊 Gráficos Capturados</h2>
 
-      <div class="grid2">
-        <div class="kpi" id="k1"></div>
-        <div class="kpi" id="k2"></div>
-      </div>
-
-      <hr/>
-
-      <h2>Evidência congelada</h2>
-      <div class="grid2">
-        <div class="card soft">
-          <div style="font-weight:800;margin-bottom:8px">FFT (som)</div>
-          <img id="imgFft" class="snap" alt="FFT" />
+      <div style="display: grid; gap: 16px; margin-top: 16px;">
+        <div>
+          <div class="muted" style="font-size: 12px; margin-bottom: 8px;">Espectro (FFT)</div>
+          <img id="imgFft" class="snap" />
         </div>
-        <div class="card soft">
-          <div style="font-weight:800;margin-bottom:8px">Silêncio (proxy)</div>
-          <img id="imgSil" class="snap" alt="Silêncio" />
+        <div>
+          <div class="muted" style="font-size: 12px; margin-bottom: 8px;">Silêncio</div>
+          <img id="imgSil" class="snap" />
         </div>
-      </div>
-
-      <div class="card soft" style="margin-top:12px">
-        <div style="font-weight:800;margin-bottom:8px">Overlay 8 linhas</div>
-        <img id="imgOv" class="snap" alt="Overlay" />
-      </div>
-
-      <hr/>
-
-      <h2>Diagnóstico/Hipótese (obrigatório)</h2>
-      <textarea id="dx" class="bigText" rows="6" placeholder="Escreva aqui o diagnóstico/hipótese e conduta (responsabilidade do médico)."></textarea>
-
-      <h2 style="margin-top:14px">Relatório (texto completo)</h2>
-      <textarea id="txt" class="bigText" rows="16"></textarea>
-
-      <div class="actions">
-        <button class="btn primary" id="btnSave">Salvar diagnóstico no relatório</button>
-        <button class="btn" id="btnCopy">Copiar relatório</button>
-        <button class="btn danger" id="btnDelete">Excluir este relatório</button>
-        <a class="btn" id="btnBack" href="report.html">Voltar para lista</a>
+        <div>
+          <div class="muted" style="font-size: 12px; margin-bottom: 8px;">CRS (8 dimensões)</div>
+          <img id="imgOv" class="snap" />
+        </div>
       </div>
     </section>
 
-    <section class="card" id="list">
-      <h1>Últimos relatórios (máx. 10)</h1>
-      <p class="muted">Armazenado no dispositivo. Ao atingir 10/10, exclua antes de gerar novos.</p>
-
-      <div class="actions">
-        <button class="btn danger" id="btnDeleteAll">Excluir todos</button>
+    <!-- JSON -->
+    <section class="card">
+      <h2>📋 Dados Brutos (JSON)</h2>
+      <textarea id="jsonData" class="bigText" readonly style="min-height: 200px;"></textarea>
+      <div class="actions" style="margin-top: 12px;">
+        <button class="btn primary" id="btnCopy">
+          📋 Copiar JSON
+        </button>
+        <button class="btn secondary" id="btnDownload">
+          ⬇️ Baixar JSON
+        </button>
       </div>
+    </section>
 
-      <div id="items" style="margin-top:10px"></div>
+    <!-- LISTA DE RELATÓRIOS -->
+    <section class="card soft">
+      <h2>📄 Todos os Relatórios</h2>
+      <div id="reportsList" style="display: grid; gap: 8px; margin-top: 12px;"></div>
     </section>
   </main>
 
-  <footer class="footer"><span>Elayon Health • Relatórios</span></footer>
   <script src="assets/report.js"></script>
 </body>
 </html>
