@@ -4,38 +4,264 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Elayon — Sessão</title>
-  <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      background: #ffffff;
+      color: #1a1a1a;
+      line-height: 1.6;
+    }
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #e5e5e5;
+    }
+
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 16px;
+      color: #1a1a1a;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: #666666;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 24px 16px 80px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      color: #0284c7;
+    }
+
+    .card.soft {
+      background: #f9f9f9;
+      box-shadow: none;
+    }
+
+    .row {
+      display: flex;
+      gap: 24px;
+      justify-content: space-between;
+    }
+
+    .row > div {
+      flex: 1;
+    }
+
+    .status-label {
+      font-size: 11px;
+      color: #999999;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .status-value {
+      font-weight: 900;
+      font-size: 24px;
+      color: #1a1a1a;
+    }
+
+    .status-value.recording {
+      color: #ef4444;
+    }
+
+    .status-value.paused {
+      color: #f59e0b;
+    }
+
+    .muted {
+      color: #666666;
+      font-size: 13px;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .actions.full {
+      grid-template-columns: 1fr;
+    }
+
+    .btn {
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 200ms;
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      color: white;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+    }
+
+    .btn.primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+    }
+
+    .btn.secondary {
+      background: #e5e5e5;
+      color: #1a1a1a;
+      border: 1px solid #cccccc;
+    }
+
+    .btn.secondary:hover:not(:disabled) {
+      background: #d5d5d5;
+    }
+
+    .btn.danger {
+      background: #ef4444;
+      color: white;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn.danger:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #debugLog {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f5f5f5;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      max-height: 120px;
+      overflow-y: auto;
+      color: #666666;
+      line-height: 1.4;
+    }
+
+    .canvasWrap {
+      background: #f9f9f9;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 4px;
+      background: #ffffff;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .metric-box {
+      padding: 16px;
+      background: #f0f8ff;
+      border: 1px solid #cce5ff;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: #666666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .metric-value {
+      font-weight: 900;
+      font-size: 32px;
+      color: #0284c7;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
 </head>
 <body>
-  <div class="bg"></div>
-
-  <header class="topbar">
-    <div class="brand">
-      <div class="logo">
-        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon" />
-      </div>
-      <div>
-        <div class="brand-title">Sessão CRS</div>
-        <div class="brand-sub" id="subTitle">Médico • Paciente</div>
-      </div>
+  <header>
+    <div class="logo">
+      <img src="IMG-20260218-WA0016.jpg" alt="Elayon" />
+    </div>
+    <div>
+      <div class="brand-title">Sessão CRS</div>
+      <div class="brand-sub" id="subTitle">Médico • Paciente</div>
     </div>
   </header>
 
   <main class="container">
     <!-- STATUS -->
     <section class="card">
-      <div class="row" style="justify-content: space-between;">
+      <div class="row">
         <div>
-          <div class="muted" style="font-size: 12px;">ID da Sessão</div>
-          <div style="font-weight: 800;" id="sessId">--</div>
+          <div class="status-label">ID da Sessão</div>
+          <div class="status-value" id="sessId">--</div>
         </div>
-        <div style="text-align: right;">
-          <div class="muted" style="font-size: 12px;">Tempo Gravado</div>
-          <div style="font-weight: 800;" id="timeRec">00:00</div>
+        <div>
+          <div class="status-label">Tempo Gravado</div>
+          <div class="status-value" id="timeRec">00:00</div>
         </div>
-        <div style="text-align: right;">
-          <div class="muted" style="font-size: 12px;">Status</div>
-          <div style="font-weight: 800; color: var(--warning);" id="status">⏸️ Parado</div>
+        <div>
+          <div class="status-label">Status</div>
+          <div class="status-value paused" id="status">⏸️ Parado</div>
         </div>
       </div>
     </section>
@@ -43,57 +269,53 @@
     <!-- CONTROLES -->
     <section class="card">
       <h2>🎙️ Controles</h2>
-      <div class="actions">
+      <div class="actions full">
         <button class="btn primary" id="btnMic">
           🎤 Ativar Microfone
         </button>
+      </div>
+      <div class="actions">
         <button class="btn secondary" id="btnRec" disabled>
           🔴 Gravar
         </button>
-        <button class="btn" id="btnStop" disabled>
+        <button class="btn secondary" id="btnStop" disabled>
           ⏹️ Parar
         </button>
+      </div>
+      <div class="actions full">
         <button class="btn danger" id="btnEnd">
           🔚 Finalizar Sessão
         </button>
       </div>
 
       <!-- DEBUG LOG -->
-      <div id="debugLog" style="
-        margin-top: 16px;
-        padding: 12px;
-        background: rgba(0,0,0,0.05);
-        border-radius: 8px;
-        font-family: monospace;
-        font-size: 11px;
-        max-height: 120px;
-        overflow-y: auto;
-        color: var(--text-muted);
-      ">
-        [Aguardando...]
-      </div>
+      <div id="debugLog">[Aguardando...]</div>
     </section>
 
     <!-- GRÁFICOS -->
     <section class="card">
       <h2>📊 Análise em Tempo Real</h2>
 
-      <div style="display: grid; gap: 16px; margin-top: 16px;">
-        <!-- FFT -->
+      <!-- FFT -->
+      <div>
+        <div class="muted">Espectro de Frequência (FFT)</div>
         <div class="canvasWrap">
-          <div class="muted" style="font-size: 12px; margin-bottom: 8px;">Espectro de Frequência (FFT)</div>
           <canvas id="cvFft" width="800" height="240"></canvas>
         </div>
+      </div>
 
-        <!-- SILÊNCIO -->
+      <!-- SILÊNCIO -->
+      <div style="margin-top: 20px;">
+        <div class="muted">Detecção de Silêncio</div>
         <div class="canvasWrap">
-          <div class="muted" style="font-size: 12px; margin-bottom: 8px;">Detecção de Silêncio</div>
           <canvas id="cvSil" width="800" height="240"></canvas>
         </div>
+      </div>
 
-        <!-- OVERLAY (CRS) -->
+      <!-- OVERLAY (CRS) -->
+      <div style="margin-top: 20px;">
+        <div class="muted">Dimensões CRS (8 linhas)</div>
         <div class="canvasWrap">
-          <div class="muted" style="font-size: 12px; margin-bottom: 8px;">Dimensões CRS (8 linhas)</div>
           <canvas id="cvOv" width="800" height="240"></canvas>
         </div>
       </div>
@@ -102,14 +324,14 @@
     <!-- MÉTRICAS RESUMIDAS -->
     <section class="card soft">
       <h2>📈 Métricas Atuais</h2>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
-        <div>
-          <div class="muted" style="font-size: 12px;">Energia RMS</div>
-          <div style="font-weight: 800; font-size: 18px;" id="mRms">0.000</div>
+      <div class="metrics-grid">
+        <div class="metric-box">
+          <div class="metric-label">Energia RMS</div>
+          <div class="metric-value" id="mRms">0.000</div>
         </div>
-        <div>
-          <div class="muted" style="font-size: 12px;">Silêncio Detectado</div>
-          <div style="font-weight: 800; font-size: 18px;" id="mSil">0.000</div>
+        <div class="metric-box">
+          <div class="metric-label">Silêncio Detectado</div>
+          <div class="metric-value" id="mSil">0.000</div>
         </div>
       </div>
     </section>
@@ -123,4 +345,3 @@
   <script src="assets/session.js"></script>
 </body>
 </html>
-
