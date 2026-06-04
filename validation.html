@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Elayon — Validação Clínica</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      background: #ffffff;
+      color: #1a1a1a;
+      line-height: 1.6;
+    }
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #e5e5e5;
+    }
+
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 16px;
+      color: #1a1a1a;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: #666666;
+    }
+
+    nav {
+      display: flex;
+      gap: 16px;
+    }
+
+    nav a {
+      font-size: 13px;
+      color: #0284c7;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    nav a:hover {
+      color: #0ea5e9;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 24px 16px 80px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      color: #0284c7;
+    }
+
+    .card h3 {
+      font-size: 14px;
+      margin-top: 20px;
+      margin-bottom: 12px;
+      color: #1a1a1a;
+      font-weight: 700;
+      border-bottom: 2px solid #e5e5e5;
+      padding-bottom: 8px;
+    }
+
+    .card.soft {
+      background: #f9f9f9;
+      box-shadow: none;
+    }
+
+    .muted {
+      color: #666666;
+      font-size: 13px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .field-desc {
+      font-size: 11px;
+      color: #999999;
+      margin-bottom: 8px;
+      font-style: italic;
+    }
+
+    /* ESCALAS NUMÉRICAS */
+    .scale-container {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .scale-input {
+      width: 60px;
+      padding: 8px;
+      border: 1px solid #cccccc;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      color: #0284c7;
+      background: #f0f8ff;
+    }
+
+    .scale-input:focus {
+      outline: none;
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+    }
+
+    .scale-label {
+      font-size: 11px;
+      color: #999999;
+    }
+
+    .scale-range {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #999999;
+      margin-top: 4px;
+      padding: 0 4px;
+    }
+
+    /* CHECKBOXES */
+    .checkbox-group {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #0284c7;
+    }
+
+    input[type="checkbox"]:hover {
+      transform: scale(1.1);
+    }
+
+    .checkbox-label {
+      font-size: 13px;
+      color: #1a1a1a;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* SELECTS */
+    select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #cccccc;
+      border-radius: 6px;
+      font-size: 13px;
+      background: #ffffff;
+      color: #1a1a1a;
+      cursor: pointer;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+    }
+
+    /* TEXTAREA */
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 12px;
+      border: 1px solid #cccccc;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      color: #1a1a1a;
+      background: #ffffff;
+      resize: vertical;
+      line-height: 1.4;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+    }
+
+    /* BOTÕES */
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .actions.full {
+      grid-template-columns: 1fr;
+    }
+
+    .btn {
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 200ms;
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      color: white;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+    }
+
+    .btn.primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+    }
+
+    .btn.secondary {
+      background: #e5e5e5;
+      color: #1a1a1a;
+      border: 1px solid #cccccc;
+    }
+
+    .btn.secondary:hover:not(:disabled) {
+      background: #d5d5d5;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .alert {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+
+    .alert.info {
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
+      color: #0284c7;
+    }
+
+    .alert.success {
+      background: #dcfce7;
+      border: 1px solid #bbf7d0;
+      color: #15803d;
+    }
+
+    .alert.error {
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+
+    .session-info {
+      background: #f9f9f9;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+      font-size: 12px;
+    }
+
+    .session-info strong {
+      color: #0284c7;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">
+        <img src="IMG-20260218-WA0016.jpg" alt="Elayon" />
+      </div>
+      <div>
+        <div class="brand-title">Validação Clínica</div>
+        <div class="brand-sub">Pareamento CRS + Avaliação</div>
+      </div>
+    </div>
+    <nav>
+      <a href="index.html">Início</a>
+      <a href="report.html">Relatórios</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- SELEÇÃO DE SESSÃO -->
+    <section class="card">
+      <h2>📋 Selecionar Sessão CRS</h2>
+      <p class="muted">Escolha uma sessão concluída para validar com avaliação clínica.</p>
+
+      <div class="field" style="margin-top: 16px;">
+        <label for="sessionSelect">Sessão</label>
+        <select id="sessionSelect">
+          <option value="">-- Carregando sessões --</option>
+        </select>
+      </div>
+
+      <div id="sessionInfo" class="session-info" style="display: none;">
+        <strong>Médico:</strong> <span id="infoMedico">--</span><br/>
+        <strong>Paciente:</strong> <span id="infoPaciente">--</span><br/>
+        <strong>Data:</strong> <span id="infoData">--</span><br/>
+        <strong>Duração:</strong> <span id="infoDuracao">--</span>
+      </div>
+    </section>
+
+    <!-- FORMULÁRIO DE AVALIAÇÃO -->
+    <section class="card" id="formSection" style="display: none;">
+      <h2>🔬 Avaliação Clínica Estruturada</h2>
+
+      <div id="alertContainer"></div>
+
+      <!-- ESCALAS NUMÉRICAS -->
+      <h3>Escalas Numéricas (0-10)</h3>
+
+      <div class="field">
+        <label>Severidade da Afasia</label>
+        <div class="field-desc">0 = Sem afasia | 10 = Afasia severa</div>
+        <div class="scale-container">
+          <input type="number" id="scaleSeveridade" class="scale-input" min="0" max="10" value="0" />
+          <div class="scale-label">/ 10</div>
+        </div>
+        <div class="scale-range"><span>Nenhuma</span><span>Severa</span></div>
+      </div>
+
+      <div class="field">
+        <label>Inteligibilidade da Fala</label>
+        <div class="field-desc">0 = Incompreensível | 10 = Perfeitamente compreensível</div>
+        <div class="scale-container">
+          <input type="number" id="scaleInteligibilidade" class="scale-input" min="0" max="10" value="10" />
+          <div class="scale-label">/ 10</div>
+        </div>
+        <div class="scale-range"><span>Incompreensível</span><span>Compreensível</span></div>
+      </div>
+
+      <div class="field">
+        <label>Esforço Vocal</label>
+        <div class="field-desc">0 = Sem esforço | 10 = Esforço máximo</div>
+        <div class="scale-container">
+          <input type="number" id="scaleEsforco" class="scale-input" min="0" max="10" value="0" />
+          <div class="scale-label">/ 10</div>
+        </div>
+        <div class="scale-range"><span>Sem esforço</span><span>Máximo</span></div>
+      </div>
+
+      <div class="field">
+        <label>Fluência</label>
+        <div class="field-desc">0 = Não fluente | 10 = Fluente</div>
+        <div class="scale-container">
+          <input type="number" id="scaleFluencia" class="scale-input" min="0" max="10" value="10" />
+          <div class="scale-label">/ 10</div>
+        </div>
+        <div class="scale-range"><span>Não fluente</span><span>Fluente</span></div>
+      </div>
+
+      <div class="field">
+        <label>Índice de Pausa</label>
+        <div class="field-desc">0 = Sem pausas | 10 = Pausas frequentes</div>
+        <div class="scale-container">
+          <input type="number" id="scalePausa" class="scale-input" min="0" max="10" value="0" />
+          <div class="scale-label">/ 10</div>
+        </div>
+        <div class="scale-range"><span>Sem pausas</span><span>Frequentes</span></div>
+      </div>
+
+      <!-- ACHADOS QUALITATIVOS -->
+      <h3>Achados Qualitativos</h3>
+
+      <div class="field">
+        <label>Tipo de Afasia (se presente)</label>
+        <select id="tipoAfasia">
+          <option value="">-- Selecionar --</option>
+          <option value="nenhuma">Nenhuma</option>
+          <option value="broca">Afasia de Broca (não fluente)</option>
+          <option value="wernicke">Afasia de Wernicke (fluente)</option>
+          <option value="global">Afasia Global</option>
+          <option value="conduccao">Afasia de Condução</option>
+          <option value="anomia">Anomia</option>
+          <option value="outra">Outra</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Características da Fala</label>
+        <div class="checkbox-group">
+          <div class="checkbox-item">
+            <input type="checkbox" id="char_hesitacao" />
+            <label for="char_hesitacao" class="checkbox-label">Hesitação</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="char_repeticao" />
+            <label for="char_repeticao" class="checkbox-label">Repetição</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="char_parafasia" />
+            <label for="char_parafasia" class="checkbox-label">Parafasia</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="char_tremor" />
+            <label for="char_tremor" class="checkbox-label">Tremor vocal</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="char_disartria" />
+            <label for="char_disartria" class="checkbox-label">Disartria</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="char_disfonia" />
+            <label for="char_disfonia" class="checkbox-label">Disfonia</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Compreensão</label>
+        <select id="compreensao">
+          <option value="">-- Selecionar --</option>
+          <option value="preservada">Preservada</option>
+          <option value="levemente_alterada">Levemente alterada</option>
+          <option value="moderadamente_alterada">Moderadamente alterada</option>
+          <option value="severamente_alterada">Severamente alterada</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Repetição</label>
+        <select id="repeticao">
+          <option value="">-- Selecionar --</option>
+          <option value="preservada">Preservada</option>
+          <option value="levemente_alterada">Levemente alterada</option>
+          <option value="moderadamente_alterada">Moderadamente alterada</option>
+          <option value="severamente_alterada">Severamente alterada</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Nomeação</label>
+        <select id="nomeacao">
+          <option value="">-- Selecionar --</option>
+          <option value="preservada">Preservada</option>
+          <option value="levemente_alterada">Levemente alterada</option>
+          <option value="moderadamente_alterada">Moderadamente alterada</option>
+          <option value="severamente_alterada">Severamente alterada</option>
+        </select>
+      </div>
+
+      <!-- DIAGNÓSTICO -->
+      <h3>Diagnóstico Clínico</h3>
+
+      <div class="field">
+        <label for="diagnostico">Hipótese Diagnóstica Principal</label>
+        <textarea id="diagnostico" placeholder="Ex: Afasia de Broca pós-AVC em hemisfério esquerdo..."></textarea>
+      </div>
+
+      <div class="field">
+        <label for="confianca">Confiança no Diagnóstico (%)</label>
+        <div class="scale-container">
+          <input type="number" id="confianca" class="scale-input" min="0" max="100" value="50" />
+          <div class="scale-label">%</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="diferenciais">Diagnósticos Diferenciais</label>
+        <textarea id="diferenciais" placeholder="Ex: Afasia de Wernicke, Demência, Apraxia de fala..."></textarea>
+      </div>
+
+      <div class="field">
+        <label for="recomendacoes">Recomendações Clínicas</label>
+        <textarea id="recomendacoes" placeholder="Ex: Fonoaudiologia, Ressonância magnética, Acompanhamento..."></textarea>
+      </div>
+
+      <!-- OBSERVAÇÕES -->
+      <h3>Observações Clínicas</h3>
+
+      <div class="field">
+        <label for="observacoes">Notas Adicionais</label>
+        <textarea id="observacoes" placeholder="Fatores contextuais, comportamento do paciente, etc..."></textarea>
+      </div>
+
+      <!-- BOTÕES -->
+      <div class="actions full">
+        <button class="btn primary" id="btnSalvar">
+          💾 Salvar Avaliação
+        </button>
+      </div>
+      <div class="actions">
+        <button class="btn secondary" id="btnLimpar">
+          🔄 Limpar Formulário
+        </button>
+        <button class="btn secondary" id="btnVoltar">
+          ← Voltar
+        </button>
+      </div>
+    </section>
+
+    <!-- RESUMO DE VALIDAÇÕES -->
+    <section class="card soft" id="summarySection" style="display: none;">
+      <h2>✅ Validações Salvas</h2>
+      <div id="validationsList"></div>
+    </section>
+  </main>
+
+  <script src="assets/validation.js"></script>
+</body>
+</html>
