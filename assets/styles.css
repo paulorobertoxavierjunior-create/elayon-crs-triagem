@@ -1,429 +1,424 @@
-/* ===== Login ===== */
-.loginCard{ padding:22px; }
-.loginLogoWrap{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  margin-bottom:10px;
-} 
-.loginLogo{
-  width:min(320px, 78vw);
-  height:auto;
-  border-radius:16px;
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,.7);
-  box-shadow: var(--shadow);
+/**
+ * STYLES.CSS — REFATORADO COM DESIGN FUTURÍSTICO CLEAN
+ * PARTE 1: Reset, Variáveis CSS, Tipografia e Layout Base
+ * 
+ * Paleta: Azul-Ciano + Verde-Esmeralda + Cinza-Neutro
+ * Inspiração: Glassmorphism + Neumorphism + Minimalismo
+ */
+
+/* ============================================
+   VARIÁVEIS CSS (Design System)
+   ============================================ */
+
+:root {
+  /* Cores Primárias */
+  --primary: #0ea5e9;        /* Azul-Ciano vibrante */
+  --primary-dark: #0284c7;   /* Azul-Ciano escuro */
+  --primary-light: #06b6d4;  /* Ciano claro */
+  
+  /* Cores Secundárias */
+  --secondary: #10b981;      /* Verde-Esmeralda */
+  --secondary-dark: #059669;
+  --secondary-light: #6ee7b7;
+  
+  /* Cores de Estado */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #0ea5e9;
+  
+  /* Cores Neutras */
+  --bg-primary: #f8fafc;     /* Fundo principal (muito claro) */
+  --bg-secondary: #f1f5f9;   /* Fundo secundário */
+  --bg-tertiary: #e2e8f0;    /* Fundo terciário */
+  
+  --surface: rgba(255, 255, 255, 0.85);
+  --surface-glass: rgba(255, 255, 255, 0.65);
+  --surface-dark: rgba(15, 23, 42, 0.08);
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  
+  --border: rgba(15, 23, 42, 0.12);
+  --border-light: rgba(15, 23, 42, 0.08);
+  
+  /* Sombras */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.10);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.14);
+  
+  /* Blur & Backdrop */
+  --blur-sm: blur(8px);
+  --blur-md: blur(12px);
+  --blur-lg: blur(16px);
+  
+  /* Tipografia */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Fira Code', 'Courier New', monospace;
+  
+  /* Espaçamento */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+  
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 999px;
+  
+  /* Transições */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ===== Topbar logo maior (se você estiver usando <img> no header) ===== */
-.brandLogo{
-  width:46px;
-  height:46px;
-  border-radius:12px;
-  border:1px solid var(--stroke);
-  object-fit:cover;
+/* ============================================
+   RESET & NORMALIZE
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* ===== Relatório: overlay menor e retangular ===== */
-.overlayRect{
-  width:100%;
-  height:260px;           /* <<< retangular menor */
-  max-height:260px;
-  display:block;
-  border-radius:14px;
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,.75);
-}
-@media (max-width:720px){
-  .overlayRect{ height:220px; max-height:220px; }
-}:root{
-  --bg1:#f7fffe;
-  --bg2:#f3fbff;
-  --bg3:#f4fff7;
-  --ink:#0b1b24;
-  --muted:#51616c;
-  --card:rgba(255,255,255,.78);
-  --stroke:rgba(10,30,40,.10);
-  --shadow: 0 12px 35px rgba(0,0,0,.08);
-  --primary:#0ea5e9;
-  --primary2:#22c55e;
-  --danger:#ef4444;
-  --warn:#f59e0b;
-  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+html, body {
+  height: 100%;
+  width: 100%;
 }
 
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  color:var(--ink);
-  background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+body {
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: linear-gradient(135deg, var(--bg-primary) 0%, #f0f9ff 50%, #f0fdf4 100%);
+  background-attachment: fixed;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.bg{
-  position:fixed; inset:0;
+/* ============================================
+   BACKGROUND DECORATIVO (Gradientes Sutis)
+   ============================================ */
+
+.bg {
+  position: fixed;
+  inset: 0;
   background:
-    radial-gradient(900px 500px at 20% 10%, rgba(14,165,233,.12), transparent 60%),
-    radial-gradient(900px 500px at 80% 20%, rgba(34,197,94,.12), transparent 60%),
-    radial-gradient(900px 500px at 50% 90%, rgba(6,182,212,.10), transparent 60%);
-  pointer-events:none;
+    radial-gradient(900px 600px at 15% 5%, rgba(14, 165, 233, 0.08), transparent 50%),
+    radial-gradient(800px 500px at 85% 15%, rgba(16, 185, 129, 0.08), transparent 50%),
+    radial-gradient(700px 400px at 50% 95%, rgba(6, 182, 212, 0.06), transparent 50%);
+  pointer-events: none;
+  z-index: -1;
 }
 
-.topbar{
-  position:sticky; top:0;
-  display:flex; gap:16px;
-  align-items:center; justify-content:space-between;
-  padding:14px 16px;
-  backdrop-filter: blur(10px);
-  background: rgba(255,255,255,.55);
-  border-bottom: 1px solid var(--stroke);
+/* ============================================
+   TOPBAR (Header Sticky)
+   ============================================ */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  
+  display: flex;
+  gap: var(--spacing-lg);
+  align-items: center;
+  justify-content: space-between;
+  
+  padding: var(--spacing-md) var(--spacing-lg);
+  
+  background: var(--surface-glass);
+  backdrop-filter: var(--blur-md);
+  border-bottom: 1px solid var(--border-light);
+  
+  box-shadow: var(--shadow-sm);
 }
 
-.brand{display:flex; gap:12px; align-items:center}
-.logo{
-  width:46px;height:46px;border-radius:14px;
-  display:grid;place-items:center;
-  background: rgba(255,255,255,.65);
-  border:1px solid var(--stroke);
-  overflow:hidden;
-}
-.logoImg{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
+/* Brand Logo */
+.brand {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+  cursor: pointer;
+  transition: opacity var(--transition-base);
 }
 
-.brand-title{font-weight:800; letter-spacing:.2px}
-.brand-sub{font-size:12px; color:var(--muted)}
-
-.nav{display:flex; gap:10px; flex-wrap:wrap}
-.link{
-  font-size:13px;
-  color:var(--ink);
-  text-decoration:none;
-  padding:8px 10px;
-  border-radius:10px;
-  border:1px solid transparent;
-}
-.link:hover{border-color:var(--stroke); background:rgba(255,255,255,.6)}
-
-.container{
-  max-width:980px;
-  margin:0 auto;
-  padding:18px 16px 80px;
-  display:grid;
-  gap:14px;
+.brand:hover {
+  opacity: 0.85;
 }
 
-.card{
-  background:var(--card);
-  border: 1px solid var(--stroke);
-  border-radius:18px;
-  box-shadow: var(--shadow);
-  padding:18px;
-}
-
-.card.soft{box-shadow:none}
-
-h1,h2{margin:0 0 10px}
-.muted{color:var(--muted); line-height:1.35}
-
-.field{display:grid; gap:6px; margin-top:10px}
-label{font-size:13px; color:var(--muted)}
-input, select, textarea{
-  border:1px solid var(--stroke);
-  border-radius:12px;
-  padding:12px 12px;
-  background:rgba(255,255,255,.85);
-  outline:none;
-}
-input:focus, textarea:focus, select:focus{
-  border-color: rgba(14,165,233,.35);
-  box-shadow: 0 0 0 4px rgba(14,165,233,.12);
-}
-
-.grid2{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:12px;
-}
-@media (max-width:720px){
-  .grid2{grid-template-columns:1fr}
-}
-
-.actions{
-  display:flex; gap:10px;
-  margin-top:14px;
-  flex-wrap:wrap;
-}
-.btn{
-  border:1px solid var(--stroke);
-  border-radius:14px;
-  padding:12px 14px;
-  background:rgba(255,255,255,.8);
-  cursor:pointer;
-  font-weight:650;
-}
-.btn:hover{filter:brightness(0.99)}
-.btn.primary{
-  border-color: rgba(14,165,233,.25);
-  background: linear-gradient(135deg, rgba(14,165,233,.18), rgba(34,197,94,.12));
-}
-.btn.danger{
-  border-color: rgba(239,68,68,.25);
-  background: rgba(239,68,68,.10);
-}
-
-.mini{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap}
-.pill{
-  font-size:12px;
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,.65);
-}
-.pill.ok{border-color:rgba(34,197,94,.25)}
-.pill.warn{border-color:rgba(245,158,11,.25)}
-.pill.info{border-color:rgba(14,165,233,.25)}
-
-.footer{
-  position:fixed;
-  left:0; right:0; bottom:0;
-  padding:10px 16px;
-  font-size:12px;
-  color:var(--muted);
-  background: rgba(255,255,255,.55);
-  backdrop-filter: blur(10px);
-  border-top:1px solid var(--stroke);
-}
-
-.canvasWrap{
-  margin-top:10px;
-  border:1px solid var(--stroke);
-  border-radius:14px;
-  overflow:hidden;
-  background: rgba(255,255,255,.75);
-}
-canvas{display:block; width:100%; height:240px}
-
-.row{
-  display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-}
-.kpi{
-  padding:10px 12px;
-  border:1px solid var(--stroke);
-  border-radius:14px;
-  background: rgba(255,255,255,.65);
-  font-family: var(--mono);
-  font-size:12px;
-  white-space:pre-line;
-}
-
-.list{margin:8px 0 0; padding-left:18px; color:var(--muted)}
-hr{border:none;border-top:1px solid var(--stroke); margin:14px 0}
-
-.snap{
-  width:100%;
-  border-radius:12px;
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,.65);
-}
-
-.bigText{
-  width:100%;
-  min-height: 220px;
-  resize: vertical;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  line-height:1.35;
-}
-
-
-/* ===== Login ===== */
-.loginCard{ padding:22px; }
-.loginLogoWrap{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  margin-bottom:10px;
-}
-.loginLogo{
-  width:min(320px, 78vw);
-  height:auto;
-  border-radius:16px;
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,.7);
-  box-shadow: var(--shadow);
-}
-
-/* ===== Topbar logo maior (se você estiver usando <img> no header) ===== */
-.brandLogo{
-  width:46px;
-  height:46px;
-  border-radius:12px;
-  border:1px solid var(--stroke);
-  object-fit:cover;
-}
-
-/* ===== Relatório: overlay menor e retangular ===== */
-.overlayRect{
-  width:100%;
-  height:260px;           /* <<< retangular menor */
-  max-height:260px;
-  display:block;
-  border-radius:14px;
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,.75);
-}
-@media (max-width:720px){
-  .overlayRect{ height:220px; max-height:220px; }
-}
-
-/* ====== LOGIN ====== */
-.loginCard{
-  max-width: 720px;
-  margin: 0 auto;
-}
-.loginCenter{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  text-align:center;
-  padding: 14px 6px;
-}
-.loginLogo{
-  width: 140px;
-  height: 140px;
-  border-radius: 18px;
-  object-fit: cover;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.10);
-}
-.loginTitle{
-  margin-top: 14px;
-  font-size: 28px;
-  letter-spacing: -0.02em;
-}
-
-/* ====== TOPBAR LOGO (deixa visível no celular) ====== */
-.logoImg{
+.logo {
   width: 44px;
   height: 44px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
+  
+  display: grid;
+  place-items: center;
+  
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(16, 185, 129, 0.10));
+  border: 1px solid var(--border);
+  
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+}
+
+.logo:hover {
+  border-color: var(--primary);
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.20);
+  transform: translateY(-2px);
+}
+
+.logoImg {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  display: block;
 }
 
-/* Se a sua .logo for pequena, força a caixa a comportar a imagem */
-.topbar .logo{
-  width: 48px;
-  height: 48px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-  border-radius: 12px;
+.brand-title {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
 }
 
-/* ====== RELATÓRIO: IMAGENS "CONGELADAS" ====== */
-.snap{
+.brand-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* Navegação */
+.nav {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.link {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  
+  transition: all var(--transition-base);
+  position: relative;
+}
+
+.link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--primary);
+  transition: width var(--transition-base);
+}
+
+.link:hover {
+  color: var(--primary);
+  border-color: var(--border);
+  background: var(--surface-dark);
+}
+
+.link:hover::after {
   width: 100%;
-  max-height: 220px;       /* deixa retangular */
-  object-fit: contain;     /* não distorce */
-  border-radius: 14px;
-  background: rgba(255,255,255,0.55);
 }
 
-/* Overlay costuma ser maior; dá um teto menor e retangular */
-#imgOv.snap{
-  max-height: 260px;
+.link.active {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: rgba(14, 165, 233, 0.08);
 }
 
-/* Textareas grandes para o médico visualizar melhor */
-.bigText{
-  width: 100%;
+/* ============================================
+   CONTAINER PRINCIPAL
+   ============================================ */
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--spacing-xl) var(--spacing-lg) 100px;
+  
+  display: grid;
+  gap: var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--spacing-lg) var(--spacing-md) 100px;
+    gap: var(--spacing-md);
+  }
+}
+
+/* ============================================
+   CARDS (Glassmorphism)
+   ============================================ */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  
+  padding: var(--spacing-lg);
+  
+  box-shadow: var(--shadow-md);
+  backdrop-filter: var(--blur-sm);
+  
+  transition: all var(--transition-base);
+}
+
+.card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.card.soft {
+  box-shadow: none;
+  background: rgba(255, 255, 255, 0.50);
+}
+
+.card.primary {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(16, 185, 129, 0.08));
+  border-color: rgba(14, 165, 233, 0.20);
+}
+
+.card.danger {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.04));
+  border-color: rgba(239, 68, 68, 0.20);
+}
+
+.card.warning {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.04));
+  border-color: rgba(245, 158, 11, 0.20);
+}
+
+/* ============================================
+   TIPOGRAFIA
+   ============================================ */
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+h1 {
+  font-size: 28px;
+}
+
+h2 {
+  font-size: 22px;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+h4 {
+  font-size: 16px;
+}
+
+p {
+  margin: 0 0 var(--spacing-md) 0;
+  line-height: 1.6;
+}
+
+.muted {
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ============================================
+   FORMULÁRIOS
+   ============================================ */
+
+.field {
+  display: grid;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+input,
+select,
+textarea {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md) var(--spacing-md);
+  
+  background: rgba(255, 255, 255, 0.90);
+  color: var(--text-primary);
+  
+  font-family: var(--font-sans);
   font-size: 14px;
-  line-height: 1.35;
-  padding: 12px;
-  border-radius: 14px;
+  
+  outline: none;
+  transition: all var(--transition-base);
 }
 
-/* ====== UPGRADES ELAYON HEALTH ====== */
-
-/* Logo com imagem */
-.logo{
-  width:44px;height:44px;border-radius:14px;
-  overflow:hidden;
-  display:grid;place-items:center;
-  background: rgba(255,255,255,.65);
-}
-.logoImg{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.12);
+  background: rgba(255, 255, 255, 0.95);
 }
 
-/* Login central cinematográfico */
-.centerHero{
-  min-height: calc(100vh - 120px);
-  display:grid;
-  place-items:center;
-  padding: 18px 16px 80px;
-}
-.heroCard{
-  width:min(520px, 92vw);
-  text-align:center;
-}
-.heroLogo{
-  width:110px;
-  height:110px;
-  border-radius:24px;
-  margin: 0 auto 12px;
-  overflow:hidden;
-  border:1px solid var(--stroke);
-  box-shadow: var(--shadow);
-  background: rgba(255,255,255,.75);
-}
-.heroLogo img{ width:100%; height:100%; object-fit:cover; display:block; }
-
-.heroTitle{ font-weight:900; letter-spacing:.2px; margin:0 0 6px; }
-.heroSub{ color:var(--muted); margin:0 0 16px; line-height:1.35; }
-
-/* Snaps retangulares (relatório) */
-.snap{
-  width:100%;
-  height:auto;
-  display:block;
-  border-radius:12px;
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,.75);
+input::placeholder {
+  color: var(--text-muted);
 }
 
-/* Campo grande pro médico */
-.bigText{
-  width:100%;
-  min-height: 140px;
-  border-radius:14px;
-  padding:12px 12px;
-  font-size: 14px;
-  line-height:1.35;
+textarea {
+  resize: vertical;
+  min-height: 100px;
 }
 
-/* Canvas do overlay/fft/silêncio com “cara de instrumento” */
-.canvasTall canvas{ height:260px }
-@media (max-width:720px){
-  .canvasTall canvas{ height:220px }
+/* ============================================
+   GRID RESPONSIVO
+   ============================================ */
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
 }
 
-/* Pequena badge do médico */
-.badge{
-  display:inline-flex;
-  gap:8px;
-  align-items:center;
-  font-size:12px;
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,.65);
-  color: var(--muted);
+@media (max-width: 768px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.row {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  align-items: center;
 }
