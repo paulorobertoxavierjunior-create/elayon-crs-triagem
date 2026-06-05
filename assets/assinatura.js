@@ -662,7 +662,7 @@ function generatePDFCondensado(signatureData) {
     );
 
     // Salvar PDF
-    doc.save(`doc.save(`${session.paciente}-elayon-${formatDate(session.start).split(',')[0]}.pdf`);
+    doc.save(`${session.paciente}-elayon-${formatDate(session.start).split(',')[0]}.pdf`);
     alert("✅ Relatório exportado com sucesso em 2 páginas!");
   };
 
