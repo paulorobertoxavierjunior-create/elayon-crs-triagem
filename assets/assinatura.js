@@ -1,11 +1,10 @@
 /**
- * ASSINATURA.JS — FASE 4 (PARTE 1/2)
- * Assinatura digital + Exportação PDF com jsPDF
+ * ASSINATURA.JS — VERSÃO FINAL COMPLETA
+ * Desenha assinatura + Gera PDF profissional 2 páginas
  */
 
 const KEY_SESSIONS = "elayon_crs_sessions";
 const KEY_VALIDATIONS = "elayon_validations";
-const KEY_REPORTS = "elayon_correlation_reports";
 
 // ============================================
 // UTILITÁRIOS
@@ -23,12 +22,17 @@ function loadValidations() {
   return JSON.parse(localStorage.getItem(KEY_VALIDATIONS) || "[]");
 }
 
-function loadReports() {
-  return JSON.parse(localStorage.getItem(KEY_REPORTS) || "[]");
+function saveSessions(arr) {
+  localStorage.setItem(KEY_SESSIONS, JSON.stringify(arr));
 }
 
-function formatDate(ms) {
-  return new Date(ms).toLocaleString("pt-BR");
+function saveValidations(arr) {
+  localStorage.setItem(KEY_VALIDATIONS, JSON.stringify(arr));
+}
+
+function formatDate(timestamp) {
+  const d = new Date(timestamp);
+  return d.toLocaleString("pt-BR");
 }
 
 // ============================================
@@ -38,197 +42,156 @@ function formatDate(ms) {
 const sessionId = getParam("id");
 const sessions = loadSessions();
 const validations = loadValidations();
-const reports = loadReports();
 
-const session = sessions.find(s => s.id === sessionId);
-const validation = validations.find(v => v.sessionId === sessionId);
-const report = reports.find(r => r.sessionId === sessionId);
+let session = sessions.find(s => s.id === sessionId);
+let validation = validations.find(v => v.sessionId === sessionId);
 
-if (!session || !validation) {
-  alert("Sessão ou validação não encontrada");
+if (!session) {
+  alert("Sessão não encontrada");
   location.href = "index.html";
 }
 
-// ============================================
-// PREENCHER INFORMAÇÕES
-// ============================================
-
-document.getElementById("infoMedico").textContent = session.medico;
-document.getElementById("infoPaciente").textContent = session.paciente;
-document.getElementById("infoDataSessao").textContent = formatDate(session.start);
-document.getElementById("infoDiagnostico").textContent = validation.diagnostic.diagnostico || "--";
-
-// Status validação
-let statusText = "⚠️ Pendente";
-if (report && report.summary.significantCorrelations >= 5) {
-  statusText = "✅ Validado";
-} else if (report && report.summary.significantCorrelations >= 3) {
-  statusText = "⚠️ Parcialmente Validado";
+if (!validation) {
+  validation = {
+    sessionId: sessionId,
+    scales: {
+      severidade: 0,
+      inteligibilidade: 0,
+      esforco: 0,
+      fluencia: 0,
+      pausa: 0
+    },
+    qualitative: {
+      tipoAfasia: "",
+      compreensao: "",
+      repeticao: "",
+      nomeacao: ""
+    },
+    diagnostic: {
+      diagnostico: "",
+      confianca: 0,
+      recomendacoes: "",
+      diferenciais: ""
+    },
+    clinical: {
+      observacoes: ""
+    },
+    createdAt: Date.now()
+  };
 }
-document.getElementById("infoStatus").textContent = statusText;
 
-// Preenchimento de resumo
-document.getElementById("sumSeveridade").textContent = validation.scales.severidade + "/10";
-document.getElementById("sumInteligibilidade").textContent = validation.scales.inteligibilidade + "/10";
-document.getElementById("sumEsforco").textContent = validation.scales.esforco + "/10";
-document.getElementById("sumFluencia").textContent = validation.scales.fluencia + "/10";
-document.getElementById("sumPausa").textContent = validation.scales.pausa + "/10";
-document.getElementById("sumConfianca").textContent = validation.diagnostic.confianca + "%";
+// Preencher formulário
+document.getElementById("infoPaciente").textContent = session.paciente;
+document.getElementById("infoMedico").textContent = session.medico;
+document.getElementById("infoData").textContent = formatDate(session.start);
 
 // ============================================
-// CANVAS DE ASSINATURA
+// CANVAS ASSINATURA
 // ============================================
 
 const canvas = document.getElementById("signatureCanvas");
 const ctx = canvas.getContext("2d");
 let isDrawing = false;
-let lastX = 0;
-let lastY = 0;
 
-// Ajustar tamanho do canvas
 function resizeCanvas() {
   const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width;
-  canvas.height = rect.height;
+  canvas.width = rect.width * devicePixelRatio;
+  canvas.height = rect.height * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "#1a1a1a";
 }
 
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
-// Desenho
-function startDrawing(e) {
+canvas.addEventListener("mousedown", (e) => {
   isDrawing = true;
   const rect = canvas.getBoundingClientRect();
-  lastX = e.clientX - rect.left;
-  lastY = e.clientY - rect.top;
-}
-
-function draw(e) {
-  if (!isDrawing) return;
-
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-
-  ctx.strokeStyle = "#1a1a1a";
-  ctx.lineWidth = 2;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-
   ctx.beginPath();
-  ctx.moveTo(lastX, lastY);
-  ctx.lineTo(x, y);
+  ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+});
+
+canvas.addEventListener("mousemove", (e) => {
+  if (!isDrawing) return;
+  const rect = canvas.getBoundingClientRect();
+  ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
   ctx.stroke();
+});
 
-  lastX = x;
-  lastY = y;
-}
-
-function stopDrawing() {
+canvas.addEventListener("mouseup", () => {
   isDrawing = false;
-}
+});
 
-canvas.addEventListener("mousedown", startDrawing);
-canvas.addEventListener("mousemove", draw);
-canvas.addEventListener("mouseup", stopDrawing);
-canvas.addEventListener("mouseout", stopDrawing);
+canvas.addEventListener("mouseleave", () => {
+  isDrawing = false;
+});
 
 // Touch support
 canvas.addEventListener("touchstart", (e) => {
-  e.preventDefault();
+  isDrawing = true;
+  const rect = canvas.getBoundingClientRect();
   const touch = e.touches[0];
-  const mouseEvent = new MouseEvent("mousedown", {
-    clientX: touch.clientX,
-    clientY: touch.clientY
-  });
-  canvas.dispatchEvent(mouseEvent);
+  ctx.beginPath();
+  ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
 });
 
 canvas.addEventListener("touchmove", (e) => {
+  if (!isDrawing) return;
   e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
   const touch = e.touches[0];
-  const mouseEvent = new MouseEvent("mousemove", {
-    clientX: touch.clientX,
-    clientY: touch.clientY
-  });
-  canvas.dispatchEvent(mouseEvent);
+  ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+  ctx.stroke();
 });
 
-canvas.addEventListener("touchend", (e) => {
-  e.preventDefault();
-  const mouseEvent = new MouseEvent("mouseup", {});
-  canvas.dispatchEvent(mouseEvent);
+canvas.addEventListener("touchend", () => {
+  isDrawing = false;
 });
 
-// ============================================
-// BOTÕES DE ASSINATURA
-// ============================================
-
+// Limpar assinatura
 document.getElementById("btnClearSignature").addEventListener("click", () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  document.getElementById("signaturePreview").style.display = "none";
-});
-
-document.getElementById("btnPreviewSignature").addEventListener("click", () => {
-  const img = canvas.toDataURL("image/png");
-  document.getElementById("signatureImg").src = img;
-  document.getElementById("signaturePreview").style.display = "block";
 });
 
 // ============================================
-// CONFIRMAÇÃO
-// ============================================
-
-document.getElementById("confirmCheck").addEventListener("change", (e) => {
-  const btnAssinar = document.getElementById("btnAssinar");
-  const btnExportPDF = document.getElementById("btnExportPDF");
-  
-  if (e.target.checked) {
-    btnAssinar.disabled = false;
-    btnExportPDF.disabled = false;
-  } else {
-    btnAssinar.disabled = true;
-    btnExportPDF.disabled = true;
-  }
-});
-
-// ============================================
-// SALVAR ASSINATURA
+// BOTÃO ASSINAR
 // ============================================
 
 document.getElementById("btnAssinar").addEventListener("click", () => {
-  const signatureData = canvas.toDataURL("image/png");
+  const checkBox = document.getElementById("confirmCheck");
   
-  if (signatureData === "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==") {
-    alert("❌ Por favor, desenhe sua assinatura antes de continuar");
+  if (!checkBox.checked) {
+    alert("❌ Você deve confirmar as informações");
     return;
   }
 
-  // Salvar assinatura
-  const signedReport = {
-    id: `signed_${Date.now()}`,
-    sessionId: sessionId,
-    validationId: validation.id,
-    medico: session.medico,
-    paciente: session.paciente,
-    signatureData: signatureData,
-    signedAt: Date.now(),
-    session: session,
-    validation: validation,
-    report: report
-  };
+  const signatureData = canvas.toDataURL("image/png");
+  
+  if (!signatureData || signatureData.length < 500) {
+    alert("❌ Por favor, desenhe sua assinatura");
+    return;
+  }
 
-  const KEY_SIGNED = "elayon_signed_reports";
-  const signed = JSON.parse(localStorage.getItem(KEY_SIGNED) || "[]");
-  signed.unshift(signedReport);
-  localStorage.setItem(KEY_SIGNED, JSON.stringify(signed));
+  // Salvar assinatura na validação
+  validation.signatureData = signatureData;
+  validation.signedAt = Date.now();
+
+  const validationIdx = validations.findIndex(v => v.sessionId === sessionId);
+  if (validationIdx !== -1) {
+    validations[validationIdx] = validation;
+  } else {
+    validations.unshift(validation);
+  }
+  saveValidations(validations);
 
   // Atualizar status da sessão
-  const sessions = loadSessions();
-  const sessionIndex = sessions.findIndex(s => s.id === sessionId);
-  if (sessionIndex !== -1) {
-    sessions[sessionIndex].status = "signed";
-    localStorage.setItem(KEY_SESSIONS, JSON.stringify(sessions));
+  const sessionIdx = sessions.findIndex(s => s.id === sessionId);
+  if (sessionIdx !== -1) {
+    sessions[sessionIdx].status = "signed";
+    saveSessions(sessions);
   }
 
   // Mostrar resultado
@@ -240,17 +203,16 @@ document.getElementById("btnAssinar").addEventListener("click", () => {
       <strong style="color: #15803d;">✅ Relatório assinado com sucesso!</strong>
     </div>
     
-    <p style="margin-bottom: 12px;"><strong>Informações do Relatório Assinado:</strong></p>
+    <p style="margin-bottom: 12px;"><strong>Informações do Relatório:</strong></p>
     <ul style="margin-left: 20px; font-size: 13px; line-height: 1.8;">
-      <li><strong>ID:</strong> ${signedReport.id}</li>
-      <li><strong>Médico:</strong> ${signedReport.medico}</li>
-      <li><strong>Paciente:</strong> ${signedReport.paciente}</li>
-      <li><strong>Data de Assinatura:</strong> ${formatDate(signedReport.signedAt)}</li>
+      <li><strong>Médico:</strong> ${session.medico}</li>
+      <li><strong>Paciente:</strong> ${session.paciente}</li>
+      <li><strong>Data de Assinatura:</strong> ${formatDate(validation.signedAt)}</li>
       <li><strong>Status:</strong> ✅ Finalizado</li>
     </ul>
 
     <p style="margin-top: 16px; font-size: 12px; color: #666666;">
-      O relatório foi salvo e pode ser exportado em PDF para arquivo permanente.
+      O relatório foi salvo. Clique em "Exportar PDF" para baixar.
     </p>
   `;
   
@@ -259,42 +221,30 @@ document.getElementById("btnAssinar").addEventListener("click", () => {
   // Desabilitar botão
   document.getElementById("btnAssinar").disabled = true;
   document.getElementById("btnAssinar").textContent = "✅ Assinado";
+  document.getElementById("btnExportPDF").disabled = false;
+  document.getElementById("btnIAReview").disabled = false;
 });
 
-// Habilitar botão IA Review
-document.getElementById("btnIAReview").disabled = false;
-document.getElementById("btnExportPDF").disabled = false;
-
 // ============================================
-// VOLTAR
-// ============================================
-
-document.getElementById("btnVoltar").addEventListener("click", () => {
-  location.href = `index.html`;
-});
-
-console.log("✅ assinatura.js carregado (PARTE 1/2)");
-
-// ============================================
-// EXPORTAR PDF (COM jsPDF + 2 PÁGINAS)
+// EXPORTAR PDF
 // ============================================
 
 document.getElementById("btnExportPDF").addEventListener("click", () => {
   const signatureData = canvas.toDataURL("image/png");
   
-  if (signatureData === "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==") {
+  if (!signatureData || signatureData.length < 500) {
     alert("❌ Por favor, desenhe sua assinatura antes de exportar");
     return;
   }
 
-  generatePDFCondensado(signatureData);
+  generatePDFProfissional(signatureData);
 });
 
 // ============================================
-// GERAR PDF CONDENSADO (2 PÁGINAS)
+// GERAR PDF PROFISSIONAL (2 PÁGINAS)
 // ============================================
 
-function generatePDFCondensado(signatureData) {
+function generatePDFProfissional(signatureData) {
   const { jsPDF } = window.jspdf;
   
   const doc = new jsPDF({
@@ -311,7 +261,7 @@ function generatePDFCondensado(signatureData) {
   let y = margin;
 
   // ============================================
-  // PÁGINA 1: INFO + DIAGNÓSTICO + GRÁFICO + ESCALAS
+  // PÁGINA 1: CABEÇALHO + DIAGNÓSTICO + ESCALAS
   // ============================================
 
   // Cabeçalho
@@ -333,7 +283,7 @@ function generatePDFCondensado(signatureData) {
   doc.line(margin, y, pageWidth - margin, y);
   y += 6;
 
-  // Informações gerais (compacto)
+  // Informações gerais
   doc.setFontSize(9);
   doc.setTextColor(26, 26, 26);
   doc.setFont(undefined, 'normal');
@@ -341,7 +291,8 @@ function generatePDFCondensado(signatureData) {
   const infoLines = [
     `Médico: ${session.medico}`,
     `Paciente: ${session.paciente}`,
-    `Data: ${formatDate(session.start)}`,
+    `Data da Sessão: ${formatDate(session.start)}`,
+    `Data de Assinatura: ${formatDate(validation.signedAt)}`,
     `ID: ${session.id}`
   ];
 
@@ -352,11 +303,11 @@ function generatePDFCondensado(signatureData) {
 
   y += 4;
 
-  // Diagnóstico (compacto)
+  // Diagnóstico
   doc.setFontSize(10);
   doc.setFont(undefined, 'bold');
   doc.setTextColor(2, 132, 199);
-  doc.text("DIAGNÓSTICO", margin, y);
+  doc.text("DIAGNÓSTICO CLÍNICO", margin, y);
   y += 5;
 
   doc.setFontSize(9);
@@ -366,62 +317,39 @@ function generatePDFCondensado(signatureData) {
   const diagnostico = validation.diagnostic.diagnostico || "Não especificado";
   const diagLines = doc.splitTextToSize(diagnostico, contentWidth - 5);
   doc.text(diagLines, margin, y);
-  y += diagLines.length * lineSpacing + 3;
+  y += diagLines.length * lineSpacing + 2;
 
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(2, 132, 199);
-  doc.text(`Confiança: ${validation.diagnostic.confianca}%`, margin, y);
+  doc.text(`Confiança no Diagnóstico: ${validation.diagnostic.confianca}%`, margin, y);
   y += 5;
 
-  // Gráfico das escalas (compacto)
+  doc.setFont(undefined, 'normal');
+  doc.setTextColor(100, 100, 100);
+  doc.setFontSize(8);
+  doc.text("Status: Finalizado", margin, y);
+  y += 6;
+
+  // Escalas (tabela)
   doc.setFontSize(9);
   doc.setFont(undefined, 'bold');
   doc.setTextColor(2, 132, 199);
-  doc.text("ESCALAS", margin, y);
+  doc.text("ESCALAS DE AVALIAÇÃO", margin, y);
   y += 5;
 
-  const scalesData = [
-    { label: "Severidade", value: validation.scales.severidade, color: [239, 68, 68] },
-    { label: "Inteligibilidade", value: validation.scales.inteligibilidade, color: [59, 130, 246] },
-    { label: "Esforço", value: validation.scales.esforco, color: [249, 115, 22] },
-    { label: "Fluência", value: validation.scales.fluencia, color: [34, 197, 94] },
-    { label: "Pausa", value: validation.scales.pausa, color: [168, 85, 247] }
-  ];
-
-  // Desenhar gráfico de barras (compacto)
-  const barWidth = 6;
-  const barSpacing = 11;
-  const maxBarHeight = 25;
-  const startX = margin + 5;
-  const startY = y + 28;
-
-  scalesData.forEach((scale, idx) => {
-    const barHeight = (scale.value / 10) * maxBarHeight;
-    const x = startX + idx * barSpacing;
-
-    // Barra
-    doc.setFillColor(scale.color[0], scale.color[1], scale.color[2]);
-    doc.rect(x, startY - barHeight, barWidth, barHeight, 'F');
-
-    // Valor
-    doc.setFontSize(7);
-    doc.setTextColor(26, 26, 26);
-    doc.text(`${scale.value}`, x + 0.5, startY + 3);
-
-    // Label
-    doc.setFontSize(6);
-    doc.text(scale.label, x - 1, startY + 8, { maxWidth: 10, align: 'center' });
-  });
-
-  y = startY + 15;
-
-  // Tabela de escalas (compacto)
   doc.setFontSize(8);
   doc.setFont(undefined, 'normal');
   doc.setTextColor(26, 26, 26);
 
-  scalesData.forEach(scale => {
-    doc.text(`${scale.label}: ${scale.value}/10`, margin, y);
+  const scalesTable = [
+    `Severidade da Afasia: ${validation.scales.severidade}/10`,
+    `Inteligibilidade da Fala: ${validation.scales.inteligibilidade}/10`,
+    `Esforço Vocal: ${validation.scales.esforco}/10`,
+    `Fluência: ${validation.scales.fluencia}/10`,
+    `Índice de Pausa: ${validation.scales.pausa}/10`
+  ];
+
+  scalesTable.forEach(line => {
+    doc.text(line, margin, y);
     y += lineSpacing;
   });
 
@@ -438,7 +366,7 @@ function generatePDFCondensado(signatureData) {
   doc.setFont(undefined, 'normal');
   doc.setTextColor(26, 26, 26);
   doc.text(validation.qualitative.tipoAfasia || "Não especificado", margin, y);
-  y += 4;
+  y += 5;
 
   // Achados Qualitativos
   doc.setFontSize(9);
@@ -451,114 +379,25 @@ function generatePDFCondensado(signatureData) {
   doc.setFont(undefined, 'normal');
   doc.setTextColor(26, 26, 26);
 
-  const qualitative = [
+  const qualitativeLines = [
     `Compreensão: ${validation.qualitative.compreensao || "Não avaliado"}`,
     `Repetição: ${validation.qualitative.repeticao || "Não avaliado"}`,
     `Nomeação: ${validation.qualitative.nomeacao || "Não avaliado"}`
   ];
 
-  qualitative.forEach(line => {
+  qualitativeLines.forEach(line => {
     doc.text(line, margin, y);
     y += lineSpacing;
   });
 
-  // ============================================
-  // PÁGINA 2: MÉTRICAS + ANÁLISE + RECOMENDAÇÕES + ASSINATURA
-  // ============================================
+  y += 3;
 
-  doc.addPage();
-  y = margin;
-
-  // Métricas CRS
-  doc.setFontSize(9);
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(2, 132, 199);
-  doc.text("MÉTRICAS CRS TÉCNICAS", margin, y);
-  y += 5;
-
-  doc.setFontSize(7);
-  doc.setFont(undefined, 'normal');
-  doc.setTextColor(26, 26, 26);
-
-  const metricsTable = [
-    ["Métrica", "Valor", "Interpretação"],
-    ["Severidade", `${validation.scales.severidade}/10`, validation.scales.severidade <= 3 ? "Leve" : validation.scales.severidade <= 6 ? "Moderada" : "Severa"],
-    ["Inteligibilidade", `${validation.scales.inteligibilidade}/10`, validation.scales.inteligibilidade >= 7 ? "Preservada" : "Alterada"],
-    ["Esforço Vocal", `${validation.scales.esforco}/10`, validation.scales.esforco <= 3 ? "Normal" : "Aumentado"],
-    ["Fluência", `${validation.scales.fluencia}/10`, validation.scales.fluencia >= 7 ? "Fluente" : "Disfluente"],
-    ["Pausa", `${validation.scales.pausa}/10`, validation.scales.pausa >= 5 ? "Aumentado" : "Normal"]
-  ];
-
-  let tableY = y;
-  metricsTable.forEach((row, idx) => {
-    if (idx === 0) {
-      doc.setFont(undefined, 'bold');
-      doc.setTextColor(255, 255, 255);
-      doc.setFillColor(2, 132, 199);
-      doc.rect(margin, tableY - 3, contentWidth, 4, 'F');
-    } else {
-      doc.setFont(undefined, 'normal');
-      doc.setTextColor(26, 26, 26);
-      if (idx % 2 === 0) {
-        doc.setFillColor(240, 240, 240);
-        doc.rect(margin, tableY - 3, contentWidth, 4, 'F');
-      }
-    }
-
-    doc.text(row[0], margin + 1, tableY);
-    doc.text(row[1], margin + 50, tableY);
-    doc.text(row[2], margin + 70, tableY);
-    tableY += 4;
-  });
-
-  y = tableY + 4;
-
-  // Análise Semântica
-  doc.setFontSize(9);
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(2, 132, 199);
-  doc.text("ANÁLISE SEMÂNTICA", margin, y);
-  y += 4;
-
-  const momentoIntegral = (
-    validation.scales.severidade +
-    validation.scales.inteligibilidade +
-    validation.scales.esforco +
-    validation.scales.fluencia +
-    validation.scales.pausa
-  ) / 5;
-
-  const scales = [
-    validation.scales.severidade,
-    validation.scales.inteligibilidade,
-    validation.scales.esforco,
-    validation.scales.fluencia,
-    validation.scales.pausa
-  ];
-  const maxScale = Math.max(...scales);
-  const minScale = Math.min(...scales);
-  const derivadoSemantico = maxScale - minScale;
-
-  doc.setFontSize(8);
-  doc.setFont(undefined, 'normal');
-  doc.setTextColor(26, 26, 26);
-
-  doc.text(`Momento Integral: ${momentoIntegral.toFixed(2)}/10`, margin, y);
-  y += lineSpacing;
-  doc.text(`Derivado Semântico: ${derivadoSemantico.toFixed(2)}`, margin, y);
-  y += lineSpacing;
-
-  const interpretacao = `Padrão ${momentoIntegral <= 3 ? "leve" : momentoIntegral <= 6 ? "moderado" : "severo"}. ${derivadoSemantico <= 2 ? "Consistência" : derivadoSemantico <= 5 ? "Variabilidade moderada" : "Grande variabilidade"}.`;
-  const interpLines = doc.splitTextToSize(interpretacao, contentWidth - 5);
-  doc.text(interpLines, margin, y);
-  y += interpLines.length * lineSpacing + 3;
-
-  // Contexto
-  if (session.contexto && session.contexto !== "") {
+  // Contexto da Sessão
+  if (session.contexto && session.contexto.trim() !== "") {
     doc.setFontSize(9);
     doc.setFont(undefined, 'bold');
     doc.setTextColor(2, 132, 199);
-    doc.text("CONTEXTO", margin, y);
+    doc.text("CONTEXTO DA SESSÃO", margin, y);
     y += 4;
 
     doc.setFontSize(8);
@@ -566,61 +405,68 @@ function generatePDFCondensado(signatureData) {
     doc.setTextColor(26, 26, 26);
     const ctxLines = doc.splitTextToSize(session.contexto, contentWidth - 5);
     doc.text(ctxLines, margin, y);
-    y += ctxLines.length * lineSpacing + 3;
+    y += ctxLines.length * lineSpacing;
   }
 
-  // Recomendações
+  // ============================================
+  // PÁGINA 2: RECOMENDAÇÕES + DIFERENCIAIS + OBSERVAÇÕES + ASSINATURA
+  // ============================================
+
+  doc.addPage();
+  y = margin;
+
+  // Recomendações Clínicas
   doc.setFontSize(9);
   doc.setFont(undefined, 'bold');
   doc.setTextColor(2, 132, 199);
-  doc.text("RECOMENDAÇÕES", margin, y);
+  doc.text("RECOMENDAÇÕES CLÍNICAS", margin, y);
   y += 4;
 
   doc.setFontSize(8);
   doc.setFont(undefined, 'normal');
   doc.setTextColor(26, 26, 26);
 
-  if (validation.diagnostic.recomendacoes && validation.diagnostic.recomendacoes !== "") {
-    const recomLines = doc.splitTextToSize(validation.diagnostic.recomendacoes, contentWidth - 5);
-    doc.text(recomLines, margin, y);
-    y += recomLines.length * lineSpacing + 2;
+  if (validation.diagnostic.recomendacoes && validation.diagnostic.recomendacoes.trim() !== "") {
+    const recLines = doc.splitTextToSize(validation.diagnostic.recomendacoes, contentWidth - 5);
+    doc.text(recLines, margin, y);
+    y += recLines.length * lineSpacing + 3;
   } else {
     doc.text("Nenhuma recomendação específica", margin, y);
-    y += lineSpacing + 2;
+    y += lineSpacing + 3;
   }
 
   // Diagnósticos Diferenciais
   doc.setFontSize(9);
   doc.setFont(undefined, 'bold');
   doc.setTextColor(2, 132, 199);
-  doc.text("DIFERENCIAIS", margin, y);
+  doc.text("DIAGNÓSTICOS DIFERENCIAIS", margin, y);
   y += 4;
 
   doc.setFontSize(8);
   doc.setFont(undefined, 'normal');
   doc.setTextColor(26, 26, 26);
 
-  if (validation.diagnostic.diferenciais && validation.diagnostic.diferenciais !== "") {
+  if (validation.diagnostic.diferenciais && validation.diagnostic.diferenciais.trim() !== "") {
     const difLines = doc.splitTextToSize(validation.diagnostic.diferenciais, contentWidth - 5);
     doc.text(difLines, margin, y);
-    y += difLines.length * lineSpacing + 2;
+    y += difLines.length * lineSpacing + 3;
   } else {
     doc.text("Nenhum diagnóstico diferencial especificado", margin, y);
-    y += lineSpacing + 2;
+    y += lineSpacing + 3;
   }
 
-  // Observações
+  // Observações Clínicas
   doc.setFontSize(9);
   doc.setFont(undefined, 'bold');
   doc.setTextColor(2, 132, 199);
-  doc.text("OBSERVAÇÕES", margin, y);
+  doc.text("OBSERVAÇÕES CLÍNICAS", margin, y);
   y += 4;
 
   doc.setFontSize(8);
   doc.setFont(undefined, 'normal');
   doc.setTextColor(26, 26, 26);
 
-  if (validation.clinical.observacoes && validation.clinical.observacoes !== "") {
+  if (validation.clinical.observacoes && validation.clinical.observacoes.trim() !== "") {
     const obsLines = doc.splitTextToSize(validation.clinical.observacoes, contentWidth - 5);
     doc.text(obsLines, margin, y);
   } else {
@@ -633,7 +479,6 @@ function generatePDFCondensado(signatureData) {
 
   const signatureImg = new Image();
   signatureImg.onload = () => {
-    // Posicionar assinatura no canto direito inferior
     const signX = pageWidth - margin - 60;
     const signY = pageHeight - 35;
 
@@ -653,30 +498,50 @@ function generatePDFCondensado(signatureData) {
 
     doc.setFontSize(7);
     doc.setTextColor(100, 100, 100);
-    doc.text(`${formatDate(Date.now())}`, signX, signY + 14);
+    doc.text(formatDate(Date.now()), signX, signY + 14);
 
     // Rodapé
     doc.setFontSize(7);
     doc.setTextColor(150, 150, 150);
     doc.text(
-      "ELAYON HEALTH • Sistema de Análise Vocal CRS",
+      "Documento gerado digitalmente pelo sistema ELAYON HEALTH",
       pageWidth / 2,
       pageHeight - 3,
       { align: 'center' }
     );
 
     // Salvar PDF
-    doc.save(`${session.paciente}-elayon-${formatDate(session.start).split(',')[0]}.pdf`);
-    alert("✅ Relatório exportado com sucesso em 2 páginas!");
+    const fileName = `${session.paciente}-elayon-${new Date().toLocaleDateString("pt-BR").replace(/\//g, "-")}.pdf`;
+    doc.save(fileName);
+    alert("✅ Relatório exportado com sucesso!");
+  };
+
+  signatureImg.onerror = () => {
+    alert("❌ Erro ao carregar assinatura");
   };
 
   signatureImg.src = signatureData;
 }
 
 // ============================================
-// INICIALIZAÇÃO
+// BOTÃO IA REVIEW
 // ============================================
 
-console.log("✅ assinatura.js carregado (PARTE 2/2 - 2 PÁGINAS)");
-console.log("📊 PDF condensado profissional");
-console.log("📄 2 páginas compactas");
+document.getElementById("btnIAReview").addEventListener("click", () => {
+  if (!sessionId) {
+    alert("Sessão não encontrada");
+    return;
+  }
+
+  location.href = `ia-review.html?id=${encodeURIComponent(sessionId)}`;
+});
+
+// ============================================
+// VOLTAR
+// ============================================
+
+document.getElementById("btnVoltar").addEventListener("click", () => {
+  location.href = "index.html";
+});
+
+console.log("✅ assinatura.js carregado (COMPLETO)");
