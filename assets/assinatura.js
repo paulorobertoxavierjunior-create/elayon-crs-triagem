@@ -1,6 +1,6 @@
 /**
  * ASSINATURA.JS — FASE 4 (PARTE 1/2)
- * Assinatura digital + Exportação PDF Multipáginas
+ * Assinatura digital + Exportação PDF com jsPDF
  */
 
 const KEY_SESSIONS = "elayon_crs_sessions";
@@ -46,7 +46,7 @@ const report = reports.find(r => r.sessionId === sessionId);
 
 if (!session || !validation) {
   alert("Sessão ou validação não encontrada");
-  location.href = "dashboard.html";
+  location.href = "index.html";
 }
 
 // ============================================
@@ -223,6 +223,14 @@ document.getElementById("btnAssinar").addEventListener("click", () => {
   signed.unshift(signedReport);
   localStorage.setItem(KEY_SIGNED, JSON.stringify(signed));
 
+  // Atualizar status da sessão
+  const sessions = loadSessions();
+  const sessionIndex = sessions.findIndex(s => s.id === sessionId);
+  if (sessionIndex !== -1) {
+    sessions[sessionIndex].status = "signed";
+    localStorage.setItem(KEY_SESSIONS, JSON.stringify(sessions));
+  }
+
   // Mostrar resultado
   const resultSection = document.getElementById("resultSection");
   const resultContent = document.getElementById("resultContent");
@@ -258,13 +266,13 @@ document.getElementById("btnAssinar").addEventListener("click", () => {
 // ============================================
 
 document.getElementById("btnVoltar").addEventListener("click", () => {
-  location.href = `dashboard.html?id=${encodeURIComponent(sessionId)}`;
+  location.href = `index.html`;
 });
 
 console.log("✅ assinatura.js carregado (PARTE 1/2)");
 
 // ============================================
-// EXPORTAR PDF (MULTIPÁGINAS - FLUIDO)
+// EXPORTAR PDF (COM jsPDF - PROFISSIONAL)
 // ============================================
 
 document.getElementById("btnExportPDF").addEventListener("click", () => {
@@ -275,74 +283,57 @@ document.getElementById("btnExportPDF").addEventListener("click", () => {
     return;
   }
 
-  generatePDFMultipage(signatureData);
+  generatePDFWithjsPDF(signatureData);
 });
 
 // ============================================
-// EXPORTAR PDF (MULTIPÁGINAS - FLUIDO)
+// GERAR PDF COM jsPDF (PROFISSIONAL)
 // ============================================
 
-document.getElementById("btnExportPDF").addEventListener("click", () => {
-  const signatureData = canvas.toDataURL("image/png");
+function generatePDFWithjsPDF(signatureData) {
+  const { jsPDF } = window.jspdf;
   
-  if (signatureData === "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==") {
-    alert("❌ Por favor, desenhe sua assinatura antes de exportar");
-    return;
-  }
+  // Criar documento A4
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
 
-  generatePDFMultipage(signatureData);
-});
-
-
-// ============================================
-// GERAR PDF 4 PÁGINAS (TUDO APARECENDO)
-// ============================================
-
-function generatePDFMultipage(signatureData) {
-  const pages = [];
-  
-  // Configurações A4 REAL
-  const A4_WIDTH = 210;
-  const A4_HEIGHT = 297;
-  const DPI = 72;
-  const SCALE = DPI / 25.4;
-  
-  const margin = 20 * SCALE;
-  const contentWidth = (A4_WIDTH - 2 * 20) * SCALE;
-  const lineHeight = 16 * SCALE;
-  
-  // ============================================
-  // PÁGINA 1: CABEÇALHO + INFORMAÇÕES
-  // ============================================
-  
-  let page1 = createBlankPage(A4_WIDTH, A4_HEIGHT, SCALE);
-  let ctx = page1.getContext("2d");
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 15;
+  const contentWidth = pageWidth - 2 * margin;
   let y = margin;
-  
-  // CABEÇALHO
-  ctx.fillStyle = "#0284c7";
-  ctx.font = `bold ${28 * SCALE}px Arial`;
-  ctx.fillText("ELAYON HEALTH", margin, y);
-  y += 40 * SCALE;
-  
-  ctx.fillStyle = "#1a1a1a";
-  ctx.font = `${14 * SCALE}px Arial`;
-  ctx.fillText("Relatório de Avaliação Clínica CRS", margin, y);
-  y += 30 * SCALE;
-  
+
+  // ============================================
+  // PÁGINA 1: CABEÇALHO + INFORMAÇÕES + DIAGNÓSTICO
+  // ============================================
+
+  // Cabeçalho
+  doc.setFontSize(24);
+  doc.setTextColor(2, 132, 199);
+  doc.setFont(undefined, 'bold');
+  doc.text("ELAYON HEALTH", margin, y);
+  y += 12;
+
+  doc.setFontSize(14);
+  doc.setTextColor(26, 26, 26);
+  doc.setFont(undefined, 'normal');
+  doc.text("Relatório de Avaliação Clínica CRS", margin, y);
+  y += 10;
+
   // Linha separadora
-  ctx.strokeStyle = "#0284c7";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(margin, y);
-  ctx.lineTo(page1.width - margin, y);
-  ctx.stroke();
-  y += 30 * SCALE;
-  
-  // INFORMAÇÕES GERAIS
-  ctx.fillStyle = "#1a1a1a";
-  ctx.font = `${12 * SCALE}px Arial`;
-  
+  doc.setDrawColor(2, 132, 199);
+  doc.setLineWidth(0.5);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 10;
+
+  // Informações gerais
+  doc.setFontSize(11);
+  doc.setTextColor(26, 26, 26);
+  doc.setFont(undefined, 'normal');
+
   const infoLines = [
     `Médico: ${session.medico}`,
     `Paciente: ${session.paciente}`,
@@ -350,298 +341,257 @@ function generatePDFMultipage(signatureData) {
     `Data de Assinatura: ${formatDate(Date.now())}`,
     `ID do Relatório: ${session.id}`
   ];
-  
+
   infoLines.forEach(line => {
-    ctx.fillText(line, margin, y);
-    y += 20 * SCALE;
+    doc.text(line, margin, y);
+    y += 6;
   });
-  
-  y += 25 * SCALE;
-  
-  // DIAGNÓSTICO
-  ctx.fillStyle = "#0284c7";
-  ctx.font = `bold ${14 * SCALE}px Arial`;
-  ctx.fillText("DIAGNÓSTICO CLÍNICO", margin, y);
-  y += 25 * SCALE;
-  
-  ctx.fillStyle = "#1a1a1a";
-  ctx.font = `${11 * SCALE}px Arial`;
-  
+
+  y += 8;
+
+  // Diagnóstico
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(2, 132, 199);
+  doc.text("DIAGNÓSTICO CLÍNICO", margin, y);
+  y += 8;
+
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.setTextColor(26, 26, 26);
+
   const diagnostico = validation.diagnostic.diagnostico || "Não especificado";
-  const diagLines = wrapTextPDF(ctx, diagnostico, contentWidth, 11 * SCALE);
-  diagLines.forEach(line => {
-    if (y > page1.height - margin - 20 * SCALE) return;
-    ctx.fillText(line, margin, y);
-    y += 18 * SCALE;
-  });
-  
-  pages.push(page1);
-  
+  const diagLines = doc.splitTextToSize(diagnostico, contentWidth);
+  doc.text(diagLines, margin, y);
+  y += diagLines.length * 5 + 5;
+
+  // Confiança no diagnóstico
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(2, 132, 199);
+  doc.text(`Confiança no Diagnóstico: ${validation.diagnostic.confianca}%`, margin, y);
+  y += 6;
+
+  // Status
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.setTextColor(26, 26, 26);
+  doc.text(`Status: ${statusText}`, margin, y);
+  y += 6;
+
   // ============================================
   // PÁGINA 2: ESCALAS DE AVALIAÇÃO
   // ============================================
-  
-  let page2 = createBlankPage(A4_WIDTH, A4_HEIGHT, SCALE);
-  ctx = page2.getContext("2d");
+
+  doc.addPage();
   y = margin;
-  
-  // Título
-  ctx.fillStyle = "#0284c7";
-  ctx.font = `bold ${14 * SCALE}px Arial`;
-  ctx.fillText("ESCALAS DE AVALIAÇÃO", margin, y);
-  y += 25 * SCALE;
-  
-  ctx.fillStyle = "#1a1a1a";
-  ctx.font = `${12 * SCALE}px Arial`;
-  
+
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(2, 132, 199);
+  doc.text("ESCALAS DE AVALIAÇÃO", margin, y);
+  y += 8;
+
+  doc.setFontSize(11);
+  doc.setFont(undefined, 'normal');
+  doc.setTextColor(26, 26, 26);
+
   const scales = [
     `Severidade da Afasia: ${validation.scales.severidade}/10`,
     `Inteligibilidade da Fala: ${validation.scales.inteligibilidade}/10`,
     `Esforço Vocal: ${validation.scales.esforco}/10`,
     `Fluência: ${validation.scales.fluencia}/10`,
-    `Índice de Pausa: ${validation.scales.pausa}/10`,
-    `Confiança no Diagnóstico: ${validation.diagnostic.confianca}%`
+    `Índice de Pausa: ${validation.scales.pausa}/10`
   ];
-  
+
   scales.forEach(line => {
-    ctx.fillText(line, margin, y);
-    y += 20 * SCALE;
+    doc.text(line, margin, y);
+    y += 6;
   });
-  
-  y += 25 * SCALE;
-  
-  // TIPO DE AFASIA
+
+  y += 8;
+
+  // Tipo de Afasia
   if (validation.qualitative.tipoAfasia && validation.qualitative.tipoAfasia !== "") {
-    ctx.fillStyle = "#0284c7";
-    ctx.font = `bold ${14 * SCALE}px Arial`;
-    ctx.fillText("TIPO DE AFASIA", margin, y);
-    y += 25 * SCALE;
-    
-    ctx.fillStyle = "#1a1a1a";
-    ctx.font = `${12 * SCALE}px Arial`;
-    ctx.fillText(validation.qualitative.tipoAfasia, margin, y);
-    y += 20 * SCALE;
-    y += 20 * SCALE;
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(2, 132, 199);
+    doc.text("TIPO DE AFASIA", margin, y);
+    y += 8;
+
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(26, 26, 26);
+    doc.text(validation.qualitative.tipoAfasia, margin, y);
+    y += 6;
+    y += 6;
   }
-  
-  // ACHADOS QUALITATIVOS
-  ctx.fillStyle = "#0284c7";
-  ctx.font = `bold ${14 * SCALE}px Arial`;
-  ctx.fillText("ACHADOS QUALITATIVOS", margin, y);
-  y += 25 * SCALE;
-  
-  ctx.fillStyle = "#1a1a1a";
-  ctx.font = `${12 * SCALE}px Arial`;
-  
+
+  // Achados Qualitativos
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(2, 132, 199);
+  doc.text("ACHADOS QUALITATIVOS", margin, y);
+  y += 8;
+
+  doc.setFontSize(11);
+  doc.setFont(undefined, 'normal');
+  doc.setTextColor(26, 26, 26);
+
   const qualitative = [
     `Compreensão: ${validation.qualitative.compreensao || "Não avaliado"}`,
     `Repetição: ${validation.qualitative.repeticao || "Não avaliado"}`,
     `Nomeação: ${validation.qualitative.nomeacao || "Não avaliado"}`
   ];
-  
+
   qualitative.forEach(line => {
-    ctx.fillText(line, margin, y);
-    y += 20 * SCALE;
+    doc.text(line, margin, y);
+    y += 6;
   });
-  
-  pages.push(page2);
-  
+
+  y += 6;
+
+  // Contexto da sessão
+  if (session.contexto && session.contexto !== "") {
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(2, 132, 199);
+    doc.text("CONTEXTO DA SESSÃO", margin, y);
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(26, 26, 26);
+    const ctxLines = doc.splitTextToSize(session.contexto, contentWidth);
+    doc.text(ctxLines, margin, y);
+    y += ctxLines.length * 5;
+  }
+
   // ============================================
   // PÁGINA 3: RECOMENDAÇÕES E DIFERENCIAIS
   // ============================================
-  
-  let page3 = createBlankPage(A4_WIDTH, A4_HEIGHT, SCALE);
-  ctx = page3.getContext("2d");
+
+  doc.addPage();
   y = margin;
-  
-  // RECOMENDAÇÕES
-  ctx.fillStyle = "#0284c7";
-  ctx.font = `bold ${14 * SCALE}px Arial`;
-  ctx.fillText("RECOMENDAÇÕES CLÍNICAS", margin, y);
-  y += 25 * SCALE;
-  
-  ctx.fillStyle = "#1a1a1a";
-  ctx.font = `${11 * SCALE}px Arial`;
-  
+
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(2, 132, 199);
+  doc.text("RECOMENDAÇÕES CLÍNICAS", margin, y);
+  y += 8;
+
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.setTextColor(26, 26, 26);
+
   if (validation.diagnostic.recomendacoes && validation.diagnostic.recomendacoes !== "") {
-    const recomLines = wrapTextPDF(ctx, validation.diagnostic.recomendacoes, contentWidth, 11 * SCALE);
-    recomLines.forEach(line => {
-      if (y > page3.height - margin - 40 * SCALE) return;
-      ctx.fillText(line, margin, y);
-      y += 18 * SCALE;
-    });
+    const recomLines = doc.splitTextToSize(validation.diagnostic.recomendacoes, contentWidth);
+    doc.text(recomLines, margin, y);
+    y += recomLines.length * 5 + 8;
   } else {
-    ctx.fillText("Nenhuma recomendação específica", margin, y);
-    y += 18 * SCALE;
+    doc.text("Nenhuma recomendação específica", margin, y);
+    y += 8;
   }
-  
-  y += 25 * SCALE;
-  
-  // DIAGNÓSTICOS DIFERENCIAIS
-  ctx.fillStyle = "#0284c7";
-  ctx.font = `bold ${14 * SCALE}px Arial`;
-  ctx.fillText("DIAGNÓSTICOS DIFERENCIAIS", margin, y);
-  y += 25 * SCALE;
-  
-  ctx.fillStyle = "#1a1a1a";
-  ctx.font = `${11 * SCALE}px Arial`;
-  
+
+  y += 5;
+
+  // Diagnósticos Diferenciais
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(2, 132, 199);
+  doc.text("DIAGNÓSTICOS DIFERENCIAIS", margin, y);
+  y += 8;
+
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.setTextColor(26, 26, 26);
+
   if (validation.diagnostic.diferenciais && validation.diagnostic.diferenciais !== "") {
-    const difLines = wrapTextPDF(ctx, validation.diagnostic.diferenciais, contentWidth, 11 * SCALE);
-    difLines.forEach(line => {
-      if (y > page3.height - margin - 40 * SCALE) return;
-      ctx.fillText(line, margin, y);
-      y += 18 * SCALE;
-    });
+    const difLines = doc.splitTextToSize(validation.diagnostic.diferenciais, contentWidth);
+    doc.text(difLines, margin, y);
+    y += difLines.length * 5 + 8;
   } else {
-    ctx.fillText("Nenhum diagnóstico diferencial especificado", margin, y);
-    y += 18 * SCALE;
+    doc.text("Nenhum diagnóstico diferencial especificado", margin, y);
+    y += 8;
   }
-  
-  y += 25 * SCALE;
-  
-  // OBSERVAÇÕES
-  ctx.fillStyle = "#0284c7";
-  ctx.font = `bold ${14 * SCALE}px Arial`;
-  ctx.fillText("OBSERVAÇÕES CLÍNICAS", margin, y);
-  y += 25 * SCALE;
-  
-  ctx.fillStyle = "#1a1a1a";
-  ctx.font = `${11 * SCALE}px Arial`;
-  
+
+  y += 5;
+
+  // Observações
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(2, 132, 199);
+  doc.text("OBSERVAÇÕES CLÍNICAS", margin, y);
+  y += 8;
+
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.setTextColor(26, 26, 26);
+
   if (validation.clinical.observacoes && validation.clinical.observacoes !== "") {
-    const obsLines = wrapTextPDF(ctx, validation.clinical.observacoes, contentWidth, 11 * SCALE);
-    obsLines.forEach(line => {
-      if (y > page3.height - margin - 40 * SCALE) return;
-      ctx.fillText(line, margin, y);
-      y += 18 * SCALE;
-    });
+    const obsLines = doc.splitTextToSize(validation.clinical.observacoes, contentWidth);
+    doc.text(obsLines, margin, y);
   } else {
-    ctx.fillText("Nenhuma observação adicional", margin, y);
-    y += 18 * SCALE;
+    doc.text("Nenhuma observação adicional", margin, y);
   }
-  
-  pages.push(page3);
-  
+
   // ============================================
   // PÁGINA 4: ASSINATURA
   // ============================================
-  
-  let page4 = createBlankPage(A4_WIDTH, A4_HEIGHT, SCALE);
-  ctx = page4.getContext("2d");
-  y = page4.height - 180 * SCALE;
-  
-  // Espaço para assinatura
-  ctx.fillStyle = "#1a1a1a";
-  ctx.font = `${12 * SCALE}px Arial`;
-  ctx.fillText("Assinatura do Médico:", margin, y - 40 * SCALE);
-  
+
+  doc.addPage();
+  y = pageHeight - 100;
+
+  // Texto de assinatura
+  doc.setFontSize(11);
+  doc.setFont(undefined, 'normal');
+  doc.setTextColor(26, 26, 26);
+  doc.text("Assinatura do Médico:", margin, y - 25);
+
   // Linha para assinatura
-  ctx.strokeStyle = "#1a1a1a";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(margin, y);
-  ctx.lineTo(margin + 160 * SCALE, y);
-  ctx.stroke();
-  
-  // Desenhar assinatura
-  const signatureImg = new Image();
-  signatureImg.onload = () => {
-    ctx.drawImage(signatureImg, margin, y - 70 * SCALE, 160 * SCALE, 60 * SCALE);
-    
+  doc.setDrawColor(26, 26, 26);
+  doc.setLineWidth(0.3);
+  doc.line(margin, y, margin + 80, y);
+
+  // Adicionar assinatura
+  const img = new Image();
+  img.onload = () => {
+    doc.addImage(img, 'PNG', margin, y - 30, 80, 25);
+
     // Texto abaixo
-    ctx.fillStyle = "#1a1a1a";
-    ctx.font = `${11 * SCALE}px Arial`;
-    ctx.fillText(`${session.medico}`, margin, y + 30 * SCALE);
-    
-    ctx.font = `${10 * SCALE}px Arial`;
-    ctx.fillText(`${formatDate(Date.now())}`, margin, y + 50 * SCALE);
-    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(26, 26, 26);
+    doc.text(`${session.medico}`, margin, y + 15);
+
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`${formatDate(Date.now())}`, margin, y + 22);
+
     // Rodapé
-    ctx.fillStyle = "#999999";
-    ctx.font = `${9 * SCALE}px Arial`;
-    ctx.fillText("Documento gerado digitalmente pelo sistema ELAYON HEALTH", margin, page4.height - 10 * SCALE);
-    
-    // Converter páginas para PDF
-    downloadPDFMultipage(pages);
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text(
+      "Documento gerado digitalmente pelo sistema ELAYON HEALTH",
+      pageWidth / 2,
+      pageHeight - 5,
+      { align: 'center' }
+    );
+
+    // Salvar PDF
+    doc.save(`elayon-relatorio-${session.id}.pdf`);
+    alert("✅ Relatório exportado com sucesso em PDF!");
   };
-  
-  signatureImg.src = signatureData;
-}
 
-// ============================================
-// CRIAR PÁGINA EM BRANCO
-// ============================================
-
-function createBlankPage(width, height, scale) {
-  const canvas = document.createElement("canvas");
-  canvas.width = width * scale;
-  canvas.height = height * scale;
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  return canvas;
-}
-
-// ============================================
-// QUEBRA DE TEXTO
-// ============================================
-
-function wrapTextPDF(ctx, text, maxWidth, fontSize) {
-  const words = text.split(" ");
-  const lines = [];
-  let currentLine = "";
-  
-  words.forEach(word => {
-    const testLine = currentLine + (currentLine ? " " : "") + word;
-    const metrics = ctx.measureText(testLine);
-    
-    if (metrics.width > maxWidth && currentLine) {
-      lines.push(currentLine);
-      currentLine = word;
-    } else {
-      currentLine = testLine;
-    }
-  });
-  
-  if (currentLine) lines.push(currentLine);
-  return lines;
-}
-
-// ============================================
-// DOWNLOAD PDF MULTIPÁGINAS
-// ============================================
-
-function downloadPDFMultipage(pages) {
-  // Combinar páginas em uma única imagem
-  const totalHeight = pages.reduce((sum, p) => sum + p.height, 0);
-  const finalCanvas = document.createElement("canvas");
-  finalCanvas.width = pages[0].width;
-  finalCanvas.height = totalHeight;
-  
-  const finalCtx = finalCanvas.getContext("2d");
-  let currentY = 0;
-  
-  pages.forEach(page => {
-    finalCtx.drawImage(page, 0, currentY);
-    currentY += page.height;
-  });
-  
-  // Download
-  const link = document.createElement("a");
-  link.href = finalCanvas.toDataURL("image/png");
-  link.download = `elayon-relatorio-${session.id}.png`;
-  link.click();
-  
-  alert("✅ Relatório exportado com sucesso em 4 páginas A4!");
+  img.src = signatureData;
 }
 
 // ============================================
 // INICIALIZAÇÃO
 // ============================================
 
-console.log("✅ assinatura.js carregado (PARTE 2/2 - 4 PÁGINAS)");
-console.log("📄 PDF com 4 páginas A4 completas");
+console.log("✅ assinatura.js carregado (PARTE 2/2 - jsPDF)");
+console.log("📄 PDF profissional com jsPDF");
 console.log("📋 Sessão:", session);
 console.log("✍️ Validação:", validation);
 console.log("📊 Relatório:", report);
