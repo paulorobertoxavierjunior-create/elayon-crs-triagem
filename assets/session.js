@@ -1,9 +1,14 @@
 /**
- * SESSION.JS — VERSÃO FUNCIONAL MINIMALISTA
- * Apenas: Mic → Gráficos → JSON → Report
+ * SESSION.JS — GRAVAÇÃO CRS OTIMIZADA
+ * Carrega dados + Grava áudio + Calcula métricas + Salva validação
  */
 
 const KEY_SESSIONS = "elayon_crs_sessions";
+const KEY_VALIDATIONS = "elayon_validations";
+
+// ============================================
+// UTILITÁRIOS
+// ============================================
 
 function getParam(name) {
   return new URL(location.href).searchParams.get(name);
@@ -13,98 +18,90 @@ function loadSessions() {
   return JSON.parse(localStorage.getItem(KEY_SESSIONS) || "[]");
 }
 
+function loadValidations() {
+  return JSON.parse(localStorage.getItem(KEY_VALIDATIONS) || "[]");
+}
+
 function saveSessions(arr) {
   localStorage.setItem(KEY_SESSIONS, JSON.stringify(arr));
 }
 
+function saveValidations(arr) {
+  localStorage.setItem(KEY_VALIDATIONS, JSON.stringify(arr));
+}
+
 function log(msg) {
-  const el = document.getElementById("debugLog");
-  if (!el) return;
-  const line = document.createElement("div");
-  line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-  el.appendChild(line);
-  el.scrollTop = el.scrollHeight;
+  const debugLog = document.getElementById("debugLog");
+  const timestamp = new Date().toLocaleTimeString("pt-BR");
+  debugLog.innerHTML += `[${timestamp}] ${msg}<br/>`;
+  debugLog.scrollTop = debugLog.scrollHeight;
 }
 
 // ============================================
 // CARREGAR SESSÃO
 // ============================================
 
-const id = getParam("id");
-const { session } = (() => {
-  const arr = loadSessions();
-  const s = arr.find(x => x.id === id);
-  return { session: s };
-})();
+const sessionId = getParam("id");
+const sessions = loadSessions();
+let session = sessions.find(s => s.id === sessionId);
 
 if (!session) {
   alert("Sessão não encontrada");
   location.href = "index.html";
 }
 
-document.getElementById("subTitle").textContent = 
-  `${session.medico} → ${session.paciente}`;
-document.getElementById("sessId").textContent = session.id.substring(0, 12) + "...";
+// Preencher info
+document.getElementById("infoMedico").textContent = session.medico;
+document.getElementById("infoPaciente").textContent = session.paciente;
+document.getElementById("infoId").textContent = session.id;
+document.getElementById("subTitle").textContent = `${session.paciente} • ${session.medico}`;
 
 // ============================================
-// ÁUDIO & CANVAS
+// AUDIO CONTEXT
 // ============================================
 
-let audioCtx, analyser, srcNode, stream;
+let stream, audioCtx, analyser, srcNode;
 let enabled = false;
 let recording = false;
 let recordedMs = 0;
 let audioBuffer = [];
+let raf;
 
+const HISTORY = 512;
+const overlaySeries = Array(8).fill(null).map(() => new Float32Array(HISTORY));
+const silSeries = new Float32Array(HISTORY);
+let wIdx = 0;
+
+// Canvas
 const cvFft = document.getElementById("cvFft");
 const cvSil = document.getElementById("cvSil");
 const cvOv = document.getElementById("cvOv");
-
 const ctxF = cvFft.getContext("2d");
 const ctxS = cvSil.getContext("2d");
 const ctxO = cvOv.getContext("2d");
 
-// Histórico para visualização
-const HISTORY = 720;
-const overlaySeries = Array.from({ length: 8 }, () => new Array(HISTORY).fill(0));
-const silSeries = new Array(HISTORY).fill(0);
-let wIdx = 0;
-
-function fitCanvas(cv, h) {
-  const r = cv.getBoundingClientRect();
-  cv.width = Math.floor(r.width * devicePixelRatio);
-  cv.height = Math.floor(h * devicePixelRatio);
-}
-
-function fitAll() {
-  fitCanvas(cvFft, 240);
-  fitCanvas(cvSil, 240);
-  fitCanvas(cvOv, 240);
-}
-
-addEventListener("resize", fitAll);
-fitAll();
-
 // ============================================
-// PROCESSAMENTO DE ÁUDIO
+// CÁLCULOS
 // ============================================
 
-function rmsFromTimeDomain(buf) {
+function rmsFromTimeDomain(timeData) {
   let sum = 0;
-  for (let i = 0; i < buf.length; i++) {
-    const v = (buf[i] - 128) / 128;
-    sum += v * v;
+  for (let i = 0; i < timeData.length; i++) {
+    const norm = (timeData[i] - 128) / 128;
+    sum += norm * norm;
   }
-  return Math.sqrt(sum / buf.length);
+  const n = timeData.length;
+  return Math.sqrt(sum / n);
 }
 
-function bandEnergy(freq, fromHz, toHz, sampleRate) {
-  const nyq = sampleRate / 2;
-  const from = Math.floor((fromHz / nyq) * freq.length);
-  const to = Math.floor((toHz / nyq) * freq.length);
+function bandEnergy(freqData, fMin, fMax, sampleRate) {
+  const nyquist = sampleRate / 2;
+  const binMin = Math.floor((fMin / nyquist) * freqData.length);
+  const binMax = Math.floor((fMax / nyquist) * freqData.length);
+
   let sum = 0, n = 0;
-  for (let i = Math.max(0, from); i <= Math.min(freq.length - 1, to); i++) {
-    sum += freq[i];
+  for (let i = binMin; i < binMax && i < freqData.length; i++) {
+    sum += freqData[i];
     n++;
   }
   return n ? (sum / n) / 255 : 0;
@@ -114,7 +111,7 @@ function sampleOnce(timeData, freqData) {
   const rms = rmsFromTimeDomain(timeData);
   const silence = rms < 0.025 ? 1 : 0;
 
-  // Bandas
+  // Bandas de frequência
   const sub = bandEnergy(freqData, 20, 80, 16000);
   const low = bandEnergy(freqData, 80, 250, 16000);
   const mid = bandEnergy(freqData, 250, 2000, 16000);
@@ -148,12 +145,19 @@ function sampleOnce(timeData, freqData) {
   // Atualizar métricas
   document.getElementById("mRms").textContent = rms.toFixed(3);
   document.getElementById("mSil").textContent = silence.toFixed(3);
+  document.getElementById("samples").textContent = audioBuffer.length;
 
-  // Desenhar
-  drawFFT(freqData);
-  drawSilence();
-  drawOverlay();
+  // Desenhar (com throttle)
+  if (audioBuffer.length % 4 === 0) {
+    drawFFT(freqData);
+    drawSilence();
+    drawOverlay();
+  }
 }
+
+// ============================================
+// DESENHAR GRÁFICOS
+// ============================================
 
 function drawFFT(freq) {
   ctxF.fillStyle = "rgba(248, 250, 252, 1)";
@@ -219,7 +223,6 @@ function drawOverlay() {
   }
 }
 
-let raf;
 function loop() {
   const timeData = new Uint8Array(analyser.frequencyBinCount);
   const freqData = new Uint8Array(analyser.frequencyBinCount);
@@ -261,7 +264,7 @@ document.getElementById("btnRec").addEventListener("click", () => {
   document.getElementById("btnRec").disabled = true;
   document.getElementById("btnStop").disabled = false;
   document.getElementById("status").textContent = "🔴 Gravando";
-  document.getElementById("status").style.color = "var(--danger)";
+  document.getElementById("status").classList.add("recording");
   log("🔴 Gravação iniciada");
   if (!raf) loop();
 });
@@ -271,8 +274,8 @@ document.getElementById("btnStop").addEventListener("click", () => {
   document.getElementById("btnRec").disabled = false;
   document.getElementById("btnStop").disabled = true;
   document.getElementById("status").textContent = "⏸️ Parado";
-  document.getElementById("status").style.color = "var(--warning)";
-  log("⏹️ Gravação parada");
+  document.getElementById("status").classList.remove("recording");
+  log(`⏹️ Gravação parada (${audioBuffer.length} amostras)`);
 });
 
 document.getElementById("btnEnd").addEventListener("click", () => {
@@ -287,7 +290,7 @@ document.getElementById("btnEnd").addEventListener("click", () => {
     ov: cvOv.toDataURL("image/png")
   };
 
-  // Salvar dados
+  // Salvar dados da sessão
   session.audioBuffer = audioBuffer;
   session.recordedMs = recordedMs;
   session.status = "closed";
@@ -298,11 +301,45 @@ document.getElementById("btnEnd").addEventListener("click", () => {
   if (idx >= 0) arr[idx] = session;
   saveSessions(arr);
 
+  // CRIAR VALIDAÇÃO VAZIA
+  const validations = loadValidations();
+  const validation = {
+    sessionId: sessionId,
+    scales: {
+      severidade: 0,
+      inteligibilidade: 0,
+      esforco: 0,
+      fluencia: 0,
+      pausa: 0
+    },
+    diagnostic: {
+      diagnostico: "",
+      confianca: 0,
+      recomendacoes: "",
+      diferenciais: ""
+    },
+    clinical: {
+      tipo: "",
+      compreensao: "",
+      repeticao: "",
+      nomeacao: "",
+      observacoes: ""
+    },
+    createdAt: Date.now()
+  };
+
+  const existingIdx = validations.findIndex(v => v.sessionId === sessionId);
+  if (existingIdx !== -1) {
+    validations[existingIdx] = validation;
+  } else {
+    validations.unshift(validation);
+  }
+  saveValidations(validations);
+
   log("✅ Sessão finalizada");
   setTimeout(() => {
-    location.href = `report.html?id=${encodeURIComponent(session.id)}`;
+    location.href = `assinatura.html?id=${encodeURIComponent(sessionId)}`;
   }, 1000);
 });
 
-// Iniciar loop
-if (enabled) loop();
+log("✅ session.js carregado");
