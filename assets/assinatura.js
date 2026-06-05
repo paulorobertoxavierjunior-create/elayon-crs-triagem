@@ -279,6 +279,21 @@ document.getElementById("btnExportPDF").addEventListener("click", () => {
 });
 
 // ============================================
+// EXPORTAR PDF (MULTIPÁGINAS - FLUIDO)
+// ============================================
+
+document.getElementById("btnExportPDF").addEventListener("click", () => {
+  const signatureData = canvas.toDataURL("image/png");
+  
+  if (signatureData === "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==") {
+    alert("❌ Por favor, desenhe sua assinatura antes de exportar");
+    return;
+  }
+
+  generatePDFMultipage(signatureData);
+});
+
+// ============================================
 // GERAR PDF MULTIPÁGINAS (FLUIDO)
 // ============================================
 
