@@ -1,6 +1,6 @@
 /**
  * ASSINATURA.JS — FASE 4 (PARTE 1/2)
- * Assinatura digital + Exportação PDF
+ * Assinatura digital + Exportação PDF Multipáginas
  */
 
 const KEY_SESSIONS = "elayon_crs_sessions";
@@ -264,7 +264,7 @@ document.getElementById("btnVoltar").addEventListener("click", () => {
 console.log("✅ assinatura.js carregado (PARTE 1/2)");
 
 // ============================================
-// EXPORTAR PDF (VERSÃO CORRIGIDA)
+// EXPORTAR PDF (MULTIPÁGINAS - FLUIDO)
 // ============================================
 
 document.getElementById("btnExportPDF").addEventListener("click", () => {
@@ -275,16 +275,15 @@ document.getElementById("btnExportPDF").addEventListener("click", () => {
     return;
   }
 
-  generatePDFSimple(signatureData);
+  generatePDFMultipage(signatureData);
 });
 
 // ============================================
-// GERAR PDF SIMPLES E FUNCIONAL
+// GERAR PDF MULTIPÁGINAS (FLUIDO)
 // ============================================
 
-function generatePDFSimple(signatureData) {
-  const pdfCanvas = document.createElement("canvas");
-  const pdfCtx = pdfCanvas.getContext("2d");
+function generatePDFMultipage(signatureData) {
+  const pages = [];
   
   // Configurações A4
   const A4_WIDTH = 210;
@@ -292,48 +291,42 @@ function generatePDFSimple(signatureData) {
   const DPI = 150;
   const SCALE = DPI / 25.4;
   
-  pdfCanvas.width = A4_WIDTH * SCALE;
-  pdfCanvas.height = A4_HEIGHT * SCALE;
+  const margin = 20 * SCALE;
+  const contentWidth = (A4_WIDTH - 2 * 20) * SCALE;
   
-  // Fundo branco
-  pdfCtx.fillStyle = "#ffffff";
-  pdfCtx.fillRect(0, 0, pdfCanvas.width, pdfCanvas.height);
+  // ============================================
+  // PÁGINA 1: CABEÇALHO + INFORMAÇÕES
+  // ============================================
   
-  const margin = 15 * SCALE;
-  const contentWidth = pdfCanvas.width - 2 * margin;
+  let page1 = createBlankPage(A4_WIDTH, A4_HEIGHT, SCALE);
+  let ctx = page1.getContext("2d");
   let y = margin;
   
-  // ============================================
-  // CABEÇALHO
-  // ============================================
+  // Cabeçalho
+  ctx.fillStyle = "#0284c7";
+  ctx.font = `bold ${24 * SCALE}px Arial`;
+  ctx.fillText("ELAYON HEALTH", margin, y);
+  y += 35 * SCALE;
   
-  pdfCtx.fillStyle = "#0284c7";
-  pdfCtx.font = `bold ${20 * SCALE}px Arial`;
-  pdfCtx.fillText("ELAYON HEALTH", margin, y);
+  ctx.fillStyle = "#1a1a1a";
+  ctx.font = `${14 * SCALE}px Arial`;
+  ctx.fillText("Relatório de Avaliação Clínica CRS", margin, y);
   y += 30 * SCALE;
   
-  pdfCtx.fillStyle = "#1a1a1a";
-  pdfCtx.font = `${12 * SCALE}px Arial`;
-  pdfCtx.fillText("Relatório de Avaliação Clínica CRS", margin, y);
+  // Linha separadora
+  ctx.strokeStyle = "#cccccc";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(margin, y);
+  ctx.lineTo(page1.width - margin, y);
+  ctx.stroke();
   y += 25 * SCALE;
   
-  // Linha separadora
-  pdfCtx.strokeStyle = "#cccccc";
-  pdfCtx.lineWidth = 1;
-  pdfCtx.beginPath();
-  pdfCtx.moveTo(margin, y);
-  pdfCtx.lineTo(pdfCanvas.width - margin, y);
-  pdfCtx.stroke();
-  y += 20 * SCALE;
+  // Informações gerais
+  ctx.fillStyle = "#1a1a1a";
+  ctx.font = `${12 * SCALE}px Arial`;
   
-  // ============================================
-  // INFORMAÇÕES GERAIS
-  // ============================================
-  
-  pdfCtx.fillStyle = "#1a1a1a";
-  pdfCtx.font = `${11 * SCALE}px Arial`;
-  
-  const info = [
+  const infoLines = [
     `Médico: ${session.medico}`,
     `Paciente: ${session.paciente}`,
     `Data da Sessão: ${formatDate(session.start)}`,
@@ -341,136 +334,228 @@ function generatePDFSimple(signatureData) {
     `ID do Relatório: ${session.id}`
   ];
   
-  info.forEach(line => {
-    pdfCtx.fillText(line, margin, y);
+  infoLines.forEach(line => {
+    ctx.fillText(line, margin, y);
+    y += 18 * SCALE;
+  });
+  
+  y += 20 * SCALE;
+  
+  // Diagnóstico
+  ctx.fillStyle = "#0284c7";
+  ctx.font = `bold ${14 * SCALE}px Arial`;
+  ctx.fillText("DIAGNÓSTICO CLÍNICO", margin, y);
+  y += 22 * SCALE;
+  
+  ctx.fillStyle = "#1a1a1a";
+  ctx.font = `${11 * SCALE}px Arial`;
+  
+  const diagnostico = validation.diagnostic.diagnostico || "Não especificado";
+  const diagLines = wrapTextPDF(ctx, diagnostico, contentWidth, 11 * SCALE);
+  diagLines.forEach(line => {
+    ctx.fillText(line, margin, y);
     y += 16 * SCALE;
   });
   
-  y += 15 * SCALE;
+  pages.push(page1);
   
   // ============================================
-  // DIAGNÓSTICO
+  // PÁGINA 2: ESCALAS E AVALIAÇÃO
   // ============================================
   
-  pdfCtx.fillStyle = "#0284c7";
-  pdfCtx.font = `bold ${12 * SCALE}px Arial`;
-  pdfCtx.fillText("DIAGNÓSTICO CLÍNICO", margin, y);
-  y += 18 * SCALE;
+  let page2 = createBlankPage(A4_WIDTH, A4_HEIGHT, SCALE);
+  ctx = page2.getContext("2d");
+  y = margin;
   
-  pdfCtx.fillStyle = "#1a1a1a";
-  pdfCtx.font = `${10 * SCALE}px Arial`;
+  // Título
+  ctx.fillStyle = "#0284c7";
+  ctx.font = `bold ${16 * SCALE}px Arial`;
+  ctx.fillText("ESCALAS DE AVALIAÇÃO", margin, y);
+  y += 25 * SCALE;
   
-  const diagnostico = validation.diagnostic.diagnostico || "Não especificado";
-  const diagLines = wrapTextPDF(pdfCtx, diagnostico, contentWidth, 10 * SCALE);
-  diagLines.forEach(line => {
-    pdfCtx.fillText(line, margin, y);
-    y += 14 * SCALE;
-  });
-  
-  y += 12 * SCALE;
-  
-  // ============================================
-  // ESCALAS CLÍNICAS
-  // ============================================
-  
-  pdfCtx.fillStyle = "#0284c7";
-  pdfCtx.font = `bold ${12 * SCALE}px Arial`;
-  pdfCtx.fillText("ESCALAS DE AVALIAÇÃO", margin, y);
-  y += 18 * SCALE;
-  
-  pdfCtx.fillStyle = "#1a1a1a";
-  pdfCtx.font = `${10 * SCALE}px Arial`;
+  ctx.fillStyle = "#1a1a1a";
+  ctx.font = `${12 * SCALE}px Arial`;
   
   const scales = [
-    `Severidade da Afasia: ${validation.scales.severidade}/10`,
-    `Inteligibilidade da Fala: ${validation.scales.inteligibilidade}/10`,
-    `Esforço Vocal: ${validation.scales.esforco}/10`,
-    `Fluência: ${validation.scales.fluencia}/10`,
-    `Índice de Pausa: ${validation.scales.pausa}/10`,
-    `Confiança no Diagnóstico: ${validation.diagnostic.confianca}%`
+    { label: "Severidade da Afasia", value: validation.scales.severidade },
+    { label: "Inteligibilidade da Fala", value: validation.scales.inteligibilidade },
+    { label: "Esforço Vocal", value: validation.scales.esforco },
+    { label: "Fluência", value: validation.scales.fluencia },
+    { label: "Índice de Pausa", value: validation.scales.pausa },
+    { label: "Confiança no Diagnóstico", value: validation.diagnostic.confianca + "%" }
   ];
   
-  scales.forEach(line => {
-    pdfCtx.fillText(line, margin, y);
-    y += 14 * SCALE;
+  scales.forEach(scale => {
+    ctx.fillText(`${scale.label}: ${scale.value}`, margin, y);
+    y += 20 * SCALE;
   });
   
-  y += 12 * SCALE;
+  y += 20 * SCALE;
   
-  // ============================================
-  // TIPO DE AFASIA
-  // ============================================
-  
+  // Tipo de Afasia
   if (validation.qualitative.tipoAfasia && validation.qualitative.tipoAfasia !== "") {
-    pdfCtx.fillStyle = "#0284c7";
-    pdfCtx.font = `bold ${12 * SCALE}px Arial`;
-    pdfCtx.fillText("TIPO DE AFASIA", margin, y);
-    y += 18 * SCALE;
+    ctx.fillStyle = "#0284c7";
+    ctx.font = `bold ${14 * SCALE}px Arial`;
+    ctx.fillText("TIPO DE AFASIA", margin, y);
+    y += 22 * SCALE;
     
-    pdfCtx.fillStyle = "#1a1a1a";
-    pdfCtx.font = `${10 * SCALE}px Arial`;
-    pdfCtx.fillText(validation.qualitative.tipoAfasia, margin, y);
-    y += 14 * SCALE;
-    y += 12 * SCALE;
+    ctx.fillStyle = "#1a1a1a";
+    ctx.font = `${12 * SCALE}px Arial`;
+    ctx.fillText(validation.qualitative.tipoAfasia, margin, y);
+    y += 20 * SCALE;
   }
   
+  // Compreensão, Repetição, Nomeação
+  y += 15 * SCALE;
+  
+  ctx.fillStyle = "#0284c7";
+  ctx.font = `bold ${14 * SCALE}px Arial`;
+  ctx.fillText("ACHADOS QUALITATIVOS", margin, y);
+  y += 22 * SCALE;
+  
+  ctx.fillStyle = "#1a1a1a";
+  ctx.font = `${12 * SCALE}px Arial`;
+  
+  const qualitative = [
+    `Compreensão: ${validation.qualitative.compreensao || "Não avaliado"}`,
+    `Repetição: ${validation.qualitative.repeticao || "Não avaliado"}`,
+    `Nomeação: ${validation.qualitative.nomeacao || "Não avaliado"}`
+  ];
+  
+  qualitative.forEach(line => {
+    ctx.fillText(line, margin, y);
+    y += 18 * SCALE;
+  });
+  
+  pages.push(page2);
+  
   // ============================================
-  // RECOMENDAÇÕES
+  // PÁGINA 3: RECOMENDAÇÕES E OBSERVAÇÕES
   // ============================================
+  
+  let page3 = createBlankPage(A4_WIDTH, A4_HEIGHT, SCALE);
+  ctx = page3.getContext("2d");
+  y = margin;
+  
+  // Recomendações
+  ctx.fillStyle = "#0284c7";
+  ctx.font = `bold ${16 * SCALE}px Arial`;
+  ctx.fillText("RECOMENDAÇÕES CLÍNICAS", margin, y);
+  y += 25 * SCALE;
+  
+  ctx.fillStyle = "#1a1a1a";
+  ctx.font = `${11 * SCALE}px Arial`;
   
   if (validation.diagnostic.recomendacoes && validation.diagnostic.recomendacoes !== "") {
-    pdfCtx.fillStyle = "#0284c7";
-    pdfCtx.font = `bold ${12 * SCALE}px Arial`;
-    pdfCtx.fillText("RECOMENDAÇÕES", margin, y);
-    y += 18 * SCALE;
-    
-    pdfCtx.fillStyle = "#1a1a1a";
-    pdfCtx.font = `${10 * SCALE}px Arial`;
-    
-    const recomLines = wrapTextPDF(pdfCtx, validation.diagnostic.recomendacoes, contentWidth, 10 * SCALE);
+    const recomLines = wrapTextPDF(ctx, validation.diagnostic.recomendacoes, contentWidth, 11 * SCALE);
     recomLines.forEach(line => {
-      pdfCtx.fillText(line, margin, y);
-      y += 14 * SCALE;
+      ctx.fillText(line, margin, y);
+      y += 16 * SCALE;
     });
-    
-    y += 12 * SCALE;
+  } else {
+    ctx.fillText("Nenhuma recomendação específica", margin, y);
+    y += 16 * SCALE;
   }
   
+  y += 25 * SCALE;
+  
+  // Diagnósticos Diferenciais
+  ctx.fillStyle = "#0284c7";
+  ctx.font = `bold ${16 * SCALE}px Arial`;
+  ctx.fillText("DIAGNÓSTICOS DIFERENCIAIS", margin, y);
+  y += 25 * SCALE;
+  
+  ctx.fillStyle = "#1a1a1a";
+  ctx.font = `${11 * SCALE}px Arial`;
+  
+  if (validation.diagnostic.diferenciais && validation.diagnostic.diferenciais !== "") {
+    const difLines = wrapTextPDF(ctx, validation.diagnostic.diferenciais, contentWidth, 11 * SCALE);
+    difLines.forEach(line => {
+      ctx.fillText(line, margin, y);
+      y += 16 * SCALE;
+    });
+  } else {
+    ctx.fillText("Nenhum diagnóstico diferencial especificado", margin, y);
+    y += 16 * SCALE;
+  }
+  
+  y += 25 * SCALE;
+  
+  // Observações
+  ctx.fillStyle = "#0284c7";
+  ctx.font = `bold ${16 * SCALE}px Arial`;
+  ctx.fillText("OBSERVAÇÕES CLÍNICAS", margin, y);
+  y += 25 * SCALE;
+  
+  ctx.fillStyle = "#1a1a1a";
+  ctx.font = `${11 * SCALE}px Arial`;
+  
+  if (validation.clinical.observacoes && validation.clinical.observacoes !== "") {
+    const obsLines = wrapTextPDF(ctx, validation.clinical.observacoes, contentWidth, 11 * SCALE);
+    obsLines.forEach(line => {
+      ctx.fillText(line, margin, y);
+      y += 16 * SCALE;
+    });
+  } else {
+    ctx.fillText("Nenhuma observação adicional", margin, y);
+    y += 16 * SCALE;
+  }
+  
+  pages.push(page3);
+  
   // ============================================
-  // ESPAÇO PARA ASSINATURA
+  // PÁGINA 4: ASSINATURA
   // ============================================
   
-  y = pdfCanvas.height - 100 * SCALE;
+  let page4 = createBlankPage(A4_WIDTH, A4_HEIGHT, SCALE);
+  ctx = page4.getContext("2d");
+  y = page4.height - 150 * SCALE;
   
   // Linha para assinatura
-  pdfCtx.strokeStyle = "#1a1a1a";
-  pdfCtx.lineWidth = 1;
-  pdfCtx.beginPath();
-  pdfCtx.moveTo(margin, y);
-  pdfCtx.lineTo(margin + 120 * SCALE, y);
-  pdfCtx.stroke();
+  ctx.strokeStyle = "#1a1a1a";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(margin, y);
+  ctx.lineTo(margin + 150 * SCALE, y);
+  ctx.stroke();
   
   // Desenhar assinatura
   const signatureImg = new Image();
   signatureImg.onload = () => {
-    pdfCtx.drawImage(signatureImg, margin, y - 60 * SCALE, 120 * SCALE, 50 * SCALE);
+    ctx.drawImage(signatureImg, margin, y - 70 * SCALE, 150 * SCALE, 60 * SCALE);
     
     // Texto abaixo
-    pdfCtx.fillStyle = "#1a1a1a";
-    pdfCtx.font = `${9 * SCALE}px Arial`;
-    pdfCtx.fillText(`${session.medico}`, margin, y + 15 * SCALE);
-    pdfCtx.fillText(`${formatDate(Date.now())}`, margin, y + 28 * SCALE);
+    ctx.fillStyle = "#1a1a1a";
+    ctx.font = `${11 * SCALE}px Arial`;
+    ctx.fillText(`${session.medico}`, margin, y + 20 * SCALE);
+    
+    ctx.font = `${10 * SCALE}px Arial`;
+    ctx.fillText(`${formatDate(Date.now())}`, margin, y + 35 * SCALE);
     
     // Rodapé
-    pdfCtx.fillStyle = "#999999";
-    pdfCtx.font = `${8 * SCALE}px Arial`;
-    pdfCtx.fillText("Documento gerado digitalmente pelo sistema ELAYON HEALTH", margin, pdfCanvas.height - 8 * SCALE);
+    ctx.fillStyle = "#999999";
+    ctx.font = `${9 * SCALE}px Arial`;
+    ctx.fillText("Documento gerado digitalmente pelo sistema ELAYON HEALTH", margin, page4.height - 10 * SCALE);
     
-    // Converter e baixar
-    downloadPDFImage(pdfCanvas);
+    // Converter páginas para PDF
+    downloadPDFMultipage(pages);
   };
   
   signatureImg.src = signatureData;
+}
+
+// ============================================
+// CRIAR PÁGINA EM BRANCO
+// ============================================
+
+function createBlankPage(width, height, scale) {
+  const canvas = document.createElement("canvas");
+  canvas.width = width * scale;
+  canvas.height = height * scale;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  return canvas;
 }
 
 // ============================================
@@ -499,23 +584,39 @@ function wrapTextPDF(ctx, text, maxWidth, lineHeight) {
 }
 
 // ============================================
-// DOWNLOAD PDF
+// DOWNLOAD PDF MULTIPÁGINAS
 // ============================================
 
-function downloadPDFImage(canvas) {
+function downloadPDFMultipage(pages) {
+  // Combinar páginas em uma única imagem
+  const totalHeight = pages.reduce((sum, p) => sum + p.height, 0);
+  const finalCanvas = document.createElement("canvas");
+  finalCanvas.width = pages[0].width;
+  finalCanvas.height = totalHeight;
+  
+  const finalCtx = finalCanvas.getContext("2d");
+  let currentY = 0;
+  
+  pages.forEach(page => {
+    finalCtx.drawImage(page, 0, currentY);
+    currentY += page.height;
+  });
+  
+  // Download
   const link = document.createElement("a");
-  link.href = canvas.toDataURL("image/png");
+  link.href = finalCanvas.toDataURL("image/png");
   link.download = `elayon-relatorio-${session.id}.png`;
   link.click();
   
-  alert("✅ Relatório exportado com sucesso!");
+  alert("✅ Relatório exportado com sucesso em 4 páginas fluidas!");
 }
 
 // ============================================
 // INICIALIZAÇÃO
 // ============================================
 
-console.log("✅ assinatura.js carregado (PARTE 2/2 - CORRIGIDO)");
+console.log("✅ assinatura.js carregado (PARTE 2/2 - MULTIPÁGINAS)");
+console.log("📄 PDF com 4 páginas fluidas");
 console.log("📋 Sessão:", session);
 console.log("✍️ Validação:", validation);
 console.log("📊 Relatório:", report);
