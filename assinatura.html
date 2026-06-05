@@ -384,7 +384,7 @@
       </div>
     </section>
 
-    <!-- CONFIRMAÇÃO -->
+       <!-- CONFIRMAÇÃO -->
     <section class="card soft">
       <h2>⚠️ Confirmação Final</h2>
       <p class="muted">Ao assinar, você confirma que:</p>
@@ -406,18 +406,19 @@
     <!-- BOTÕES FINAIS -->
     <section class="card">
       <div class="actions full">
-        <button class="btn primary" id="btnAssinar" disabled>
+        <button class="btn btn-primary" id="btnAssinar" disabled>
           ✍️ Assinar e Finalizar
         </button>
       </div>
+
       <div class="actions">
-        <button class="btn secondary" id="btnExportPDF" disabled>
+        <button class="btn btn-secondary" id="btnExportPDF" disabled>
           📥 Exportar PDF
         </button>
-        <button class="btn secondary" id="btnVoltar">
-<button class="btn btn-primary" id="btnIAReview" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); margin-top: 12px;">
-  🤖 Validar usando IA
-</button>
+        <button class="btn btn-primary" id="btnIAReview" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);" disabled>
+          🤖 Validar com IA
+        </button>
+        <button class="btn btn-secondary" id="btnVoltar">
           ← Voltar
         </button>
       </div>
@@ -431,5 +432,22 @@
   </main>
 
   <script src="assets/assinatura.js"></script>
+
+  <script>
+    // ============================================
+    // BOTÃO IA REVIEW
+    // ============================================
+
+    document.getElementById("btnIAReview").addEventListener("click", () => {
+      const sessionId = new URL(location.href).searchParams.get("id");
+      
+      if (!sessionId) {
+        alert("❌ Sessão não encontrada");
+        return;
+      }
+
+      location.href = `ia-review.html?id=${encodeURIComponent(sessionId)}`;
+    });
+  </script>
 </body>
 </html>
