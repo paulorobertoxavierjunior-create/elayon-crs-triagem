@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Elayon Health — IA Review</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 50%, #0f2a1f 100%);
+      color: #f1f5f9;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-top: 20px;
+    }
+
+    .logo {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 15px;
+      background: rgba(14, 165, 233, 0.1);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 6px;
+      font-weight: 900;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 13px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(14, 165, 233, 0.2);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .card h2 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: #0ea5e9;
+    }
+
+    .card p {
+      color: #cbd5e1;
+      font-size: 12px;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(14, 165, 233, 0.2);
+      border-radius: 8px;
+      color: #f1f5f9;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: all 200ms;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: #0ea5e9;
+      background: rgba(15, 23, 42, 0.95);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 200ms;
+      text-align: center;
+      display: block;
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      color: white;
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #0ea5e9;
+      border: 1px solid rgba(14, 165, 233, 0.3);
+      font-size: 12px;
+      padding: 8px 12px;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(14, 165, 233, 0.1);
+      border-color: #0ea5e9;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 500px;
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(14, 165, 233, 0.2);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .message {
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.5;
+      max-width: 90%;
+      word-wrap: break-word;
+    }
+
+    .message.user {
+      background: rgba(2, 132, 199, 0.2);
+      border: 1px solid rgba(2, 132, 199, 0.3);
+      color: #0ea5e9;
+      align-self: flex-end;
+      border-radius: 8px 0 8px 8px;
+    }
+
+    .message.ai {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      color: #10b981;
+      align-self: flex-start;
+      border-radius: 0 8px 8px 8px;
+    }
+
+    .message.system {
+      background: rgba(249, 115, 22, 0.1);
+      border: 1px solid rgba(249, 115, 22, 0.2);
+      color: #f97316;
+      align-self: center;
+      text-align: center;
+      font-size: 11px;
+    }
+
+    .chat-input {
+      padding: 12px;
+      border-top: 1px solid rgba(14, 165, 233, 0.2);
+      display: flex;
+      gap: 8px;
+    }
+
+    .chat-input textarea {
+      flex: 1;
+      resize: none;
+      min-height: 40px;
+      max-height: 80px;
+    }
+
+    .chat-input button {
+      padding: 10px 16px;
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .chat-input button:hover {
+      opacity: 0.9;
+    }
+
+    .chat-input button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 10px;
+      background: rgba(14, 165, 233, 0.1);
+      border: 1px solid rgba(14, 165, 233, 0.2);
+      border-radius: 20px;
+      font-size: 11px;
+      color: #0ea5e9;
+      margin-bottom: 8px;
+      margin-right: 6px;
+    }
+
+    .file-info {
+      background: rgba(14, 165, 233, 0.05);
+      border: 1px solid rgba(14, 165, 233, 0.1);
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+
+    .file-info strong {
+      color: #0ea5e9;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .actions button {
+      padding: 10px;
+      font-size: 12px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px;
+      color: #64748b;
+    }
+
+    .empty-state p {
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      background: #0ea5e9;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 30px;
+      color: #64748b;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- HEADER -->
+    <header>
+      <div class="logo">🤖</div>
+      <h1>IA Review</h1>
+      <p class="subtitle">Validação Inteligente de Relatórios CRS</p>
+    </header>
+
+    <!-- GRID: UPLOAD + CHAT -->
+    <div class="grid">
+      <!-- PAINEL ESQUERDO: UPLOAD + CONFIGURAÇÃO -->
+      <div class="card">
+        <h2>📄 Relatório</h2>
+        <p>Carregue o PDF para análise pela IA.</p>
+
+        <div class="field">
+          <label for="iaProvider">Provedor de IA</label>
+          <select id="iaProvider">
+            <option value="gemini">🔵 Google Gemini (Grátis)</option>
+            <option value="claude">🟣 Claude Anthropic (Grátis)</option>
+            <option value="groq">⚡ Groq (Grátis - Rápido)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="iaKey">Chave da API</label>
+          <input id="iaKey" type="password" placeholder="Cole sua chave aqui" />
+          <small style="color: #64748b; font-size: 10px; margin-top: 4px; display: block;">
+            Sua chave é armazenada apenas localmente no navegador.
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="pdfUpload">Upload do PDF</label>
+          <input id="pdfUpload" type="file" accept=".pdf" />
+        </div>
+
+        <div id="fileInfo" class="file-info" style="display: none;">
+          <strong>📄 Arquivo carregado:</strong><br/>
+          <span id="fileName"></span>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" id="btnLoadPDF">
+            📤 Carregar PDF
+          </button>
+          <button class="btn btn-secondary" id="btnClearPDF">
+            🗑️ Limpar
+          </button>
+        </div>
+
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(14, 165, 233, 0.1);">
+          <h2 style="font-size: 14px; margin-bottom: 10px;">📊 Dados do Relatório</h2>
+          <div id="reportData" class="empty-state" style="padding: 12px; text-align: left;">
+            Nenhum relatório carregado.
+          </div>
+        </div>
+      </div>
+
+      <!-- PAINEL DIREITO: CHAT COM IA -->
+      <div class="card">
+        <h2>💬 Chat com IA</h2>
+        <p>A IA questiona a técnica e tecnologia para validar o resultado.</p>
+
+        <div class="chat-container">
+          <div class="chat-messages" id="chatMessages">
+            <div class="message system">
+              Carregue um PDF para iniciar a análise
+            </div>
+          </div>
+          <div class="chat-input">
+            <textarea id="userMessage" placeholder="Escreva sua resposta..." disabled></textarea>
+            <button id="btnSendMessage" disabled>Enviar</button>
+          </div>
+        </div>
+
+        <div class="actions" style="margin-top: 12px;">
+          <button class="btn btn-secondary" id="btnStartAnalysis" disabled>
+            🚀 Iniciar Análise
+          </button>
+          <button class="btn btn-secondary" id="btnExportChat" disabled>
+            💾 Salvar Chat
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AÇÕES FINAIS -->
+    <div class="card" style="margin-top: 20px;">
+      <h2>✅ Validação Final</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <button class="btn btn-primary" id="btnConfirmValidation">
+          ✍️ Confirmar Validação
+        </button>
+        <button class="btn btn-secondary" id="btnVoltar">
+          ← Voltar ao Dashboard
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Elayon Health • IA Review • 2026</p>
+  </footer>
+
+  <script>
+    // ============================================
+    // CONSTANTES
+    // ============================================
+
+    const KEY_SESSIONS = "elayon_crs_sessions";
+    const KEY_VALIDATIONS = "elayon_validations";
+    const KEY_IA_REVIEWS = "elayon_ia_reviews";
+
+    // ============================================
+    // ELEMENTOS DOM
+    // ============================================
+
+    const iaProvider = document.getElementById("iaProvider");
+    const iaKey = document.getElementById("iaKey");
+    const pdfUpload = document.getElementById("pdfUpload");
+    const btnLoadPDF = document.getElementById("btnLoadPDF");
+    const btnClearPDF = document.getElementById("btnClearPDF");
+    const fileInfo = document.getElementById("fileInfo");
+    const fileName = document.getElementById("fileName");
+    const reportData = document.getElementById("reportData");
+    const chatMessages = document.getElementById("chatMessages");
+    const userMessage = document.getElementById("userMessage");
+    const btnSendMessage = document.getElementById("btnSendMessage");
+    const btnStartAnalysis = document.getElementById("btnStartAnalysis");
+    const btnExportChat = document.getElementById("btnExportChat");
+    const btnConfirmValidation = document.getElementById("btnConfirmValidation");
+    const btnVoltar = document.getElementById("btnVoltar");
+
+    // ============================================
+    // ESTADO
+    // ============================================
+
+    let currentPDF = null;
+    let currentReport = null;
+    let chatHistory = [];
+    let analysisStarted = false;
+
+    // ============================================
+    // UTILITÁRIOS
+    // ============================================
+
+    function getParam(name) {
+      return new URL(location.href).searchParams.get(name);
+    }
+
+    function loadSessions() {
+      return JSON.parse(localStorage.getItem(KEY_SESSIONS) || "[]");
+    }
+
+    function loadValidations() {
+      return JSON.parse(localStorage.getItem(KEY_VALIDATIONS) || "[]");
+    }
+
+    function saveChatHistory(sessionId, history) {
+      const reviews = JSON.parse(localStorage.getItem(KEY_IA_REVIEWS) || "[]");
+      const existingIdx = reviews.findIndex(r => r.sessionId === sessionId);
+      
+      const review = {
+        id: `review_${Date.now()}`,
+        sessionId,
+        provider: iaProvider.value,
+        chatHistory: history,
+        createdAt: Date.now()
+      };
+
+      if (existingIdx !== -1) {
+        reviews[existingIdx] = review;
+      } else {
+        reviews.unshift(review);
+      }
+
+      localStorage.setItem(KEY_IA_REVIEWS, JSON.stringify(reviews));
+    }
+
+    function addMessage(text, type = "system") {
+      const msg = document.createElement("div");
+      msg.className = `message ${type}`;
+      msg.textContent = text;
+      chatMessages.appendChild(msg);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      chatHistory.push({ role: type, content: text });
+    }
+
+    // ============================================
+    // CARREGAR PDF
+    // ============================================
+
+    btnLoadPDF.addEventListener("click", () => {
+      const file = pdfUpload.files[0];
+      
+      if (!file) {
+        alert("Selecione um arquivo PDF");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        currentPDF = e.target.result;
+        fileName.textContent = file.name;
+        fileInfo.style.display = "block";
+
+        // Simular extração de dados do PDF
+        reportData.innerHTML = `
+          <strong>📋 Arquivo:</strong> ${file.name}<br/>
+          <strong>📊 Tamanho:</strong> ${(file.size / 1024).toFixed(2)} KB<br/>
+          <strong>✅ Status:</strong> Pronto para análise
+        `;
+
+        // Habilitar botões
+        btnStartAnalysis.disabled = false;
+        userMessage.disabled = false;
+        btnSendMessage.disabled = false;
+
+        addMessage("PDF carregado com sucesso! Clique em 'Iniciar Análise' para começar.", "system");
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
+
+    btnClearPDF.addEventListener("click", () => {
+      currentPDF = null;
+      pdfUpload.value = "";
+      fileInfo.style.display = "none";
+      reportData.innerHTML = "Nenhum relatório carregado.";
+      chatMessages.innerHTML = '<div class="message system">Carregue um PDF para iniciar a análise</div>';
+      chatHistory = [];
+      analysisStarted = false;
+
+      btnStartAnalysis.disabled = true;
+      userMessage.disabled = true;
+      btnSendMessage.disabled = true;
+    });
+
+    // ============================================
+    // INICIAR ANÁLISE
+    // ============================================
+
+    btnStartAnalysis.addEventListener("click", () => {
+      if (!currentPDF) {
+        alert("Carregue um PDF primeiro");
+        return;
+      }
+
+      if (!iaKey.value) {
+        alert("Insira sua chave de API");
+        return;
+      }
+
+      analysisStarted = true;
+      addMessage("🤖 IA iniciando análise do relatório...", "system");
+
+      // Simular questões iniciais da IA
+      setTimeout(() => {
+        const questions = [
+          "Qual foi a metodologia exata usada para capturar o áudio? (Microfone, ambiente, duração total)",
+          "Quais são os critérios clínicos que levaram a este diagnóstico específico?",
+          "Como você validou a inteligibilidade da fala? Qual escala foi utilizada?",
+          "Existem comorbidades que podem influenciar os resultados da análise vocal?"
+        ];
+
+        const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+        addMessage(randomQuestion, "ai");
+      }, 1000);
+
+      btnStartAnalysis.disabled = true;
+    });
+
+    // ============================================
+    // ENVIAR MENSAGEM
+    // ============================================
+
+    btnSendMessage.addEventListener("click", sendMessage);
+    userMessage.addEventListener("keypress", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    function sendMessage() {
+      const text = userMessage.value.trim();
+      
+      if (!text) return;
+
+      addMessage(text, "user");
+      userMessage.value = "";
+
+      // Simular resposta da IA
+      setTimeout(() => {
+        const responses = [
+          "Entendi. Essa informação é crucial para validar a confiabilidade dos dados. Qual foi a taxa de ruído ambiental?",
+          "Excelente. Isso está alinhado com os padrões clínicos. Você observou variabilidade entre as tentativas?",
+          "Perfeito. A metodologia está clara. Qual é sua confiança percentual neste diagnóstico?",
+          "Ótimo. Isso reforça o diagnóstico. Há alguma observação adicional que gostaria de documentar?"
+        ];
+
+        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+        addMessage(randomResponse, "ai");
+      }, 800);
+    }
+
+    // ============================================
+    // EXPORTAR CHAT
+    // ============================================
+
+    btnExportChat.addEventListener("click", () => {
+      const sessionId = getParam("id");
+      saveChatHistory(sessionId, chatHistory);
+      alert("✅ Chat salvo com sucesso!");
+    });
+
+    // ============================================
+    // CONFIRMAR VALIDAÇÃO
+    // ============================================
+
+    btnConfirmValidation.addEventListener("click", () => {
+      if (!analysisStarted) {
+        alert("Inicie a análise primeiro");
+        return;
+      }
+
+      const sessionId = getParam("id");
+      saveChatHistory(sessionId, chatHistory);
+
+      // Atualizar status da sessão
+      const sessions = loadSessions();
+      const sessionIdx = sessions.findIndex(s => s.id === sessionId);
+      if (sessionIdx !== -1) {
+        sessions[sessionIdx].status = "ia_validated";
+        localStorage.setItem(KEY_SESSIONS, JSON.stringify(sessions));
+      }
+
+      alert("✅ Validação confirmada! Relatório pronto para entrega.");
+      location.href = "index.html";
+    });
+
+    // ============================================
+    // VOLTAR
+    // ============================================
+
+    btnVoltar.addEventListener("click", () => {
+      location.href = "index.html";
+    });
+
+    console.log("✅ ia-review.js carregado");
+  </script>
+</body>
+</html>
