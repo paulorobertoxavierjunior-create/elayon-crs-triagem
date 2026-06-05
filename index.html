@@ -20,7 +20,7 @@
     }
 
     .container {
-      max-width: 600px;
+      max-width: 900px;
       margin: 0 auto;
     }
 
@@ -54,12 +54,24 @@
       margin-bottom: 30px;
     }
 
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .card {
       background: rgba(30, 41, 59, 0.85);
       border: 1px solid rgba(14, 165, 233, 0.2);
       border-radius: 16px;
       padding: 24px;
-      margin-bottom: 20px;
       backdrop-filter: blur(10px);
     }
 
@@ -161,6 +173,20 @@
       border-color: #0ea5e9;
     }
 
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 8px 12px;
+      font-size: 12px;
+      width: auto;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+    }
+
     .btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
@@ -177,6 +203,56 @@
       color: #0ea5e9;
       margin-bottom: 8px;
       margin-right: 8px;
+    }
+
+    .session-item {
+      padding: 12px;
+      background: rgba(14, 165, 233, 0.05);
+      border: 1px solid rgba(14, 165, 233, 0.1);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .session-info {
+      flex: 1;
+    }
+
+    .session-info strong {
+      color: #0ea5e9;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .session-info small {
+      color: #64748b;
+      display: block;
+      font-size: 11px;
+    }
+
+    .session-actions {
+      display: flex;
+      gap: 8px;
+      margin-left: 12px;
+    }
+
+    .session-actions a {
+      padding: 6px 10px;
+      background: rgba(14, 165, 233, 0.1);
+      border: 1px solid rgba(14, 165, 233, 0.2);
+      border-radius: 6px;
+      color: #0ea5e9;
+      text-decoration: none;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 200ms;
+    }
+
+    .session-actions a:hover {
+      background: rgba(14, 165, 233, 0.2);
+      border-color: #0ea5e9;
     }
 
     .debug-box {
@@ -208,6 +284,13 @@
       color: #0ea5e9;
     }
 
+    .empty-state {
+      color: #64748b;
+      text-align: center;
+      padding: 20px 0;
+      font-size: 13px;
+    }
+
     footer {
       text-align: center;
       margin-top: 40px;
@@ -225,45 +308,66 @@
       <p class="subtitle">CRS • Análise Vocal em Tempo Real</p>
     </header>
 
-    <!-- FORMULÁRIO -->
-    <div class="card">
-      <h2>🎤 Iniciar Sessão</h2>
-      <p>Preencha os dados e comece a capturar áudio.</p>
+    <!-- GRID: FORMULÁRIO + ESTATÍSTICAS -->
+    <div class="grid">
+      <!-- FORMULÁRIO -->
+      <div class="card">
+        <h2>🎤 Iniciar Sessão</h2>
+        <p>Preencha os dados e comece a capturar áudio.</p>
 
-      <div class="field">
-        <label for="medico">Médico</label>
-        <input id="medico" type="text" placeholder="Dra. Ana Silva" value="Dra. Ana Silva" />
+        <div class="field">
+          <label for="medico">Médico</label>
+          <input id="medico" type="text" placeholder="Dra. Ana Silva" value="Dra. Ana Silva" />
+        </div>
+
+        <div class="field">
+          <label for="paciente">Paciente</label>
+          <input id="paciente" type="text" placeholder="João Santos" value="João Santos" />
+        </div>
+
+        <div class="field">
+          <label for="contexto">Contexto (opcional)</label>
+          <textarea id="contexto" placeholder="Ex: triagem neurológica..."></textarea>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" id="btnStart">
+            ▶️ Iniciar Sessão
+          </button>
+          <button class="btn btn-secondary" id="btnClear">
+            🔄 Limpar Formulário
+          </button>
+        </div>
       </div>
 
-      <div class="field">
-        <label for="paciente">Paciente</label>
-        <input id="paciente" type="text" placeholder="João Santos" value="João Santos" />
-      </div>
+      <!-- ESTATÍSTICAS -->
+      <div class="card">
+        <h2>📊 Estatísticas</h2>
+        
+        <div style="margin-bottom: 20px;">
+          <div class="badge" id="pillTotal">📋 Total: 0</div>
+          <div class="badge" id="pillClosed">✅ Finalizados: 0</div>
+          <div class="badge" id="pillActive">⏱️ Ativos: 0</div>
+        </div>
 
-      <div class="field">
-        <label for="contexto">Contexto (opcional)</label>
-        <textarea id="contexto" placeholder="Ex: triagem neurológica..."></textarea>
-      </div>
+        <p style="color: #94a3b8; font-size: 12px;">
+          <strong>Limite de Relatórios:</strong><br/>
+          <span id="limitInfo">0 / 10 relatórios</span>
+        </p>
 
-      <div class="actions">
-        <button class="btn btn-primary" id="btnStart">
-          ▶️ Iniciar Sessão
-        </button>
-        <button class="btn btn-secondary" id="btnClear">
-          🔄 Limpar Formulário
-        </button>
-      </div>
-
-      <div style="margin-top: 16px;">
-        <div class="badge" id="pillReports">📊 Relatórios: 0/100</div>
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(14, 165, 233, 0.1);">
+          <button class="btn btn-danger" id="btnClearAll" style="width: 100%;">
+            🗑️ Limpar Todos
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- ÚLTIMAS SESSÕES -->
     <div class="card">
       <h2>📄 Últimas Sessões</h2>
-      <div id="recentSessions">
-        <p style="color: #64748b; text-align: center; padding: 20px 0;">Nenhuma sessão ainda.</p>
+      <div id="recentSessions" class="empty-state">
+        Nenhuma sessão ainda.
       </div>
     </div>
 
@@ -321,8 +425,23 @@
       try {
         localStorage.setItem(KEY_SESSIONS, JSON.stringify(arr));
         log(`✅ ${arr.length} sessão(ões) salva(s)`, "ok");
+        updateCounters();
       } catch (e) {
         log(`❌ Erro ao salvar: ${e.message}`, "error");
+      }
+    }
+
+    function deleteSession(sessionId) {
+      const sessions = loadSessions();
+      const filtered = sessions.filter(s => s.id !== sessionId);
+      saveSessions(filtered);
+      log(`🗑️ Sessão ${sessionId} deletada`, "info");
+    }
+
+    function deleteAllSessions() {
+      if (confirm("Tem certeza que deseja deletar TODAS as sessões? Esta ação não pode ser desfeita.")) {
+        saveSessions([]);
+        log("🗑️ Todas as sessões deletadas", "info");
       }
     }
 
@@ -335,7 +454,11 @@
     const elCtx = document.getElementById("contexto");
     const btnStart = document.getElementById("btnStart");
     const btnClear = document.getElementById("btnClear");
-    const pillReports = document.getElementById("pillReports");
+    const btnClearAll = document.getElementById("btnClearAll");
+    const pillTotal = document.getElementById("pillTotal");
+    const pillClosed = document.getElementById("pillClosed");
+    const pillActive = document.getElementById("pillActive");
+    const limitInfo = document.getElementById("limitInfo");
     const recentSessions = document.getElementById("recentSessions");
 
     // ============================================
@@ -356,23 +479,35 @@
     function updateCounters() {
       const sessions = loadSessions();
       const closed = sessions.filter(s => s.status === "closed").length;
+      const active = sessions.filter(s => s.status === "active").length;
+      const total = sessions.length;
 
-      if (pillReports) {
-        pillReports.textContent = `📊 Relatórios: ${closed}/${MAX_REPORTS}`;
-      }
+      // Atualizar badges
+      if (pillTotal) pillTotal.textContent = `📋 Total: ${total}`;
+      if (pillClosed) pillClosed.textContent = `✅ Finalizados: ${closed}`;
+      if (pillActive) pillActive.textContent = `⏱️ Ativos: ${active}`;
+      if (limitInfo) limitInfo.textContent = `${closed} / ${MAX_REPORTS} relatórios`;
 
+      // Atualizar lista de sessões
       if (recentSessions) {
-        const recent = sessions.slice(0, 3);
+        const recent = sessions.slice(0, 5);
         if (recent.length === 0) {
-          recentSessions.innerHTML = `<p style="color: #64748b; text-align: center; padding: 20px 0;">Nenhuma sessão ainda.</p>`;
+          recentSessions.innerHTML = `<div class="empty-state">Nenhuma sessão ainda.</div>`;
         } else {
           recentSessions.innerHTML = recent
             .map(s => `
-              <div style="padding: 12px; background: rgba(14, 165, 233, 0.05); border-radius: 8px; margin-bottom: 8px;">
-                <strong style="color: #0ea5e9;">${s.medico} → ${s.paciente}</strong><br/>
-                <small style="color: #64748b;">
-                  ${new Date(s.start).toLocaleString("pt-BR")}
-                </small>
+              <div class="session-item">
+                <div class="session-info">
+                  <strong>${s.medico} → ${s.paciente}</strong>
+                  <small>${new Date(s.start).toLocaleString("pt-BR")}</small>
+                  <small style="color: ${s.status === "closed" ? "#10b981" : "#f59e0b"};">
+                    ${s.status === "closed" ? "✅ Finalizado" : "⏱️ Ativo"}
+                  </small>
+                </div>
+                <div class="session-actions">
+                  ${s.status === "closed" ? `<a href="report.html?id=${encodeURIComponent(s.id)}">📄 Relatório</a>` : ""}
+                  <a href="#" onclick="deleteSession('${s.id}'); return false;">🗑️ Deletar</a>
+                </div>
               </div>
             `)
             .join("");
@@ -403,7 +538,7 @@
 
         if (closed >= MAX_REPORTS) {
           log(`❌ Limite atingido (${closed}/${MAX_REPORTS})`, "error");
-          alert(`Limite atingido. Exclua relatórios para continuar.`);
+          alert(`Limite de ${MAX_REPORTS} relatórios atingido. Delete alguns para continuar.`);
           return;
         }
 
@@ -440,6 +575,10 @@
         elCtx.value = "";
         log("🔄 Formulário limpo", "info");
       });
+    }
+
+    if (btnClearAll) {
+      btnClearAll.addEventListener("click", deleteAllSessions);
     }
 
     // ============================================
