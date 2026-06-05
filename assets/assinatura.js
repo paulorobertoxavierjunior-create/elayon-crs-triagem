@@ -272,7 +272,7 @@ document.getElementById("btnVoltar").addEventListener("click", () => {
 console.log("✅ assinatura.js carregado (PARTE 1/2)");
 
 // ============================================
-// EXPORTAR PDF (COM jsPDF - PROFISSIONAL)
+// EXPORTAR PDF (COM jsPDF + GRÁFICOS)
 // ============================================
 
 document.getElementById("btnExportPDF").addEventListener("click", () => {
@@ -283,17 +283,16 @@ document.getElementById("btnExportPDF").addEventListener("click", () => {
     return;
   }
 
-  generatePDFWithjsPDF(signatureData);
+  generatePDFProfissional(signatureData);
 });
 
 // ============================================
-// GERAR PDF COM jsPDF (PROFISSIONAL)
+// GERAR PDF PROFISSIONAL COM GRÁFICOS
 // ============================================
 
-function generatePDFWithjsPDF(signatureData) {
+function generatePDFProfissional(signatureData) {
   const { jsPDF } = window.jspdf;
   
-  // Criar documento A4
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -307,7 +306,7 @@ function generatePDFWithjsPDF(signatureData) {
   let y = margin;
 
   // ============================================
-  // PÁGINA 1: CABEÇALHO + INFORMAÇÕES + DIAGNÓSTICO
+  // PÁGINA 1: CABEÇALHO + INFORMAÇÕES
   // ============================================
 
   // Cabeçalho
@@ -365,7 +364,7 @@ function generatePDFWithjsPDF(signatureData) {
   doc.text(diagLines, margin, y);
   y += diagLines.length * 5 + 5;
 
-  // Confiança no diagnóstico
+  // Confiança
   doc.setFontSize(10);
   doc.setFont(undefined, 'bold');
   doc.setTextColor(2, 132, 199);
@@ -377,10 +376,9 @@ function generatePDFWithjsPDF(signatureData) {
   doc.setFont(undefined, 'normal');
   doc.setTextColor(26, 26, 26);
   doc.text(`Status: ${statusText}`, margin, y);
-  y += 6;
 
   // ============================================
-  // PÁGINA 2: ESCALAS DE AVALIAÇÃO
+  // PÁGINA 2: GRÁFICO DAS ESCALAS
   // ============================================
 
   doc.addPage();
@@ -389,43 +387,125 @@ function generatePDFWithjsPDF(signatureData) {
   doc.setFontSize(12);
   doc.setFont(undefined, 'bold');
   doc.setTextColor(2, 132, 199);
-  doc.text("ESCALAS DE AVALIAÇÃO", margin, y);
-  y += 8;
+  doc.text("ESCALAS DE AVALIAÇÃO (GRÁFICO)", margin, y);
+  y += 12;
 
-  doc.setFontSize(11);
+  // Dados das escalas
+  const scalesData = [
+    { label: "Severidade", value: validation.scales.severidade, color: [239, 68, 68] },
+    { label: "Inteligibilidade", value: validation.scales.inteligibilidade, color: [59, 130, 246] },
+    { label: "Esforço Vocal", value: validation.scales.esforco, color: [249, 115, 22] },
+    { label: "Fluência", value: validation.scales.fluencia, color: [34, 197, 94] },
+    { label: "Índice Pausa", value: validation.scales.pausa, color: [168, 85, 247] }
+  ];
+
+  // Desenhar gráfico de barras
+  const barWidth = 8;
+  const barSpacing = 15;
+  const maxBarHeight = 40;
+  const startX = margin + 10;
+  const startY = y + 50;
+
+  scalesData.forEach((scale, idx) => {
+    const barHeight = (scale.value / 10) * maxBarHeight;
+    const x = startX + idx * barSpacing;
+
+    // Barra
+    doc.setFillColor(scale.color[0], scale.color[1], scale.color[2]);
+    doc.rect(x, startY - barHeight, barWidth, barHeight, 'F');
+
+    // Valor
+    doc.setFontSize(8);
+    doc.setTextColor(26, 26, 26);
+    doc.text(`${scale.value}`, x + 1, startY + 5);
+
+    // Label
+    doc.setFontSize(7);
+    doc.text(scale.label, x - 2, startY + 12, { maxWidth: 12, align: 'center' });
+  });
+
+  y = startY + 25;
+
+  // Tabela de escalas
+  doc.setFontSize(10);
   doc.setFont(undefined, 'normal');
   doc.setTextColor(26, 26, 26);
 
-  const scales = [
-    `Severidade da Afasia: ${validation.scales.severidade}/10`,
-    `Inteligibilidade da Fala: ${validation.scales.inteligibilidade}/10`,
-    `Esforço Vocal: ${validation.scales.esforco}/10`,
-    `Fluência: ${validation.scales.fluencia}/10`,
-    `Índice de Pausa: ${validation.scales.pausa}/10`
-  ];
-
-  scales.forEach(line => {
-    doc.text(line, margin, y);
-    y += 6;
+  scalesData.forEach(scale => {
+    doc.text(`${scale.label}: ${scale.value}/10`, margin, y);
+    y += 5;
   });
 
-  y += 8;
+  y += 5;
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(2, 132, 199);
+  doc.text(`Confiança no Diagnóstico: ${validation.diagnostic.confianca}%`, margin, y);
+
+  // ============================================
+  // PÁGINA 3: MÉTRICAS CRS TÉCNICAS
+  // ============================================
+
+  doc.addPage();
+  y = margin;
+
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(2, 132, 199);
+  doc.text("MÉTRICAS CRS TÉCNICAS", margin, y);
+  y += 12;
+
+  // Tabela de métricas
+  doc.setFontSize(9);
+  doc.setFont(undefined, 'normal');
+  doc.setTextColor(26, 26, 26);
+
+  const metricsTable = [
+    ["Métrica", "Valor", "Interpretação"],
+    ["Severidade da Afasia", `${validation.scales.severidade}/10`, validation.scales.severidade <= 3 ? "Leve" : validation.scales.severidade <= 6 ? "Moderada" : "Severa"],
+    ["Inteligibilidade", `${validation.scales.inteligibilidade}/10`, validation.scales.inteligibilidade >= 7 ? "Preservada" : "Alterada"],
+    ["Esforço Vocal", `${validation.scales.esforco}/10`, validation.scales.esforco <= 3 ? "Normal" : "Aumentado"],
+    ["Fluência", `${validation.scales.fluencia}/10`, validation.scales.fluencia >= 7 ? "Fluente" : "Disfluente"],
+    ["Índice de Pausa", `${validation.scales.pausa}/10`, validation.scales.pausa >= 5 ? "Aumentado" : "Normal"]
+  ];
+
+  // Desenhar tabela
+  let tableY = y;
+  metricsTable.forEach((row, idx) => {
+    if (idx === 0) {
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(255, 255, 255);
+      doc.setFillColor(2, 132, 199);
+      doc.rect(margin, tableY - 4, contentWidth, 5, 'F');
+    } else {
+      doc.setFont(undefined, 'normal');
+      doc.setTextColor(26, 26, 26);
+      if (idx % 2 === 0) {
+        doc.setFillColor(240, 240, 240);
+        doc.rect(margin, tableY - 4, contentWidth, 5, 'F');
+      }
+    }
+
+    doc.text(row[0], margin + 2, tableY);
+    doc.text(row[1], margin + 60, tableY);
+    doc.text(row[2], margin + 85, tableY);
+    tableY += 6;
+  });
+
+  y = tableY + 10;
 
   // Tipo de Afasia
-  if (validation.qualitative.tipoAfasia && validation.qualitative.tipoAfasia !== "") {
-    doc.setFontSize(12);
-    doc.setFont(undefined, 'bold');
-    doc.setTextColor(2, 132, 199);
-    doc.text("TIPO DE AFASIA", margin, y);
-    y += 8;
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(2, 132, 199);
+  doc.text("TIPO DE AFASIA", margin, y);
+  y += 8;
 
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
-    doc.setTextColor(26, 26, 26);
-    doc.text(validation.qualitative.tipoAfasia, margin, y);
-    y += 6;
-    y += 6;
-  }
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.setTextColor(26, 26, 26);
+  doc.text(validation.qualitative.tipoAfasia || "Não especificado", margin, y);
+  y += 8;
 
   // Achados Qualitativos
   doc.setFontSize(12);
@@ -434,7 +514,7 @@ function generatePDFWithjsPDF(signatureData) {
   doc.text("ACHADOS QUALITATIVOS", margin, y);
   y += 8;
 
-  doc.setFontSize(11);
+  doc.setFontSize(10);
   doc.setFont(undefined, 'normal');
   doc.setTextColor(26, 26, 26);
 
@@ -446,20 +526,75 @@ function generatePDFWithjsPDF(signatureData) {
 
   qualitative.forEach(line => {
     doc.text(line, margin, y);
-    y += 6;
+    y += 5;
   });
 
+  // ============================================
+  // PÁGINA 4: ANÁLISE SEMÂNTICA
+  // ============================================
+
+  doc.addPage();
+  y = margin;
+
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(2, 132, 199);
+  doc.text("ANÁLISE SEMÂNTICA E MOMENTOS INTEGRAIS", margin, y);
+  y += 12;
+
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.setTextColor(26, 26, 26);
+
+  // Momento Integral (média das escalas)
+  const momentoIntegral = (
+    validation.scales.severidade +
+    validation.scales.inteligibilidade +
+    validation.scales.esforco +
+    validation.scales.fluencia +
+    validation.scales.pausa
+  ) / 5;
+
+  doc.text(`Momento Integral (Média): ${momentoIntegral.toFixed(2)}/10`, margin, y);
   y += 6;
 
-  // Contexto da sessão
+  // Derivado Semântico (variação entre escalas)
+  const scales = [
+    validation.scales.severidade,
+    validation.scales.inteligibilidade,
+    validation.scales.esforco,
+    validation.scales.fluencia,
+    validation.scales.pausa
+  ];
+  const maxScale = Math.max(...scales);
+  const minScale = Math.min(...scales);
+  const derivadoSemantico = maxScale - minScale;
+
+  doc.text(`Derivado Semântico (Variação): ${derivadoSemantico.toFixed(2)}`, margin, y);
+  y += 6;
+
+  // Interpretação
+  doc.setFont(undefined, 'bold');
+  doc.text("Interpretação:", margin, y);
+  y += 6;
+
+  doc.setFont(undefined, 'normal');
+  const interpretacao = `
+    O momento integral de ${momentoIntegral.toFixed(2)} indica um padrão ${momentoIntegral <= 3 ? "leve" : momentoIntegral <= 6 ? "moderado" : "severo"} de alteração.
+    O derivado semântico de ${derivadoSemantico.toFixed(2)} sugere ${derivadoSemantico <= 2 ? "consistência nos achados" : derivadoSemantico <= 5 ? "variabilidade moderada" : "grande variabilidade entre domínios"}.
+  `;
+
+  const interpretacaoLines = doc.splitTextToSize(interpretacao, contentWidth);
+  doc.text(interpretacaoLines, margin, y);
+  y += interpretacaoLines.length * 5 + 10;
+
+  // Contexto
   if (session.contexto && session.contexto !== "") {
-    doc.setFontSize(12);
     doc.setFont(undefined, 'bold');
     doc.setTextColor(2, 132, 199);
     doc.text("CONTEXTO DA SESSÃO", margin, y);
     y += 8;
 
-    doc.setFontSize(10);
     doc.setFont(undefined, 'normal');
     doc.setTextColor(26, 26, 26);
     const ctxLines = doc.splitTextToSize(session.contexto, contentWidth);
@@ -468,7 +603,7 @@ function generatePDFWithjsPDF(signatureData) {
   }
 
   // ============================================
-  // PÁGINA 3: RECOMENDAÇÕES E DIFERENCIAIS
+  // PÁGINA 5: RECOMENDAÇÕES + ASSINATURA
   // ============================================
 
   doc.addPage();
@@ -536,7 +671,7 @@ function generatePDFWithjsPDF(signatureData) {
   }
 
   // ============================================
-  // PÁGINA 4: ASSINATURA
+  // PÁGINA 6: ASSINATURA
   // ============================================
 
   doc.addPage();
@@ -580,7 +715,7 @@ function generatePDFWithjsPDF(signatureData) {
 
     // Salvar PDF
     doc.save(`elayon-relatorio-${session.id}.pdf`);
-    alert("✅ Relatório exportado com sucesso em PDF!");
+    alert("✅ Relatório exportado com sucesso em PDF profissional!");
   };
 
   img.src = signatureData;
@@ -590,8 +725,6 @@ function generatePDFWithjsPDF(signatureData) {
 // INICIALIZAÇÃO
 // ============================================
 
-console.log("✅ assinatura.js carregado (PARTE 2/2 - jsPDF)");
-console.log("📄 PDF profissional com jsPDF");
-console.log("📋 Sessão:", session);
-console.log("✍️ Validação:", validation);
-console.log("📊 Relatório:", report);
+console.log("✅ assinatura.js carregado (PARTE 2/2 - PROFISSIONAL)");
+console.log("📊 PDF com gráficos e métricas CRS");
+console.log("📄 6 páginas profissionais");
