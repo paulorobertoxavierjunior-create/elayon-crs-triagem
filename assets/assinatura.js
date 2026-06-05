@@ -261,6 +261,10 @@ document.getElementById("btnAssinar").addEventListener("click", () => {
   document.getElementById("btnAssinar").textContent = "✅ Assinado";
 });
 
+// Habilitar botão IA Review
+document.getElementById("btnIAReview").disabled = false;
+document.getElementById("btnExportPDF").disabled = false;
+
 // ============================================
 // VOLTAR
 // ============================================
