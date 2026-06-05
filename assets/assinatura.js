@@ -295,7 +295,7 @@ document.getElementById("btnExportPDF").addEventListener("click", () => {
 
 
 // ============================================
-// GERAR PDF MULTIPÁGINAS (A4 REAL - FLUIDO)
+// GERAR PDF 4 PÁGINAS (TUDO APARECENDO)
 // ============================================
 
 function generatePDFMultipage(signatureData) {
@@ -304,14 +304,15 @@ function generatePDFMultipage(signatureData) {
   // Configurações A4 REAL
   const A4_WIDTH = 210;
   const A4_HEIGHT = 297;
-  const DPI = 96;
+  const DPI = 72;
   const SCALE = DPI / 25.4;
   
-  const margin = 25 * SCALE;
-  const contentWidth = (A4_WIDTH - 2 * 25) * SCALE;
+  const margin = 20 * SCALE;
+  const contentWidth = (A4_WIDTH - 2 * 20) * SCALE;
+  const lineHeight = 16 * SCALE;
   
   // ============================================
-  // PÁGINA 1: CABEÇALHO + DIAGNÓSTICO + ESCALAS
+  // PÁGINA 1: CABEÇALHO + INFORMAÇÕES
   // ============================================
   
   let page1 = createBlankPage(A4_WIDTH, A4_HEIGHT, SCALE);
@@ -320,27 +321,27 @@ function generatePDFMultipage(signatureData) {
   
   // CABEÇALHO
   ctx.fillStyle = "#0284c7";
-  ctx.font = `bold ${32 * SCALE}px Arial`;
+  ctx.font = `bold ${28 * SCALE}px Arial`;
   ctx.fillText("ELAYON HEALTH", margin, y);
-  y += 50 * SCALE;
+  y += 40 * SCALE;
   
   ctx.fillStyle = "#1a1a1a";
-  ctx.font = `${16 * SCALE}px Arial`;
+  ctx.font = `${14 * SCALE}px Arial`;
   ctx.fillText("Relatório de Avaliação Clínica CRS", margin, y);
-  y += 35 * SCALE;
+  y += 30 * SCALE;
   
   // Linha separadora
   ctx.strokeStyle = "#0284c7";
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(margin, y);
   ctx.lineTo(page1.width - margin, y);
   ctx.stroke();
-  y += 35 * SCALE;
+  y += 30 * SCALE;
   
   // INFORMAÇÕES GERAIS
   ctx.fillStyle = "#1a1a1a";
-  ctx.font = `${13 * SCALE}px Arial`;
+  ctx.font = `${12 * SCALE}px Arial`;
   
   const infoLines = [
     `Médico: ${session.medico}`,
@@ -352,37 +353,46 @@ function generatePDFMultipage(signatureData) {
   
   infoLines.forEach(line => {
     ctx.fillText(line, margin, y);
-    y += 22 * SCALE;
-  });
-  
-  y += 30 * SCALE;
-  
-  // DIAGNÓSTICO
-  ctx.fillStyle = "#0284c7";
-  ctx.font = `bold ${16 * SCALE}px Arial`;
-  ctx.fillText("DIAGNÓSTICO CLÍNICO", margin, y);
-  y += 28 * SCALE;
-  
-  ctx.fillStyle = "#1a1a1a";
-  ctx.font = `${13 * SCALE}px Arial`;
-  
-  const diagnostico = validation.diagnostic.diagnostico || "Não especificado";
-  const diagLines = wrapTextPDF(ctx, diagnostico, contentWidth, 13 * SCALE);
-  diagLines.forEach(line => {
-    ctx.fillText(line, margin, y);
     y += 20 * SCALE;
   });
   
   y += 25 * SCALE;
   
-  // ESCALAS
+  // DIAGNÓSTICO
   ctx.fillStyle = "#0284c7";
-  ctx.font = `bold ${16 * SCALE}px Arial`;
-  ctx.fillText("ESCALAS DE AVALIAÇÃO", margin, y);
-  y += 28 * SCALE;
+  ctx.font = `bold ${14 * SCALE}px Arial`;
+  ctx.fillText("DIAGNÓSTICO CLÍNICO", margin, y);
+  y += 25 * SCALE;
   
   ctx.fillStyle = "#1a1a1a";
-  ctx.font = `${13 * SCALE}px Arial`;
+  ctx.font = `${11 * SCALE}px Arial`;
+  
+  const diagnostico = validation.diagnostic.diagnostico || "Não especificado";
+  const diagLines = wrapTextPDF(ctx, diagnostico, contentWidth, 11 * SCALE);
+  diagLines.forEach(line => {
+    if (y > page1.height - margin - 20 * SCALE) return;
+    ctx.fillText(line, margin, y);
+    y += 18 * SCALE;
+  });
+  
+  pages.push(page1);
+  
+  // ============================================
+  // PÁGINA 2: ESCALAS DE AVALIAÇÃO
+  // ============================================
+  
+  let page2 = createBlankPage(A4_WIDTH, A4_HEIGHT, SCALE);
+  ctx = page2.getContext("2d");
+  y = margin;
+  
+  // Título
+  ctx.fillStyle = "#0284c7";
+  ctx.font = `bold ${14 * SCALE}px Arial`;
+  ctx.fillText("ESCALAS DE AVALIAÇÃO", margin, y);
+  y += 25 * SCALE;
+  
+  ctx.fillStyle = "#1a1a1a";
+  ctx.font = `${12 * SCALE}px Arial`;
   
   const scales = [
     `Severidade da Afasia: ${validation.scales.severidade}/10`,
@@ -395,41 +405,33 @@ function generatePDFMultipage(signatureData) {
   
   scales.forEach(line => {
     ctx.fillText(line, margin, y);
-    y += 22 * SCALE;
+    y += 20 * SCALE;
   });
   
-  pages.push(page1);
-  
-  // ============================================
-  // PÁGINA 2: ACHADOS + RECOMENDAÇÕES + ASSINATURA
-  // ============================================
-  
-  let page2 = createBlankPage(A4_WIDTH, A4_HEIGHT, SCALE);
-  ctx = page2.getContext("2d");
-  y = margin;
+  y += 25 * SCALE;
   
   // TIPO DE AFASIA
   if (validation.qualitative.tipoAfasia && validation.qualitative.tipoAfasia !== "") {
     ctx.fillStyle = "#0284c7";
-    ctx.font = `bold ${16 * SCALE}px Arial`;
+    ctx.font = `bold ${14 * SCALE}px Arial`;
     ctx.fillText("TIPO DE AFASIA", margin, y);
-    y += 28 * SCALE;
+    y += 25 * SCALE;
     
     ctx.fillStyle = "#1a1a1a";
-    ctx.font = `${13 * SCALE}px Arial`;
+    ctx.font = `${12 * SCALE}px Arial`;
     ctx.fillText(validation.qualitative.tipoAfasia, margin, y);
-    y += 22 * SCALE;
+    y += 20 * SCALE;
     y += 20 * SCALE;
   }
   
   // ACHADOS QUALITATIVOS
   ctx.fillStyle = "#0284c7";
-  ctx.font = `bold ${16 * SCALE}px Arial`;
+  ctx.font = `bold ${14 * SCALE}px Arial`;
   ctx.fillText("ACHADOS QUALITATIVOS", margin, y);
-  y += 28 * SCALE;
+  y += 25 * SCALE;
   
   ctx.fillStyle = "#1a1a1a";
-  ctx.font = `${13 * SCALE}px Arial`;
+  ctx.font = `${12 * SCALE}px Arial`;
   
   const qualitative = [
     `Compreensão: ${validation.qualitative.compreensao || "Não avaliado"}`,
@@ -439,23 +441,32 @@ function generatePDFMultipage(signatureData) {
   
   qualitative.forEach(line => {
     ctx.fillText(line, margin, y);
-    y += 22 * SCALE;
+    y += 20 * SCALE;
   });
   
-  y += 20 * SCALE;
+  pages.push(page2);
+  
+  // ============================================
+  // PÁGINA 3: RECOMENDAÇÕES E DIFERENCIAIS
+  // ============================================
+  
+  let page3 = createBlankPage(A4_WIDTH, A4_HEIGHT, SCALE);
+  ctx = page3.getContext("2d");
+  y = margin;
   
   // RECOMENDAÇÕES
   ctx.fillStyle = "#0284c7";
-  ctx.font = `bold ${16 * SCALE}px Arial`;
+  ctx.font = `bold ${14 * SCALE}px Arial`;
   ctx.fillText("RECOMENDAÇÕES CLÍNICAS", margin, y);
-  y += 28 * SCALE;
+  y += 25 * SCALE;
   
   ctx.fillStyle = "#1a1a1a";
-  ctx.font = `${12 * SCALE}px Arial`;
+  ctx.font = `${11 * SCALE}px Arial`;
   
   if (validation.diagnostic.recomendacoes && validation.diagnostic.recomendacoes !== "") {
-    const recomLines = wrapTextPDF(ctx, validation.diagnostic.recomendacoes, contentWidth, 12 * SCALE);
+    const recomLines = wrapTextPDF(ctx, validation.diagnostic.recomendacoes, contentWidth, 11 * SCALE);
     recomLines.forEach(line => {
+      if (y > page3.height - margin - 40 * SCALE) return;
       ctx.fillText(line, margin, y);
       y += 18 * SCALE;
     });
@@ -464,33 +475,92 @@ function generatePDFMultipage(signatureData) {
     y += 18 * SCALE;
   }
   
-  y += 30 * SCALE;
+  y += 25 * SCALE;
   
-  // ASSINATURA
+  // DIAGNÓSTICOS DIFERENCIAIS
+  ctx.fillStyle = "#0284c7";
+  ctx.font = `bold ${14 * SCALE}px Arial`;
+  ctx.fillText("DIAGNÓSTICOS DIFERENCIAIS", margin, y);
+  y += 25 * SCALE;
+  
+  ctx.fillStyle = "#1a1a1a";
+  ctx.font = `${11 * SCALE}px Arial`;
+  
+  if (validation.diagnostic.diferenciais && validation.diagnostic.diferenciais !== "") {
+    const difLines = wrapTextPDF(ctx, validation.diagnostic.diferenciais, contentWidth, 11 * SCALE);
+    difLines.forEach(line => {
+      if (y > page3.height - margin - 40 * SCALE) return;
+      ctx.fillText(line, margin, y);
+      y += 18 * SCALE;
+    });
+  } else {
+    ctx.fillText("Nenhum diagnóstico diferencial especificado", margin, y);
+    y += 18 * SCALE;
+  }
+  
+  y += 25 * SCALE;
+  
+  // OBSERVAÇÕES
+  ctx.fillStyle = "#0284c7";
+  ctx.font = `bold ${14 * SCALE}px Arial`;
+  ctx.fillText("OBSERVAÇÕES CLÍNICAS", margin, y);
+  y += 25 * SCALE;
+  
+  ctx.fillStyle = "#1a1a1a";
+  ctx.font = `${11 * SCALE}px Arial`;
+  
+  if (validation.clinical.observacoes && validation.clinical.observacoes !== "") {
+    const obsLines = wrapTextPDF(ctx, validation.clinical.observacoes, contentWidth, 11 * SCALE);
+    obsLines.forEach(line => {
+      if (y > page3.height - margin - 40 * SCALE) return;
+      ctx.fillText(line, margin, y);
+      y += 18 * SCALE;
+    });
+  } else {
+    ctx.fillText("Nenhuma observação adicional", margin, y);
+    y += 18 * SCALE;
+  }
+  
+  pages.push(page3);
+  
+  // ============================================
+  // PÁGINA 4: ASSINATURA
+  // ============================================
+  
+  let page4 = createBlankPage(A4_WIDTH, A4_HEIGHT, SCALE);
+  ctx = page4.getContext("2d");
+  y = page4.height - 180 * SCALE;
+  
+  // Espaço para assinatura
+  ctx.fillStyle = "#1a1a1a";
+  ctx.font = `${12 * SCALE}px Arial`;
+  ctx.fillText("Assinatura do Médico:", margin, y - 40 * SCALE);
+  
+  // Linha para assinatura
   ctx.strokeStyle = "#1a1a1a";
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(margin, y);
-  ctx.lineTo(margin + 140 * SCALE, y);
+  ctx.lineTo(margin + 160 * SCALE, y);
   ctx.stroke();
   
   // Desenhar assinatura
   const signatureImg = new Image();
   signatureImg.onload = () => {
-    ctx.drawImage(signatureImg, margin, y - 60 * SCALE, 140 * SCALE, 50 * SCALE);
+    ctx.drawImage(signatureImg, margin, y - 70 * SCALE, 160 * SCALE, 60 * SCALE);
     
     // Texto abaixo
     ctx.fillStyle = "#1a1a1a";
-    ctx.font = `${12 * SCALE}px Arial`;
-    ctx.fillText(`${session.medico}`, margin, y + 25 * SCALE);
-    
     ctx.font = `${11 * SCALE}px Arial`;
-    ctx.fillText(`${formatDate(Date.now())}`, margin, y + 42 * SCALE);
+    ctx.fillText(`${session.medico}`, margin, y + 30 * SCALE);
+    
+    ctx.font = `${10 * SCALE}px Arial`;
+    ctx.fillText(`${formatDate(Date.now())}`, margin, y + 50 * SCALE);
     
     // Rodapé
     ctx.fillStyle = "#999999";
-    ctx.font = `${10 * SCALE}px Arial`;
-    ctx.fillText("Documento gerado digitalmente pelo sistema ELAYON HEALTH", margin, page2.height - 15 * SCALE);
+    ctx.font = `${9 * SCALE}px Arial`;
+    ctx.fillText("Documento gerado digitalmente pelo sistema ELAYON HEALTH", margin, page4.height - 10 * SCALE);
     
     // Converter páginas para PDF
     downloadPDFMultipage(pages);
@@ -563,15 +633,15 @@ function downloadPDFMultipage(pages) {
   link.download = `elayon-relatorio-${session.id}.png`;
   link.click();
   
-  alert("✅ Relatório exportado com sucesso em 2 páginas A4!");
+  alert("✅ Relatório exportado com sucesso em 4 páginas A4!");
 }
 
 // ============================================
 // INICIALIZAÇÃO
 // ============================================
 
-console.log("✅ assinatura.js carregado (PARTE 2/2 - A4 REAL)");
-console.log("📄 PDF com 2 páginas A4 dimensionadas");
+console.log("✅ assinatura.js carregado (PARTE 2/2 - 4 PÁGINAS)");
+console.log("📄 PDF com 4 páginas A4 completas");
 console.log("📋 Sessão:", session);
 console.log("✍️ Validação:", validation);
 console.log("📊 Relatório:", report);
