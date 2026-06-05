@@ -272,7 +272,7 @@ document.getElementById("btnVoltar").addEventListener("click", () => {
 console.log("✅ assinatura.js carregado (PARTE 1/2)");
 
 // ============================================
-// EXPORTAR PDF (COM jsPDF + GRÁFICOS)
+// EXPORTAR PDF (COM jsPDF + 2 PÁGINAS)
 // ============================================
 
 document.getElementById("btnExportPDF").addEventListener("click", () => {
@@ -283,14 +283,14 @@ document.getElementById("btnExportPDF").addEventListener("click", () => {
     return;
   }
 
-  generatePDFProfissional(signatureData);
+  generatePDFCondensado(signatureData);
 });
 
 // ============================================
-// GERAR PDF PROFISSIONAL COM GRÁFICOS
+// GERAR PDF CONDENSADO (2 PÁGINAS)
 // ============================================
 
-function generatePDFProfissional(signatureData) {
+function generatePDFCondensado(signatureData) {
   const { jsPDF } = window.jspdf;
   
   const doc = new jsPDF({
@@ -301,110 +301,95 @@ function generatePDFProfissional(signatureData) {
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 15;
+  const margin = 12;
   const contentWidth = pageWidth - 2 * margin;
+  const lineSpacing = 3.5;
   let y = margin;
 
   // ============================================
-  // PÁGINA 1: CABEÇALHO + INFORMAÇÕES
+  // PÁGINA 1: INFO + DIAGNÓSTICO + GRÁFICO + ESCALAS
   // ============================================
 
   // Cabeçalho
-  doc.setFontSize(24);
+  doc.setFontSize(18);
   doc.setTextColor(2, 132, 199);
   doc.setFont(undefined, 'bold');
   doc.text("ELAYON HEALTH", margin, y);
-  y += 12;
+  y += 8;
 
-  doc.setFontSize(14);
+  doc.setFontSize(11);
   doc.setTextColor(26, 26, 26);
   doc.setFont(undefined, 'normal');
   doc.text("Relatório de Avaliação Clínica CRS", margin, y);
-  y += 10;
+  y += 7;
 
   // Linha separadora
   doc.setDrawColor(2, 132, 199);
-  doc.setLineWidth(0.5);
+  doc.setLineWidth(0.4);
   doc.line(margin, y, pageWidth - margin, y);
-  y += 10;
+  y += 6;
 
-  // Informações gerais
-  doc.setFontSize(11);
+  // Informações gerais (compacto)
+  doc.setFontSize(9);
   doc.setTextColor(26, 26, 26);
   doc.setFont(undefined, 'normal');
 
   const infoLines = [
     `Médico: ${session.medico}`,
     `Paciente: ${session.paciente}`,
-    `Data da Sessão: ${formatDate(session.start)}`,
-    `Data de Assinatura: ${formatDate(Date.now())}`,
-    `ID do Relatório: ${session.id}`
+    `Data: ${formatDate(session.start)}`,
+    `ID: ${session.id}`
   ];
 
   infoLines.forEach(line => {
     doc.text(line, margin, y);
-    y += 6;
+    y += lineSpacing;
   });
 
-  y += 8;
+  y += 4;
 
-  // Diagnóstico
-  doc.setFontSize(12);
+  // Diagnóstico (compacto)
+  doc.setFontSize(10);
   doc.setFont(undefined, 'bold');
   doc.setTextColor(2, 132, 199);
-  doc.text("DIAGNÓSTICO CLÍNICO", margin, y);
-  y += 8;
+  doc.text("DIAGNÓSTICO", margin, y);
+  y += 5;
 
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   doc.setFont(undefined, 'normal');
   doc.setTextColor(26, 26, 26);
 
   const diagnostico = validation.diagnostic.diagnostico || "Não especificado";
-  const diagLines = doc.splitTextToSize(diagnostico, contentWidth);
+  const diagLines = doc.splitTextToSize(diagnostico, contentWidth - 5);
   doc.text(diagLines, margin, y);
-  y += diagLines.length * 5 + 5;
+  y += diagLines.length * lineSpacing + 3;
 
-  // Confiança
-  doc.setFontSize(10);
   doc.setFont(undefined, 'bold');
   doc.setTextColor(2, 132, 199);
-  doc.text(`Confiança no Diagnóstico: ${validation.diagnostic.confianca}%`, margin, y);
-  y += 6;
+  doc.text(`Confiança: ${validation.diagnostic.confianca}%`, margin, y);
+  y += 5;
 
-  // Status
-  doc.setFontSize(10);
-  doc.setFont(undefined, 'normal');
-  doc.setTextColor(26, 26, 26);
-  doc.text(`Status: ${statusText}`, margin, y);
-
-  // ============================================
-  // PÁGINA 2: GRÁFICO DAS ESCALAS
-  // ============================================
-
-  doc.addPage();
-  y = margin;
-
-  doc.setFontSize(12);
+  // Gráfico das escalas (compacto)
+  doc.setFontSize(9);
   doc.setFont(undefined, 'bold');
   doc.setTextColor(2, 132, 199);
-  doc.text("ESCALAS DE AVALIAÇÃO (GRÁFICO)", margin, y);
-  y += 12;
+  doc.text("ESCALAS", margin, y);
+  y += 5;
 
-  // Dados das escalas
   const scalesData = [
     { label: "Severidade", value: validation.scales.severidade, color: [239, 68, 68] },
     { label: "Inteligibilidade", value: validation.scales.inteligibilidade, color: [59, 130, 246] },
-    { label: "Esforço Vocal", value: validation.scales.esforco, color: [249, 115, 22] },
+    { label: "Esforço", value: validation.scales.esforco, color: [249, 115, 22] },
     { label: "Fluência", value: validation.scales.fluencia, color: [34, 197, 94] },
-    { label: "Índice Pausa", value: validation.scales.pausa, color: [168, 85, 247] }
+    { label: "Pausa", value: validation.scales.pausa, color: [168, 85, 247] }
   ];
 
-  // Desenhar gráfico de barras
-  const barWidth = 8;
-  const barSpacing = 15;
-  const maxBarHeight = 40;
-  const startX = margin + 10;
-  const startY = y + 50;
+  // Desenhar gráfico de barras (compacto)
+  const barWidth = 6;
+  const barSpacing = 11;
+  const maxBarHeight = 25;
+  const startX = margin + 5;
+  const startY = y + 28;
 
   scalesData.forEach((scale, idx) => {
     const barHeight = (scale.value / 10) * maxBarHeight;
@@ -415,106 +400,50 @@ function generatePDFProfissional(signatureData) {
     doc.rect(x, startY - barHeight, barWidth, barHeight, 'F');
 
     // Valor
-    doc.setFontSize(8);
+    doc.setFontSize(7);
     doc.setTextColor(26, 26, 26);
-    doc.text(`${scale.value}`, x + 1, startY + 5);
+    doc.text(`${scale.value}`, x + 0.5, startY + 3);
 
     // Label
-    doc.setFontSize(7);
-    doc.text(scale.label, x - 2, startY + 12, { maxWidth: 12, align: 'center' });
+    doc.setFontSize(6);
+    doc.text(scale.label, x - 1, startY + 8, { maxWidth: 10, align: 'center' });
   });
 
-  y = startY + 25;
+  y = startY + 15;
 
-  // Tabela de escalas
-  doc.setFontSize(10);
+  // Tabela de escalas (compacto)
+  doc.setFontSize(8);
   doc.setFont(undefined, 'normal');
   doc.setTextColor(26, 26, 26);
 
   scalesData.forEach(scale => {
     doc.text(`${scale.label}: ${scale.value}/10`, margin, y);
-    y += 5;
+    y += lineSpacing;
   });
 
-  y += 5;
-  doc.setFontSize(10);
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(2, 132, 199);
-  doc.text(`Confiança no Diagnóstico: ${validation.diagnostic.confianca}%`, margin, y);
-
-  // ============================================
-  // PÁGINA 3: MÉTRICAS CRS TÉCNICAS
-  // ============================================
-
-  doc.addPage();
-  y = margin;
-
-  doc.setFontSize(12);
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(2, 132, 199);
-  doc.text("MÉTRICAS CRS TÉCNICAS", margin, y);
-  y += 12;
-
-  // Tabela de métricas
-  doc.setFontSize(9);
-  doc.setFont(undefined, 'normal');
-  doc.setTextColor(26, 26, 26);
-
-  const metricsTable = [
-    ["Métrica", "Valor", "Interpretação"],
-    ["Severidade da Afasia", `${validation.scales.severidade}/10`, validation.scales.severidade <= 3 ? "Leve" : validation.scales.severidade <= 6 ? "Moderada" : "Severa"],
-    ["Inteligibilidade", `${validation.scales.inteligibilidade}/10`, validation.scales.inteligibilidade >= 7 ? "Preservada" : "Alterada"],
-    ["Esforço Vocal", `${validation.scales.esforco}/10`, validation.scales.esforco <= 3 ? "Normal" : "Aumentado"],
-    ["Fluência", `${validation.scales.fluencia}/10`, validation.scales.fluencia >= 7 ? "Fluente" : "Disfluente"],
-    ["Índice de Pausa", `${validation.scales.pausa}/10`, validation.scales.pausa >= 5 ? "Aumentado" : "Normal"]
-  ];
-
-  // Desenhar tabela
-  let tableY = y;
-  metricsTable.forEach((row, idx) => {
-    if (idx === 0) {
-      doc.setFont(undefined, 'bold');
-      doc.setTextColor(255, 255, 255);
-      doc.setFillColor(2, 132, 199);
-      doc.rect(margin, tableY - 4, contentWidth, 5, 'F');
-    } else {
-      doc.setFont(undefined, 'normal');
-      doc.setTextColor(26, 26, 26);
-      if (idx % 2 === 0) {
-        doc.setFillColor(240, 240, 240);
-        doc.rect(margin, tableY - 4, contentWidth, 5, 'F');
-      }
-    }
-
-    doc.text(row[0], margin + 2, tableY);
-    doc.text(row[1], margin + 60, tableY);
-    doc.text(row[2], margin + 85, tableY);
-    tableY += 6;
-  });
-
-  y = tableY + 10;
+  y += 3;
 
   // Tipo de Afasia
-  doc.setFontSize(12);
+  doc.setFontSize(9);
   doc.setFont(undefined, 'bold');
   doc.setTextColor(2, 132, 199);
   doc.text("TIPO DE AFASIA", margin, y);
-  y += 8;
+  y += 4;
 
-  doc.setFontSize(10);
+  doc.setFontSize(8);
   doc.setFont(undefined, 'normal');
   doc.setTextColor(26, 26, 26);
   doc.text(validation.qualitative.tipoAfasia || "Não especificado", margin, y);
-  y += 8;
+  y += 4;
 
   // Achados Qualitativos
-  doc.setFontSize(12);
+  doc.setFontSize(9);
   doc.setFont(undefined, 'bold');
   doc.setTextColor(2, 132, 199);
   doc.text("ACHADOS QUALITATIVOS", margin, y);
-  y += 8;
+  y += 4;
 
-  doc.setFontSize(10);
+  doc.setFontSize(8);
   doc.setFont(undefined, 'normal');
   doc.setTextColor(26, 26, 26);
 
@@ -526,27 +455,67 @@ function generatePDFProfissional(signatureData) {
 
   qualitative.forEach(line => {
     doc.text(line, margin, y);
-    y += 5;
+    y += lineSpacing;
   });
 
   // ============================================
-  // PÁGINA 4: ANÁLISE SEMÂNTICA
+  // PÁGINA 2: MÉTRICAS + ANÁLISE + RECOMENDAÇÕES + ASSINATURA
   // ============================================
 
   doc.addPage();
   y = margin;
 
-  doc.setFontSize(12);
+  // Métricas CRS
+  doc.setFontSize(9);
   doc.setFont(undefined, 'bold');
   doc.setTextColor(2, 132, 199);
-  doc.text("ANÁLISE SEMÂNTICA E MOMENTOS INTEGRAIS", margin, y);
-  y += 12;
+  doc.text("MÉTRICAS CRS TÉCNICAS", margin, y);
+  y += 5;
 
-  doc.setFontSize(10);
+  doc.setFontSize(7);
   doc.setFont(undefined, 'normal');
   doc.setTextColor(26, 26, 26);
 
-  // Momento Integral (média das escalas)
+  const metricsTable = [
+    ["Métrica", "Valor", "Interpretação"],
+    ["Severidade", `${validation.scales.severidade}/10`, validation.scales.severidade <= 3 ? "Leve" : validation.scales.severidade <= 6 ? "Moderada" : "Severa"],
+    ["Inteligibilidade", `${validation.scales.inteligibilidade}/10`, validation.scales.inteligibilidade >= 7 ? "Preservada" : "Alterada"],
+    ["Esforço Vocal", `${validation.scales.esforco}/10`, validation.scales.esforco <= 3 ? "Normal" : "Aumentado"],
+    ["Fluência", `${validation.scales.fluencia}/10`, validation.scales.fluencia >= 7 ? "Fluente" : "Disfluente"],
+    ["Pausa", `${validation.scales.pausa}/10`, validation.scales.pausa >= 5 ? "Aumentado" : "Normal"]
+  ];
+
+  let tableY = y;
+  metricsTable.forEach((row, idx) => {
+    if (idx === 0) {
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(255, 255, 255);
+      doc.setFillColor(2, 132, 199);
+      doc.rect(margin, tableY - 3, contentWidth, 4, 'F');
+    } else {
+      doc.setFont(undefined, 'normal');
+      doc.setTextColor(26, 26, 26);
+      if (idx % 2 === 0) {
+        doc.setFillColor(240, 240, 240);
+        doc.rect(margin, tableY - 3, contentWidth, 4, 'F');
+      }
+    }
+
+    doc.text(row[0], margin + 1, tableY);
+    doc.text(row[1], margin + 50, tableY);
+    doc.text(row[2], margin + 70, tableY);
+    tableY += 4;
+  });
+
+  y = tableY + 4;
+
+  // Análise Semântica
+  doc.setFontSize(9);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(2, 132, 199);
+  doc.text("ANÁLISE SEMÂNTICA", margin, y);
+  y += 4;
+
   const momentoIntegral = (
     validation.scales.severidade +
     validation.scales.inteligibilidade +
@@ -555,10 +524,6 @@ function generatePDFProfissional(signatureData) {
     validation.scales.pausa
   ) / 5;
 
-  doc.text(`Momento Integral (Média): ${momentoIntegral.toFixed(2)}/10`, margin, y);
-  y += 6;
-
-  // Derivado Semântico (variação entre escalas)
   const scales = [
     validation.scales.severidade,
     validation.scales.inteligibilidade,
@@ -570,161 +535,144 @@ function generatePDFProfissional(signatureData) {
   const minScale = Math.min(...scales);
   const derivadoSemantico = maxScale - minScale;
 
-  doc.text(`Derivado Semântico (Variação): ${derivadoSemantico.toFixed(2)}`, margin, y);
-  y += 6;
-
-  // Interpretação
-  doc.setFont(undefined, 'bold');
-  doc.text("Interpretação:", margin, y);
-  y += 6;
-
+  doc.setFontSize(8);
   doc.setFont(undefined, 'normal');
-  const interpretacao = `
-    O momento integral de ${momentoIntegral.toFixed(2)} indica um padrão ${momentoIntegral <= 3 ? "leve" : momentoIntegral <= 6 ? "moderado" : "severo"} de alteração.
-    O derivado semântico de ${derivadoSemantico.toFixed(2)} sugere ${derivadoSemantico <= 2 ? "consistência nos achados" : derivadoSemantico <= 5 ? "variabilidade moderada" : "grande variabilidade entre domínios"}.
-  `;
+  doc.setTextColor(26, 26, 26);
 
-  const interpretacaoLines = doc.splitTextToSize(interpretacao, contentWidth);
-  doc.text(interpretacaoLines, margin, y);
-  y += interpretacaoLines.length * 5 + 10;
+  doc.text(`Momento Integral: ${momentoIntegral.toFixed(2)}/10`, margin, y);
+  y += lineSpacing;
+  doc.text(`Derivado Semântico: ${derivadoSemantico.toFixed(2)}`, margin, y);
+  y += lineSpacing;
+
+  const interpretacao = `Padrão ${momentoIntegral <= 3 ? "leve" : momentoIntegral <= 6 ? "moderado" : "severo"}. ${derivadoSemantico <= 2 ? "Consistência" : derivadoSemantico <= 5 ? "Variabilidade moderada" : "Grande variabilidade"}.`;
+  const interpLines = doc.splitTextToSize(interpretacao, contentWidth - 5);
+  doc.text(interpLines, margin, y);
+  y += interpLines.length * lineSpacing + 3;
 
   // Contexto
   if (session.contexto && session.contexto !== "") {
+    doc.setFontSize(9);
     doc.setFont(undefined, 'bold');
     doc.setTextColor(2, 132, 199);
-    doc.text("CONTEXTO DA SESSÃO", margin, y);
-    y += 8;
+    doc.text("CONTEXTO", margin, y);
+    y += 4;
 
+    doc.setFontSize(8);
     doc.setFont(undefined, 'normal');
     doc.setTextColor(26, 26, 26);
-    const ctxLines = doc.splitTextToSize(session.contexto, contentWidth);
+    const ctxLines = doc.splitTextToSize(session.contexto, contentWidth - 5);
     doc.text(ctxLines, margin, y);
-    y += ctxLines.length * 5;
+    y += ctxLines.length * lineSpacing + 3;
   }
 
-  // ============================================
-  // PÁGINA 5: RECOMENDAÇÕES + ASSINATURA
-  // ============================================
-
-  doc.addPage();
-  y = margin;
-
-  doc.setFontSize(12);
+  // Recomendações
+  doc.setFontSize(9);
   doc.setFont(undefined, 'bold');
   doc.setTextColor(2, 132, 199);
-  doc.text("RECOMENDAÇÕES CLÍNICAS", margin, y);
-  y += 8;
+  doc.text("RECOMENDAÇÕES", margin, y);
+  y += 4;
 
-  doc.setFontSize(10);
+  doc.setFontSize(8);
   doc.setFont(undefined, 'normal');
   doc.setTextColor(26, 26, 26);
 
   if (validation.diagnostic.recomendacoes && validation.diagnostic.recomendacoes !== "") {
-    const recomLines = doc.splitTextToSize(validation.diagnostic.recomendacoes, contentWidth);
+    const recomLines = doc.splitTextToSize(validation.diagnostic.recomendacoes, contentWidth - 5);
     doc.text(recomLines, margin, y);
-    y += recomLines.length * 5 + 8;
+    y += recomLines.length * lineSpacing + 2;
   } else {
     doc.text("Nenhuma recomendação específica", margin, y);
-    y += 8;
+    y += lineSpacing + 2;
   }
 
-  y += 5;
-
   // Diagnósticos Diferenciais
-  doc.setFontSize(12);
+  doc.setFontSize(9);
   doc.setFont(undefined, 'bold');
   doc.setTextColor(2, 132, 199);
-  doc.text("DIAGNÓSTICOS DIFERENCIAIS", margin, y);
-  y += 8;
+  doc.text("DIFERENCIAIS", margin, y);
+  y += 4;
 
-  doc.setFontSize(10);
+  doc.setFontSize(8);
   doc.setFont(undefined, 'normal');
   doc.setTextColor(26, 26, 26);
 
   if (validation.diagnostic.diferenciais && validation.diagnostic.diferenciais !== "") {
-    const difLines = doc.splitTextToSize(validation.diagnostic.diferenciais, contentWidth);
+    const difLines = doc.splitTextToSize(validation.diagnostic.diferenciais, contentWidth - 5);
     doc.text(difLines, margin, y);
-    y += difLines.length * 5 + 8;
+    y += difLines.length * lineSpacing + 2;
   } else {
     doc.text("Nenhum diagnóstico diferencial especificado", margin, y);
-    y += 8;
+    y += lineSpacing + 2;
   }
 
-  y += 5;
-
   // Observações
-  doc.setFontSize(12);
+  doc.setFontSize(9);
   doc.setFont(undefined, 'bold');
   doc.setTextColor(2, 132, 199);
-  doc.text("OBSERVAÇÕES CLÍNICAS", margin, y);
-  y += 8;
+  doc.text("OBSERVAÇÕES", margin, y);
+  y += 4;
 
-  doc.setFontSize(10);
+  doc.setFontSize(8);
   doc.setFont(undefined, 'normal');
   doc.setTextColor(26, 26, 26);
 
   if (validation.clinical.observacoes && validation.clinical.observacoes !== "") {
-    const obsLines = doc.splitTextToSize(validation.clinical.observacoes, contentWidth);
+    const obsLines = doc.splitTextToSize(validation.clinical.observacoes, contentWidth - 5);
     doc.text(obsLines, margin, y);
   } else {
     doc.text("Nenhuma observação adicional", margin, y);
   }
 
   // ============================================
-  // PÁGINA 6: ASSINATURA
+  // ASSINATURA (CANTO DIREITO INFERIOR)
   // ============================================
 
-  doc.addPage();
-  y = pageHeight - 100;
+  const signatureImg = new Image();
+  signatureImg.onload = () => {
+    // Posicionar assinatura no canto direito inferior
+    const signX = pageWidth - margin - 60;
+    const signY = pageHeight - 35;
 
-  // Texto de assinatura
-  doc.setFontSize(11);
-  doc.setFont(undefined, 'normal');
-  doc.setTextColor(26, 26, 26);
-  doc.text("Assinatura do Médico:", margin, y - 25);
+    // Linha para assinatura
+    doc.setDrawColor(26, 26, 26);
+    doc.setLineWidth(0.2);
+    doc.line(signX, signY, signX + 60, signY);
 
-  // Linha para assinatura
-  doc.setDrawColor(26, 26, 26);
-  doc.setLineWidth(0.3);
-  doc.line(margin, y, margin + 80, y);
-
-  // Adicionar assinatura
-  const img = new Image();
-  img.onload = () => {
-    doc.addImage(img, 'PNG', margin, y - 30, 80, 25);
+    // Desenhar assinatura
+    doc.addImage(signatureImg, 'PNG', signX, signY - 25, 60, 20);
 
     // Texto abaixo
-    doc.setFontSize(10);
+    doc.setFontSize(8);
     doc.setFont(undefined, 'normal');
     doc.setTextColor(26, 26, 26);
-    doc.text(`${session.medico}`, margin, y + 15);
+    doc.text(`${session.medico}`, signX, signY + 8);
 
-    doc.setFontSize(9);
+    doc.setFontSize(7);
     doc.setTextColor(100, 100, 100);
-    doc.text(`${formatDate(Date.now())}`, margin, y + 22);
+    doc.text(`${formatDate(Date.now())}`, signX, signY + 14);
 
     // Rodapé
-    doc.setFontSize(8);
+    doc.setFontSize(7);
     doc.setTextColor(150, 150, 150);
     doc.text(
-      "Documento gerado digitalmente pelo sistema ELAYON HEALTH",
+      "ELAYON HEALTH • Sistema de Análise Vocal CRS",
       pageWidth / 2,
-      pageHeight - 5,
+      pageHeight - 3,
       { align: 'center' }
     );
 
     // Salvar PDF
     doc.save(`elayon-relatorio-${session.id}.pdf`);
-    alert("✅ Relatório exportado com sucesso em PDF profissional!");
+    alert("✅ Relatório exportado com sucesso em 2 páginas!");
   };
 
-  img.src = signatureData;
+  signatureImg.src = signatureData;
 }
 
 // ============================================
 // INICIALIZAÇÃO
 // ============================================
 
-console.log("✅ assinatura.js carregado (PARTE 2/2 - PROFISSIONAL)");
-console.log("📊 PDF com gráficos e métricas CRS");
-console.log("📄 6 páginas profissionais");
+console.log("✅ assinatura.js carregado (PARTE 2/2 - 2 PÁGINAS)");
+console.log("📊 PDF condensado profissional");
+console.log("📄 2 páginas compactas");
