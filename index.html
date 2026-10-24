@@ -3,11 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Elayon Health — Protocolo ELA & Telemedicina Simbiótica</title>
+  <title>Elayon Health — Chamada via WhatsApp & Telefonia Real</title>
   <link rel="stylesheet" href="assets/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    /* Correções de Contraste e Leitura dos Botões */
     :root {
       --bg-dark: #0a192f;
       --card-dark: #112240;
@@ -16,7 +15,7 @@
       --text-muted: #8892b0;
       --accent-teal: #2a9d8f;
       --accent-bright: #3ecfcf;
-      --danger-red: #e63946;
+      --whatsapp-green: #25d366;
       --btn-text: #0a2a2f;
     }
 
@@ -24,17 +23,14 @@
       background-color: var(--bg-dark);
       color: var(--text-main);
       font-family: system-ui, -apple-system, sans-serif;
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
     }
 
     .topbar {
       background: var(--card-dark);
       border-bottom: 1px solid var(--border-line);
       padding: 16px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
     }
 
     .user-badge-bar {
@@ -42,111 +38,40 @@
       border: 1px solid var(--border-line);
       border-radius: 12px;
       padding: 14px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 20px;
     }
 
-    /* Cards de Botões dos Perfis com Texto Legível */
-    .role-toggle-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-bottom: 20px;
-    }
-
-    .role-card-btn {
-      background: #f0f7f7;
-      border: 2px solid #b8d8d8;
-      border-radius: 16px;
-      padding: 18px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      color: var(--btn-text) !important;
-    }
-
-    .role-card-btn .role-title {
-      font-weight: 800;
-      font-size: 14px;
-      color: #0a2a2f !important;
-      margin-top: 6px;
-    }
-
-    .role-card-btn .role-sub {
-      font-size: 11px;
-      color: #335c67 !important;
-      font-weight: 600;
-      margin-top: 2px;
-    }
-
-    .role-card-btn.active {
-      border-color: var(--accent-bright);
-      background: #ffffff;
-      box-shadow: 0 4px 15px rgba(62, 207, 207, 0.25);
-    }
-
-    /* Inputs e Campos em Geral */
-    .field-group {
-      margin-bottom: 16px;
-      text-align: left;
-    }
-
+    .field-group { margin-bottom: 16px; text-align: left; }
     .field-group label {
-      display: block;
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      margin-bottom: 6px;
+      display: block; font-size: 11px; font-weight: 800;
+      color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;
     }
 
     .input-dark {
+      width: 100%; padding: 12px 14px; border-radius: 10px;
+      border: 1px solid var(--border-line); background: #0d1b2a;
+      color: #ffffff; font-family: inherit; font-size: 13px;
+      outline: none; box-sizing: border-box;
+    }
+    .input-dark:focus { border-color: var(--accent-bright); }
+
+    /* Botão de WhatsApp */
+    .btn-whatsapp {
       width: 100%;
-      padding: 12px 14px;
-      border-radius: 10px;
-      border: 1px solid var(--border-line);
-      background: #0d1b2a;
-      color: #ffffff;
-      font-family: inherit;
-      font-size: 13px;
-      outline: none;
-      box-sizing: border-box;
+      background: linear-gradient(135deg, #25d366, #128c7e);
+      color: #ffffff !important;
+      font-weight: 800; font-size: 14px;
+      padding: 16px; border: none; border-radius: 12px;
+      cursor: pointer; transition: 0.2s; margin-top: 10px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
     }
-
-    .input-dark:focus {
-      border-color: var(--accent-bright);
-    }
-
-    /* Botão de Ação Principal Corrigido */
-    .btn-submit-main {
-      width: 100%;
-      background: linear-gradient(135deg, #2a9d8f, #3ecfcf);
-      color: #041f24 !important;
-      font-weight: 800;
-      font-size: 14px;
-      padding: 16px;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: 0.2s;
-      margin-top: 10px;
-    }
-
-    .btn-submit-main:hover {
-      opacity: 0.95;
-      transform: translateY(-1px);
-    }
+    .btn-whatsapp:hover { opacity: 0.95; transform: translateY(-1px); }
 
     .status-pill {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 8px 12px;
-      border-radius: 8px;
-      background: #112240;
-      border: 1px solid var(--border-line);
-      margin-top: 10px;
+      font-size: 11px; font-weight: 700; padding: 10px 14px;
+      border-radius: 8px; background: #112240;
+      border: 1px solid var(--border-line); margin-top: 12px;
     }
   </style>
 </head>
@@ -156,15 +81,15 @@
     <div style="display:flex; align-items:center; gap:12px;">
       <img src="IMG-20260218-WA0016.jpg" alt="Logo" style="width:38px; height:38px; border-radius:50%; border:2px solid var(--accent-teal);" onerror="this.src='https://via.placeholder.com/38';" />
       <div>
-        <div style="font-weight:800; font-size:15px; color:#fff;">Elayon Health — Protocolo ELA</div>
-        <div style="font-size:11px; color:var(--text-muted);">Telemedicina Simbiótica • Conexão por ID Supabase</div>
+        <div style="font-weight:800; font-size:15px; color:#fff;">Elayon Health • Conexão WhatsApp Real</div>
+        <div style="font-size:11px; color:var(--text-muted);">Entrevista Telefônica • Análise Espectral da Fala</div>
       </div>
     </div>
   </header>
 
   <main style="max-width: 680px; margin: 30px auto; padding: 0 16px;">
 
-    <!-- Badge do Médico Logado -->
+    <!-- Badge do Médico -->
     <section class="user-badge-bar">
       <div>
         <strong id="docDisplayNameUI" style="color:#fff; font-size:14px;">Paulo Xavier (Médico)</strong>
@@ -175,48 +100,45 @@
       </div>
     </section>
 
-    <!-- Formulário Central -->
+    <!-- Form do Médico -->
     <section style="background: var(--card-dark); border:1px solid var(--border-line); border-radius:20px; padding:24px;">
-      <h2 style="font-size:18px; margin-top:0; color:#fff; margin-bottom:18px;">Iniciar Consulta Simbiótica (Até 10 min)</h2>
+      <h2 style="font-size:18px; margin-top:0; color:#fff; margin-bottom:18px;">📞 Iniciar Entrevista via WhatsApp / Telefonia</h2>
 
-      <!-- Botões de Troca de Perfil -->
-      <div class="role-toggle-grid">
-        <div class="role-card-btn active" id="btnRoleMedico" onclick="selecionarModo('medico')">
-          <span style="font-size:26px;">👨‍⚕️</span>
-          <div class="role-title">Médico / Piloto</div>
-          <div class="role-sub">Insere ID & Recebe Análise</div>
-        </div>
-
-        <div class="role-card-btn" id="btnRolePaciente" onclick="selecionarModo('paciente')">
-          <span style="font-size:26px;">🗣️</span>
-          <div class="role-title">Paciente / Usuário</div>
-          <div class="role-sub">Aba de Interação Livre Assistida</div>
-        </div>
+      <!-- ID do Paciente -->
+      <div class="field-group">
+        <label for="txtPatientID">ID do Paciente (Supabase):</label>
+        <input type="text" id="txtPatientID" class="input-dark" placeholder="Cole o ID do paciente" value="c708823f-a48a-41f0-948f-287eee484821" onchange="verificarTelefonePaciente()" />
       </div>
 
-      <!-- Campo Apenas com ID do Paciente para Verificação -->
-      <div class="field-group" id="groupPatientID">
-        <label for="txtPatientID">ID do Paciente (Cadastrado no Supabase):</label>
-        <input type="text" id="txtPatientID" class="input-dark" placeholder="Cole o ID do paciente (ex: c708823f-a48a-41f0-948f-287eee484821)" value="c708823f-a48a-41f0-948f-287eee484821" />
+      <!-- Telefone Validade do Paciente -->
+      <div class="field-group">
+        <label for="txtPatientPhone">Número do WhatsApp / Telefone Móvel com DDD:</label>
+        <input type="text" id="txtPatientPhone" class="input-dark" placeholder="Ex: +5511999998888" />
       </div>
 
       <div class="field-group">
-        <label for="selectProtocol">Protocolo de Consulta ELA:</label>
+        <label for="selectProtocol">Protocolo de Avaliação de Fala:</label>
         <select id="selectProtocol" class="input-dark">
-          <option value="linha_base">🟢 Linha de Base (1ª Avaliação • Referência Definitiva)</option>
-          <option value="acompanhamento" selected>🔵 Sessão de Acompanhamento (Evolução Vocal)</option>
-          <option value="avaliacao_resposta">🟡 Avaliação de Resposta ao Tratamento</option>
-          <option value="livre">📋 Protocolo Geral de Fala</option>
+          <option value="linha_base">🟢 Linha de Base (1ª Avaliação ELA)</option>
+          <option value="acompanhamento" selected>🔵 Acompanhamento de Evolução Vocal</option>
+          <option value="avaliacao_resposta">🟡 Resposta ao Tratamento</option>
         </select>
       </div>
 
       <div class="status-pill" id="statusVerificacaoUI" style="color: #64748b;">
-        🔍 Aguardando conferência do ID do paciente no Supabase...
+        🔍 Digite o ID para consultar o WhatsApp do paciente...
       </div>
 
-      <button class="btn-submit-main" id="btnIniciarAtendimento" onclick="conferirUsuarioEIniciar()">
-        📹 Conferir ID no Supabase & Iniciar Consulta por Vídeo
+      <!-- Disparo do WhatsApp -->
+      <button class="btn-whatsapp" id="btnIniciarWhatsApp" onclick="dispararChamadaWhatsApp()">
+        <span>💬 Iniciar Ligação via WhatsApp & Ativar Gravador CRS</span>
       </button>
+
+      <div style="margin-top: 12px; text-align: center;">
+        <a href="perfil.html" style="color: var(--accent-bright); font-size: 11px; text-decoration: none;">
+          ⚙️ Faltando número? Clique aqui para cadastrar seu Telefone no Perfil
+        </a>
+      </div>
     </section>
 
   </main>
@@ -226,78 +148,68 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa3RrZWx1bXRwdWdpZG5lY2JqIiwicm9sZSI6Inhsa3FnZWx1bXRwdWdpZG5lY2JqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NzU4OTgsImV4cCI6MjEwNjM1MTg5OH0.EIn9oiFl7PmhYhaMlvYKljeFVZflRCbxD_HT65-88XM';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let modoAtivo = 'medico';
-
-    function selecionarModo(modo) {
-      modoAtivo = modo;
-      document.getElementById('btnRoleMedico').classList.toggle('active', modo === 'medico');
-      document.getElementById('btnRolePaciente').classList.toggle('active', modo === 'paciente');
-
-      const groupID = document.getElementById('groupPatientID');
-      if (groupID) groupID.style.display = (modo === 'medico') ? 'block' : 'none';
-
-      const btnAction = document.getElementById('btnIniciarAtendimento');
-      if (btnAction) {
-        btnAction.textContent = (modo === 'medico') 
-          ? '📹 Conferir ID no Supabase & Iniciar Consulta por Vídeo' 
-          : '🤖 Entrar na Aba de Interação Livre Assistida (Elayon Space)';
-      }
-    }
-
-    // Confere se o Usuário existe no Supabase e abre a sessão ao atender
-    async function conferirUsuarioEIniciar() {
-      const statusUI = document.getElementById('statusVerificacaoUI');
-
-      if (modoAtivo === 'paciente') {
-        // Redireciona o usuário diretamente para a aba de interação livre assistida pela IA
-        window.location.href = `pages/ia-review.html?role=paciente&mode=livre`;
-        return;
-      }
-
+    async function verificarTelefonePaciente() {
       const patientId = document.getElementById('txtPatientID').value.trim();
-      if (!patientId) {
-        alert('Por favor, informe o ID do paciente cadastrado no Supabase.');
-        return;
-      }
+      const statusUI = document.getElementById('statusVerificacaoUI');
+      const phoneInput = document.getElementById('txtPatientPhone');
 
-      statusUI.textContent = "⌛ Consultando existência do ID no Supabase...";
+      if (!patientId) return;
+
+      statusUI.textContent = "⌛ Buscando perfil e telefone do paciente no Supabase...";
       statusUI.style.color = "#f59e0b";
 
       try {
-        // Consulta leve na tabela profiles para checar a existência do ID
-        const { data: profile, error } = await supabaseClient
+        const { data: profile } = await supabaseClient
           .from('profiles')
-          .select('id, nome, tokens')
+          .select('id, nome, telefone')
           .eq('id', patientId)
           .maybeSingle();
 
-        if (profile || !error) {
-          const nomePaciente = profile ? (profile.nome || 'Paciente Cadastrado') : 'Paciente Confirmado';
-          statusUI.textContent = `✅ Usuário localizado: ${nomePaciente}. Liberando canal de chamada...`;
+        if (profile && profile.telefone) {
+          phoneInput.value = profile.telefone;
+          statusUI.textContent = `✅ Paciente: ${profile.nome || 'Confirmado'} • WhatsApp: ${profile.telefone}`;
           statusUI.style.color = "#10b981";
-
-          setTimeout(() => {
-            // Abre o painel de teleconferência (A chamada inicia ao atender e dura até 10 min)
-            window.location.href = `pages/crs-dashboard.html?role=medico&patient_id=${encodeURIComponent(patientId)}&protocol=${document.getElementById('selectProtocol').value}`;
-          }, 800);
-        } else {
-          statusUI.textContent = "⚠️ ID do paciente não encontrado no Supabase. Modos de teste ativado.";
+        } else if (profile) {
+          statusUI.textContent = `⚠️ Paciente ${profile.nome || ''} encontrado, mas sem número de telefone cadastrado.`;
           statusUI.style.color = "#ef4444";
-          
-          setTimeout(() => {
-            window.location.href = `pages/crs-dashboard.html?role=medico&patient_id=${encodeURIComponent(patientId)}&protocol=${document.getElementById('selectProtocol').value}`;
-          }, 1200);
+        } else {
+          phoneInput.value = "+5511999998888";
+          statusUI.textContent = "✅ Modo local: Número de teste atribuído.";
+          statusUI.style.color = "#10b981";
         }
       } catch (err) {
-        statusUI.textContent = "✅ ID validado em modo local resiliente. Abrindo sessão...";
+        phoneInput.value = "+5511999998888";
+        statusUI.textContent = "✅ Telefone de teste ativado.";
         statusUI.style.color = "#10b981";
-        setTimeout(() => {
-          window.location.href = `pages/crs-dashboard.html?role=medico&patient_id=${encodeURIComponent(patientId)}&protocol=${document.getElementById('selectProtocol').value}`;
-        }, 800);
       }
     }
 
-    selecionarModo('medico');
+    function dispararChamadaWhatsApp() {
+      const rawPhone = document.getElementById('txtPatientPhone').value.replace(/\D/g, '');
+      const patientId = document.getElementById('txtPatientID').value.trim();
+      const protocol = document.getElementById('selectProtocol').value;
+
+      if (!rawPhone) {
+        alert('É necessário um número de telefone com DDD cadastrado para iniciar a ligação.');
+        return;
+      }
+
+      // 1. Mensagem de saudação automática com o link de entrada na chamada de voz do WhatsApp
+      const msgSaudacao = encodeURIComponent(`Olá! Aqui é o seu médico no Elayon Health. Vamos iniciar a nossa consulta de acompanhamento da fala. Por favor, atenda a ligação a seguir.`);
+      const whatsappUrl = `https://wa.me/${rawPhone}?text=${msgSaudacao}`;
+
+      // 2. Abre o WhatsApp para o médico chamar
+      window.open(whatsappUrl, '_blank');
+
+      // 3. Redireciona o painel do médico para a tela do espectrograma CRS de 10 min
+      setTimeout(() => {
+        window.location.href = `pages/crs-dashboard.html?role=medico&patient_id=${encodeURIComponent(patientId)}&phone=${encodeURIComponent(rawPhone)}&protocol=${protocol}`;
+      }, 1000);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      verificarTelefonePaciente();
+    });
   </script>
 </body>
 </html>
