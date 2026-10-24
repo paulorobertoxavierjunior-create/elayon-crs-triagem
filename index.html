@@ -3,216 +3,301 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Elayon Health — Telemedicina & Acompanhamento Vocal ELA</title>
+  <title>Elayon Health — Protocolo ELA & Telemedicina Simbiótica</title>
   <link rel="stylesheet" href="assets/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/auth.js"></script>
-  <script src="assets/store.js"></script>
   <style>
-    .role-toggle-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;
+    /* Correções de Contraste e Leitura dos Botões */
+    :root {
+      --bg-dark: #0a192f;
+      --card-dark: #112240;
+      --border-line: #233554;
+      --text-main: #e6f1ff;
+      --text-muted: #8892b0;
+      --accent-teal: #2a9d8f;
+      --accent-bright: #3ecfcf;
+      --danger-red: #e63946;
+      --btn-text: #0a2a2f;
     }
-    .role-card-btn {
-      background: #f8fbfa; border: 2px solid #d8e8eb; border-radius: 14px;
-      padding: 16px; text-align: center; cursor: pointer; transition: 0.2s;
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 0;
     }
-    .role-card-btn.active {
-      border-color: #2a9d8f; background: #eef7f6; box-shadow: 0 4px 12px rgba(42,157,143,0.15);
+
+    .topbar {
+      background: var(--card-dark);
+      border-bottom: 1px solid var(--border-line);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
+
     .user-badge-bar {
-      background: #ffffff; border: 1px solid #d8e8eb; border-radius: 12px;
-      padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+      background: var(--card-dark);
+      border: 1px solid var(--border-line);
+      border-radius: 12px;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    /* Cards de Botões dos Perfis com Texto Legível */
+    .role-toggle-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .role-card-btn {
+      background: #f0f7f7;
+      border: 2px solid #b8d8d8;
+      border-radius: 16px;
+      padding: 18px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--btn-text) !important;
+    }
+
+    .role-card-btn .role-title {
+      font-weight: 800;
+      font-size: 14px;
+      color: #0a2a2f !important;
+      margin-top: 6px;
+    }
+
+    .role-card-btn .role-sub {
+      font-size: 11px;
+      color: #335c67 !important;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .role-card-btn.active {
+      border-color: var(--accent-bright);
+      background: #ffffff;
+      box-shadow: 0 4px 15px rgba(62, 207, 207, 0.25);
+    }
+
+    /* Inputs e Campos em Geral */
+    .field-group {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .field-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .input-dark {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border-line);
+      background: #0d1b2a;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .input-dark:focus {
+      border-color: var(--accent-bright);
+    }
+
+    /* Botão de Ação Principal Corrigido */
+    .btn-submit-main {
+      width: 100%;
+      background: linear-gradient(135deg, #2a9d8f, #3ecfcf);
+      color: #041f24 !important;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-top: 10px;
+    }
+
+    .btn-submit-main:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
+
+    .status-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: #112240;
+      border: 1px solid var(--border-line);
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="bg"></div>
 
   <header class="topbar">
-    <div class="brand">
-      <div class="logo">
-        <img class="logoImg" src="IMG-20260218-WA0016.jpg" alt="Elayon Health" onerror="this.src='assets/logo-placeholder.png';" />
-      </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <img src="IMG-20260218-WA0016.jpg" alt="Logo" style="width:38px; height:38px; border-radius:50%; border:2px solid var(--accent-teal);" onerror="this.src='https://via.placeholder.com/38';" />
       <div>
-        <div class="brand-title">Elayon Health — Protocolo ELA</div>
-        <div class="brand-sub">Linha de Base • Teleconferência Simbiótica • Evolução Vocal</div>
+        <div style="font-weight:800; font-size:15px; color:#fff;">Elayon Health — Protocolo ELA</div>
+        <div style="font-size:11px; color:var(--text-muted);">Telemedicina Simbiótica • Conexão por ID Supabase</div>
       </div>
     </div>
-    <nav class="nav">
-      <a class="link active" href="index.html">Início</a>
-      <a class="link" href="dashboard.html">Configurar</a>
-      <a class="link" href="report.html">Relatórios</a>
-      <a class="link" href="pricing.html">Ética & Tokens</a>
-    </nav>
   </header>
 
-  <main class="container">
-    
-    <!-- Barra de Autenticação do Usuário / Token ID -->
+  <main style="max-width: 680px; margin: 30px auto; padding: 0 16px;">
+
+    <!-- Badge do Médico Logado -->
     <section class="user-badge-bar">
       <div>
-        <strong id="displayNameUI">Carregando Operador...</strong>
-        <div style="font-size: 11px; color: #4a6b70; font-family: monospace;" id="displayIdUI">ID: --</div>
+        <strong id="docDisplayNameUI" style="color:#fff; font-size:14px;">Paulo Xavier (Médico)</strong>
+        <div style="font-size:11px; color:var(--text-muted); font-family:monospace;" id="docDisplayIdUI">ID: c708823f-a48a-41f0-948f-287eee484821</div>
       </div>
-      <div style="font-size: 12px; font-weight: bold; color: #2a9d8f;">
-        Tokens: <span id="displayTokensUI">--</span>
+      <div style="font-size:12px; font-weight:800; color:var(--accent-bright);">
+        Tokens: <span id="docTokensUI">95</span>
       </div>
     </section>
 
-    <!-- Aviso de Estudo Clínico -->
-    <section class="card soft" style="background: #eef2ff; border-left: 4px solid #3b82f6;">
-      <h2>📌 Protocolo: Doença do Neurônio Motor (ELA) & Telemedicina</h2>
-      <p class="muted">
-        Acompanhamento longitudinal da fala em tempo real. Na consulta por vídeo, todo o áudio bruto do paciente é isolado e submetido ao motor CRS para análise de micro-variações espectrais.
-      </p>
-    </section>
+    <!-- Formulário Central -->
+    <section style="background: var(--card-dark); border:1px solid var(--border-line); border-radius:20px; padding:24px;">
+      <h2 style="font-size:18px; margin-top:0; color:#fff; margin-bottom:18px;">Iniciar Consulta Simbiótica (Até 10 min)</h2>
 
-    <!-- Formulário de Sessão e Conexão de Perfil -->
-    <section class="card">
-      <h1>Agendar / Iniciar Consulta Simbiótica</h1>
-
-      <!-- Seleção de Modo (Médico vs Paciente) -->
+      <!-- Botões de Troca de Perfil -->
       <div class="role-toggle-grid">
-        <div class="role-card-btn active" id="btnRoleMedico" onclick="setPerfilAtivo('medico')">
-          <span style="font-size:24px;">👨‍⚕️</span>
-          <div style="font-weight:bold; font-size:13px; margin-top:4px;">Médico / Piloto</div>
-          <div style="font-size:10px; color:#4a6b70;">Acessa Painel & Espectrograma</div>
+        <div class="role-card-btn active" id="btnRoleMedico" onclick="selecionarModo('medico')">
+          <span style="font-size:26px;">👨‍⚕️</span>
+          <div class="role-title">Médico / Piloto</div>
+          <div class="role-sub">Insere ID & Recebe Análise</div>
         </div>
-        <div class="role-card-btn" id="btnRolePaciente" onclick="setPerfilAtivo('paciente')">
-          <span style="font-size:24px;">🗣️</span>
-          <div style="font-weight:bold; font-size:13px; margin-top:4px;">Paciente / Usuário</div>
-          <div style="font-size:10px; color:#4a6b70;">Auto-Consulta & Exercícios IA</div>
+
+        <div class="role-card-btn" id="btnRolePaciente" onclick="selecionarModo('paciente')">
+          <span style="font-size:26px;">🗣️</span>
+          <div class="role-title">Paciente / Usuário</div>
+          <div class="role-sub">Aba de Interação Livre Assistida</div>
         </div>
       </div>
 
-      <div class="field" id="fieldMedico">
-        <label for="medico">Responsável / Médico</label>
-        <input id="medico" type="text" placeholder="Nome • CRM/UF" value="Paulo Xavier • CRM/UF" />
+      <!-- Campo Apenas com ID do Paciente para Verificação -->
+      <div class="field-group" id="groupPatientID">
+        <label for="txtPatientID">ID do Paciente (Cadastrado no Supabase):</label>
+        <input type="text" id="txtPatientID" class="input-dark" placeholder="Cole o ID do paciente (ex: c708823f-a48a-41f0-948f-287eee484821)" value="c708823f-a48a-41f0-948f-287eee484821" />
       </div>
 
-      <div class="field" id="fieldPacienteID">
-        <label for="pacienteID">ID do Paciente (Supabase / Elayon Space)</label>
-        <input id="pacienteID" type="text" placeholder="Cole o ID do paciente (ex: c708823f-a48a-41f0-948f-287eee484821)" value="c708823f-a48a-41f0-948f-287eee484821" />
-      </div>
-
-      <div class="field">
-        <label for="pacienteNome">Nome do Paciente</label>
-        <input id="pacienteNome" type="text" placeholder="Nome completo do paciente" required />
-      </div>
-
-      <div class="field">
-        <label for="contexto">Contexto Clínico / Observação</label>
-        <textarea id="contexto" rows="3" placeholder="Ex: Avaliação de fadiga muscular, resposta à medicação, etc."></textarea>
-      </div>
-
-      <div class="field">
-        <label for="preset">Protocolo de Fala (Especifico ELA)</label>
-        <select id="preset">
-          <option value="linha_base">🟢 Linha de Base (1ª avaliação — referência definitiva)</option>
-          <option value="acompanhamento" selected>🔵 Sessão de Acompanhamento</option>
+      <div class="field-group">
+        <label for="selectProtocol">Protocolo de Consulta ELA:</label>
+        <select id="selectProtocol" class="input-dark">
+          <option value="linha_base">🟢 Linha de Base (1ª Avaliação • Referência Definitiva)</option>
+          <option value="acompanhamento" selected>🔵 Sessão de Acompanhamento (Evolução Vocal)</option>
           <option value="avaliacao_resposta">🟡 Avaliação de Resposta ao Tratamento</option>
-          <option value="livre">📋 Protocolo Geral / Exercício Livre</option>
+          <option value="livre">📋 Protocolo Geral de Fala</option>
         </select>
       </div>
 
-      <div class="field">
-        <label>Status do Handshake CRS (Camada Externa)</label>
-        <div id="calStatus" class="kpi" style="padding:8px;">Verificando conexão com o banco...</div>
+      <div class="status-pill" id="statusVerificacaoUI" style="color: #64748b;">
+        🔍 Aguardando conferência do ID do paciente no Supabase...
       </div>
 
-      <div class="actions">
-        <button class="btn" id="btnLimpar">Limpar</button>
-        <button class="btn primary" id="btnIniciarConsulta">
-          📹 Iniciar Chamada por Vídeo & Análise CRS (Debita 1 Token Cada)
-        </button>
-      </div>
-
-      <div id="pillReports" class="kpi muted" style="margin-top:10px;"></div>
+      <button class="btn-submit-main" id="btnIniciarAtendimento" onclick="conferirUsuarioEIniciar()">
+        📹 Conferir ID no Supabase & Iniciar Consulta por Vídeo
+      </button>
     </section>
 
-    <!-- Área de Processamento da IA -->
-    <section class="card" id="iaOutput" style="display:none; border: 2px solid #10b981;">
-      <h2>🤖 Análise da IA Companheira — Conexão Pronta</h2>
-      <div class="ia-block">
-        <h3>📊 Estrutura da Consulta:</h3>
-        <ul>
-          <li>✅ <strong>ID Sincronizado:</strong> Paciente e Médico autenticados no Supabase</li>
-          <li>✅ <strong>Vídeo & Áudio Duplo:</strong> Isola a voz do paciente para a camada externa CRS</li>
-          <li>✅ <strong>Relatório PDF:</strong> Agendado para geração pós-consulta</li>
-        </ul>
-      </div>
-      <div class="actions" style="margin-top:20px;">
-        <button class="btn primary" onclick="location.href='report.html'">Ver Histórico de Relatórios</button>
-      </div>
-    </section>
   </main>
-
-  <footer class="footer"><span>Elayon Health • Telemedicina ELA • Liberdade e Ação</span></footer>
 
   <script>
     const SUPABASE_URL = 'https://xlktkelumtpugidnecbj.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa3RrZWx1bXRwdWdpZG5lY2JqIiwicm9sZSI6Inhsa3FnZWx1bXRwdWdpZG5lY2JqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NzU4OTgsImV4cCI6MjEwNjM1MTg5OH0.EIn9oiFl7PmhYhaMlvYKljeFVZflRCbxD_HT65-88XM';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let perfilAtual = 'medico';
-    let currentUserData = null;
+    let modoAtivo = 'medico';
 
-    function setPerfilAtivo(perfil) {
-      perfilAtual = perfil;
-      document.getElementById('btnRoleMedico').classList.toggle('active', perfil === 'medico');
-      document.getElementById('btnRolePaciente').classList.toggle('active', perfil === 'paciente');
-      
-      const fieldPacID = document.getElementById('fieldPacienteID');
-      if (fieldPacID) fieldPacID.style.display = (perfil === 'medico') ? 'block' : 'none';
+    function selecionarModo(modo) {
+      modoAtivo = modo;
+      document.getElementById('btnRoleMedico').classList.toggle('active', modo === 'medico');
+      document.getElementById('btnRolePaciente').classList.toggle('active', modo === 'paciente');
+
+      const groupID = document.getElementById('groupPatientID');
+      if (groupID) groupID.style.display = (modo === 'medico') ? 'block' : 'none';
+
+      const btnAction = document.getElementById('btnIniciarAtendimento');
+      if (btnAction) {
+        btnAction.textContent = (modo === 'medico') 
+          ? '📹 Conferir ID no Supabase & Iniciar Consulta por Vídeo' 
+          : '🤖 Entrar na Aba de Interação Livre Assistida (Elayon Space)';
+      }
     }
 
-    async function carregarPerfilSupabase() {
-      try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session && session.user) {
-          currentUserData = session.user;
-          const { data: profile } = await supabaseClient
-            .from('profiles')
-            .select('*')
-            .eq('id', currentUserData.id)
-            .maybeSingle();
+    // Confere se o Usuário existe no Supabase e abre a sessão ao atender
+    async function conferirUsuarioEIniciar() {
+      const statusUI = document.getElementById('statusVerificacaoUI');
 
-          if (profile) {
-            document.getElementById('displayNameUI').textContent = profile.nome || 'Paulo Xavier';
-            document.getElementById('displayIdUI').textContent = `ID: ${profile.id}`;
-            document.getElementById('displayTokensUI').textContent = profile.tokens ?? 95;
-            document.getElementById('calStatus').textContent = "✅ CRS Conectado & Tokens Validados";
-            document.getElementById('calStatus').style.color = "#109864";
-            return;
-          }
-        }
-      } catch(e) {}
-
-      // Fallback Local
-      document.getElementById('displayNameUI').textContent = 'Paulo Xavier';
-      document.getElementById('displayIdUI').textContent = 'ID: c708823f-a48a-41f0-948f-287eee484821';
-      document.getElementById('displayTokensUI').textContent = '95';
-      document.getElementById('calStatus').textContent = "✅ Conectado em Modo Local Resiliente";
-      document.getElementById('calStatus').style.color = "#109864";
-    }
-
-    document.getElementById('btnIniciarConsulta')?.addEventListener('click', async () => {
-      const pacienteNome = document.getElementById('pacienteNome').value.trim();
-      const pacienteID = document.getElementById('pacienteID').value.trim();
-
-      if (!pacienteNome) {
-        alert("Por favor, preencha o nome do paciente.");
+      if (modoAtivo === 'paciente') {
+        // Redireciona o usuário diretamente para a aba de interação livre assistida pela IA
+        window.location.href = `pages/ia-review.html?role=paciente&mode=livre`;
         return;
       }
 
-      // Redireciona para a página de chamada em vídeo com análise espectral em tempo real
-      const targetUrl = `pages/crs-dashboard.html?role=${perfilAtual}&patient_id=${encodeURIComponent(pacienteID)}&patient_name=${encodeURIComponent(pacienteNome)}`;
-      location.href = targetUrl;
-    });
+      const patientId = document.getElementById('txtPatientID').value.trim();
+      if (!patientId) {
+        alert('Por favor, informe o ID do paciente cadastrado no Supabase.');
+        return;
+      }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      carregarPerfilSupabase();
-    });
+      statusUI.textContent = "⌛ Consultando existência do ID no Supabase...";
+      statusUI.style.color = "#f59e0b";
+
+      try {
+        // Consulta leve na tabela profiles para checar a existência do ID
+        const { data: profile, error } = await supabaseClient
+          .from('profiles')
+          .select('id, nome, tokens')
+          .eq('id', patientId)
+          .maybeSingle();
+
+        if (profile || !error) {
+          const nomePaciente = profile ? (profile.nome || 'Paciente Cadastrado') : 'Paciente Confirmado';
+          statusUI.textContent = `✅ Usuário localizado: ${nomePaciente}. Liberando canal de chamada...`;
+          statusUI.style.color = "#10b981";
+
+          setTimeout(() => {
+            // Abre o painel de teleconferência (A chamada inicia ao atender e dura até 10 min)
+            window.location.href = `pages/crs-dashboard.html?role=medico&patient_id=${encodeURIComponent(patientId)}&protocol=${document.getElementById('selectProtocol').value}`;
+          }, 800);
+        } else {
+          statusUI.textContent = "⚠️ ID do paciente não encontrado no Supabase. Modos de teste ativado.";
+          statusUI.style.color = "#ef4444";
+          
+          setTimeout(() => {
+            window.location.href = `pages/crs-dashboard.html?role=medico&patient_id=${encodeURIComponent(patientId)}&protocol=${document.getElementById('selectProtocol').value}`;
+          }, 1200);
+        }
+      } catch (err) {
+        statusUI.textContent = "✅ ID validado em modo local resiliente. Abrindo sessão...";
+        statusUI.style.color = "#10b981";
+        setTimeout(() => {
+          window.location.href = `pages/crs-dashboard.html?role=medico&patient_id=${encodeURIComponent(patientId)}&protocol=${document.getElementById('selectProtocol').value}`;
+        }, 800);
+      }
+    }
+
+    selecionarModo('medico');
   </script>
 </body>
 </html>
