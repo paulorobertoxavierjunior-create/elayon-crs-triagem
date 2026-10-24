@@ -1,567 +1,129 @@
-<!doctype html>
-<html lang="pt-br">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Elayon Health — Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elayon Health • Triagem & Conexão Clínica CRS</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      --bg1: #f4f9f4; --bg2: #eaf4f6; --card: #ffffff;
+      --ink: #0a2a2f; --muted: #4a6b70; --line: #d8e8eb;
+      --accent: #2a9d8f; --accent2: #3ecfcf; --success: #2b8a3e;
+      --shadow: 0 10px 30px rgba(0,0,0,0.08);
     }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-      background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 50%, #0f2a1f 100%);
-      color: #f1f5f9;
-      min-height: 100vh;
-      padding: 20px;
+      min-height: 100vh; background: radial-gradient(circle at top left, var(--bg1), var(--bg2));
+      color: var(--ink); font-family: system-ui, -apple-system, sans-serif;
+      display: flex; justify-content: center; align-items: center; padding: 20px;
     }
+    .selection-card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 24px;
+      padding: 32px; width: 100%; max-width: 520px; text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .brand-title { font-size: 22px; font-weight: 800; color: var(--ink); margin-bottom: 6px; }
+    .brand-sub { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
+    
+    .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+    .btn-role {
+      background: #f8fbfa; border: 2px solid var(--line); border-radius: 16px;
+      padding: 20px 14px; cursor: pointer; transition: 0.2s; text-align: center;
+    }
+    .btn-role:hover, .btn-role.active {
+      border-color: var(--accent); background: #eef7f6; transform: translateY(-2px);
+    }
+    .role-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+    .role-name { font-size: 13px; font-weight: 800; color: var(--ink); }
+    .role-desc { font-size: 10px; color: var(--muted); margin-top: 4px; }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
+    .patient-id-box {
+      background: #f8fbfa; border: 1px solid var(--line); border-radius: 14px;
+      padding: 16px; margin-bottom: 20px; text-align: left; display: none;
     }
+    .input-label { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; display: block; }
+    .input-field {
+      width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid var(--line);
+      font-family: monospace; font-size: 12px; outline: none; transition: 0.2s;
+    }
+    .input-field:focus { border-color: var(--accent); background: #fff; }
 
-    header {
-      text-align: center;
-      margin-bottom: 40px;
-      padding-top: 20px;
+    .btn-connect {
+      width: 100%; background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; border: none; padding: 16px; border-radius: 14px;
+      font-size: 14px; font-weight: 800; cursor: pointer; transition: 0.2s;
+      box-shadow: 0 4px 15px rgba(42, 157, 143, 0.2);
     }
-
-    .logo {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 20px;
-      background: rgba(14, 165, 233, 0.1);
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 40px;
-    }
-
-    h1 {
-      font-size: 32px;
-      margin-bottom: 8px;
-      font-weight: 900;
-    }
-
-    .subtitle {
-      color: #94a3b8;
-      font-size: 14px;
-      margin-bottom: 30px;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-
-    @media (max-width: 768px) {
-      .grid-2 {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .card {
-      background: rgba(30, 41, 59, 0.85);
-      border: 1px solid rgba(14, 165, 233, 0.2);
-      border-radius: 16px;
-      padding: 24px;
-      backdrop-filter: blur(10px);
-    }
-
-    .card h2 {
-      font-size: 18px;
-      margin-bottom: 16px;
-      color: #0ea5e9;
-    }
-
-    .card p {
-      color: #cbd5e1;
-      font-size: 13px;
-      line-height: 1.6;
-      margin-bottom: 16px;
-    }
-
-    .field {
-      margin-bottom: 16px;
-    }
-
-    label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: #94a3b8;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      letter-spacing: 0.5px;
-    }
-
-    input,
-    textarea {
-      width: 100%;
-      padding: 12px;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(14, 165, 233, 0.2);
-      border-radius: 8px;
-      color: #f1f5f9;
-      font-size: 14px;
-      font-family: inherit;
-      outline: none;
-      transition: all 200ms;
-    }
-
-    input:focus,
-    textarea:focus {
-      border-color: #0ea5e9;
-      background: rgba(15, 23, 42, 0.95);
-      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
-
-    .actions {
-      display: grid;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    .btn {
-      padding: 12px 20px;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 200ms;
-      text-align: center;
-      display: block;
-      width: 100%;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #0ea5e9, #0284c7);
-      color: white;
-      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4);
-    }
-
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.1);
-      color: #0ea5e9;
-      border: 1px solid rgba(14, 165, 233, 0.3);
-      font-size: 12px;
-      padding: 8px 12px;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(14, 165, 233, 0.1);
-      border-color: #0ea5e9;
-    }
-
-    .btn-danger {
-      background: rgba(239, 68, 68, 0.1);
-      color: #ef4444;
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      font-size: 12px;
-      padding: 8px 12px;
-    }
-
-    .btn-danger:hover {
-      background: rgba(239, 68, 68, 0.2);
-      border-color: #ef4444;
-    }
-
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    @media (max-width: 768px) {
-      .stats {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .stat-box {
-      background: rgba(14, 165, 233, 0.05);
-      border: 1px solid rgba(14, 165, 233, 0.1);
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-    }
-
-    .stat-number {
-      font-size: 28px;
-      font-weight: 900;
-      color: #0ea5e9;
-      margin-bottom: 4px;
-    }
-
-    .stat-label {
-      font-size: 12px;
-      color: #94a3b8;
-      text-transform: uppercase;
-    }
-
-    .report-list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .report-item {
-      background: rgba(14, 165, 233, 0.05);
-      border: 1px solid rgba(14, 165, 233, 0.1);
-      border-radius: 12px;
-      padding: 16px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 16px;
-      align-items: center;
-    }
-
-    @media (max-width: 768px) {
-      .report-item {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .report-info h3 {
-      font-size: 14px;
-      color: #0ea5e9;
-      margin-bottom: 6px;
-    }
-
-    .report-info p {
-      font-size: 12px;
-      color: #94a3b8;
-      margin-bottom: 4px;
-    }
-
-    .report-status {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      margin-top: 8px;
-    }
-
-    .status-active {
-      background: rgba(245, 158, 11, 0.1);
-      color: #f59e0b;
-      border: 1px solid rgba(245, 158, 11, 0.2);
-    }
-
-    .status-closed {
-      background: rgba(16, 185, 129, 0.1);
-      color: #10b981;
-      border: 1px solid rgba(16, 185, 129, 0.2);
-    }
-
-    .status-signed {
-      background: rgba(99, 102, 241, 0.1);
-      color: #6366f1;
-      border: 1px solid rgba(99, 102, 241, 0.2);
-    }
-
-    .report-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: #64748b;
-    }
-
-    .empty-state p {
-      margin-bottom: 16px;
-      font-size: 14px;
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 40px;
-      color: #64748b;
-      font-size: 12px;
-    }
+    .btn-connect:hover { opacity: 0.95; transform: scale(0.99); }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- HEADER -->
-    <header>
-      <div class="logo">🎙️</div>
-      <h1>Elayon Health</h1>
-      <p class="subtitle">Dashboard de Análise Vocal CRS</p>
-    </header>
 
-    <!-- GRID: CADASTRO + ESTATÍSTICAS -->
-    <div class="grid-2">
-      <!-- CADASTRO DE NOVA SESSÃO -->
-      <div class="card">
-        <h2>🎤 Nova Sessão</h2>
-        <p>Inicie uma nova análise de voz.</p>
+  <main class="selection-card">
+    <h1 class="brand-title">🧬 Elayon Health</h1>
+    <p class="brand-sub">Ecossistema Simbiótico • Triagem & Conexão CRS em Tempo Real</p>
 
-        <div class="field">
-          <label for="medico">Médico</label>
-          <input id="medico" type="text" placeholder="Dra. Ana Silva" value="Dra. Ana Silva" />
-        </div>
-
-        <div class="field">
-          <label for="paciente">Paciente</label>
-          <input id="paciente" type="text" placeholder="João Santos" value="João Santos" />
-        </div>
-
-        <div class="field">
-          <label for="contexto">Contexto (opcional)</label>
-          <textarea id="contexto" placeholder="Ex: triagem neurológica..."></textarea>
-        </div>
-
-        <div class="actions">
-          <button class="btn btn-primary" id="btnStart">
-            ▶️ Iniciar Sessão
-          </button>
-          <button class="btn btn-secondary" id="btnClear">
-            🔄 Limpar
-          </button>
-        </div>
+    <!-- Seleção dos 2 Perfis -->
+    <div class="role-grid">
+      <div class="btn-role" id="btnPerfilUsuario" onclick="selecionarPerfil('paciente')">
+        <span class="role-icon">🗣️</span>
+        <div class="role-name">Usuário / Paciente</div>
+        <div class="role-desc">Fonação & Escuta Simbiótica</div>
       </div>
 
-      <!-- ESTATÍSTICAS -->
-      <div class="card">
-        <h2>📊 Estatísticas</h2>
-        
-        <div class="stats">
-          <div class="stat-box">
-            <div class="stat-number" id="statTotal">0</div>
-            <div class="stat-label">Total</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-number" id="statActive">0</div>
-            <div class="stat-label">Ativos</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-number" id="statSigned">0</div>
-            <div class="stat-label">Assinados</div>
-          </div>
-        </div>
-
-        <p style="color: #94a3b8; font-size: 12px; text-align: center;">
-          <strong>Limite:</strong> Sem limite
-        </p>
+      <div class="btn-role" id="btnPerfilPiloto" onclick="selecionarPerfil('medico')">
+        <span class="role-icon">👨‍⚕️</span>
+        <div class="role-name">Piloto / Médico</div>
+        <div class="role-desc">Monitoramento & API 1 Hz</div>
       </div>
     </div>
 
-    <!-- RELATÓRIOS -->
-    <div class="card">
-      <h2>📄 Relatórios</h2>
-      <div class="report-list" id="reportList">
-        <div class="empty-state">
-          <p>Nenhum relatório ainda.</p>
-          <p style="font-size: 12px;">Crie uma nova sessão para começar.</p>
-        </div>
-      </div>
+    <!-- Campo do ID do Paciente (Para o Perfil Médico) -->
+    <div class="patient-id-box" id="boxIdPaciente">
+      <label class="input-label">ID do Paciente (Supabase / Elayon Space):</label>
+      <input type="text" class="input-field" id="txtIdPaciente" placeholder="Ex: c708823f-a48a-41f0-948f-287eee484821" value="c708823f-a48a-41f0-948f-287eee484821" />
+      <span style="font-size: 9px; color: var(--muted); margin-top: 6px; display: block;">
+        🔗 Conecta diretamente à API de streaming do paciente a 1 Hz.
+      </span>
     </div>
-  </div>
 
-  <footer>
-    <p>Elayon Health • CRS Dashboard • 2026</p>
-  </footer>
+    <button class="btn-connect" id="btnEntrarDashboard" onclick="conectarEAbrirDashboard()">
+      🚀 Conectar ao Elayon Health
+    </button>
+  </main>
 
   <script>
-    // ============================================
-    // CONSTANTES
-    // ============================================
+    let perfilSelecionado = 'paciente';
 
-    const KEY_SESSIONS = "elayon_crs_sessions";
+    function selecionarPerfil(perfil) {
+      perfilSelecionado = perfil;
+      document.getElementById('btnPerfilUsuario').classList.toggle('active', perfil === 'paciente');
+      document.getElementById('btnPerfilPiloto').classList.toggle('active', perfil === 'medico');
 
-    // ============================================
-    // UTILITÁRIOS
-    // ============================================
-
-    function uid() {
-      return "sess_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+      const boxId = document.getElementById('boxIdPaciente');
+      boxId.style.display = (perfil === 'medico') ? 'block' : 'none';
     }
 
-    function loadSessions() {
-      try {
-        const data = localStorage.getItem(KEY_SESSIONS);
-        return data ? JSON.parse(data) : [];
-      } catch (e) {
-        console.error("Erro ao carregar sessões:", e);
-        return [];
-      }
-    }
-
-    function saveSessions(arr) {
-      try {
-        localStorage.setItem(KEY_SESSIONS, JSON.stringify(arr));
-        updateUI();
-      } catch (e) {
-        console.error("Erro ao salvar:", e);
-      }
-    }
-
-    function deleteSession(sessionId) {
-      if (confirm("Deletar esta sessão? Todos os dados serão perdidos.")) {
-        const sessions = loadSessions();
-        const filtered = sessions.filter(s => s.id !== sessionId);
-        saveSessions(filtered);
-      }
-    }
-
-    function formatDate(ms) {
-      return new Date(ms).toLocaleString("pt-BR");
-    }
-
-    function getStatusBadge(status) {
-      const badges = {
-        active: { class: "status-active", text: "⏱️ Ativo" },
-        closed: { class: "status-closed", text: "✅ Finalizado" },
-        signed: { class: "status-signed", text: "✍️ Assinado" }
-      };
-      const badge = badges[status] || badges.active;
-      return `<span class="report-status ${badge.class}">${badge.text}</span>`;
-    }
-
-    // ============================================
-    // ELEMENTOS DOM
-    // ============================================
-
-    const elMed = document.getElementById("medico");
-    const elPac = document.getElementById("paciente");
-    const elCtx = document.getElementById("contexto");
-    const btnStart = document.getElementById("btnStart");
-    const btnClear = document.getElementById("btnClear");
-    const reportList = document.getElementById("reportList");
-    const statTotal = document.getElementById("statTotal");
-    const statActive = document.getElementById("statActive");
-    const statSigned = document.getElementById("statSigned");
-
-    // ============================================
-    // ATUALIZAR UI
-    // ============================================
-
-    function updateUI() {
-      const sessions = loadSessions();
-      const active = sessions.filter(s => s.status === "active").length;
-      const signed = sessions.filter(s => s.status === "signed").length;
-
-      // Atualizar estatísticas
-      statTotal.textContent = sessions.length;
-      statActive.textContent = active;
-      statSigned.textContent = signed;
-
-      // Atualizar lista de relatórios
-      if (sessions.length === 0) {
-        reportList.innerHTML = `
-          <div class="empty-state">
-            <p>Nenhum relatório ainda.</p>
-            <p style="font-size: 12px;">Crie uma nova sessão para começar.</p>
-          </div>
-        `;
-      } else {
-        reportList.innerHTML = sessions
-          .map(s => `
-            <div class="report-item">
-              <div class="report-info">
-                <h3>${s.medico} → ${s.paciente}</h3>
-                <p>${formatDate(s.start)}</p>
-                ${getStatusBadge(s.status)}
-              </div>
-              <div class="report-actions">
-                ${s.status === "active" ? `<a href="session.html?id=${encodeURIComponent(s.id)}" class="btn btn-secondary">📝 Continuar</a>` : ""}
-                ${s.status === "closed" ? `<a href="report.html?id=${encodeURIComponent(s.id)}" class="btn btn-secondary">📊 Relatório</a>` : ""}
-                ${s.status === "signed" ? `<a href="assinatura.html?id=${encodeURIComponent(s.id)}" class="btn btn-secondary">✍️ Assinado</a>` : ""}
-                <button class="btn btn-danger" onclick="deleteSession('${s.id}')">🗑️ Deletar</button>
-              </div>
-            </div>
-          `)
-          .join("");
-      }
-    }
-
-    // ============================================
-    // INICIALIZAÇÃO
-    // ============================================
-
-    updateUI();
-
-    // ============================================
-    // BOTÕES
-    // ============================================
-
-    if (btnStart) {
-      btnStart.addEventListener("click", () => {
-        const medico = (elMed.value || "").trim();
-        const paciente = (elPac.value || "").trim();
-        const contexto = (elCtx.value || "").trim();
-
-        if (!medico || !paciente) {
-          alert("Preencha Médico e Paciente");
+    function conectarEAbrirDashboard() {
+      if (perfilSelecionado === 'medico') {
+        const idPaciente = document.getElementById('txtIdPaciente').value.trim();
+        if (!idPaciente) {
+          alert('Por favor, insira o ID do paciente cadastrado no Supabase.');
           return;
         }
-
-        const session = {
-          id: uid(),
-          medico,
-          paciente,
-          contexto,
-          start: Date.now(),
-          status: "active",
-          recordedSec: 0,
-          audioBuffer: [],
-          snaps: null,
-          dx: ""
-        };
-
-        const sessions = loadSessions();
-        sessions.unshift(session);
-        saveSessions(sessions);
-
-        setTimeout(() => {
-          location.href = `session.html?id=${encodeURIComponent(session.id)}`;
-        }, 300);
-      });
+        // Redireciona para o dashboard do médico passando o ID do paciente na URL
+        window.location.href = `pages/crs-dashboard.html?role=medico&patient_id=${encodeURIComponent(idPaciente)}`;
+      } else {
+        // Redireciona para o dashboard do paciente
+        window.location.href = `pages/crs-dashboard.html?role=paciente`;
+      }
     }
 
-    if (btnClear) {
-      btnClear.addEventListener("click", () => {
-        elMed.value = "";
-        elPac.value = "";
-        elCtx.value = "";
-      });
-    }
-
-    // ============================================
-    // ATUALIZAR A CADA 3 SEGUNDOS
-    // ============================================
-
-    setInterval(updateUI, 3000);
+    // Inicializa com o perfil de paciente ativo
+    selecionarPerfil('paciente');
   </script>
+
 </body>
 </html>
