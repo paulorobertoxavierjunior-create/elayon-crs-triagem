@@ -39,7 +39,7 @@ async function verificarStatusLiberacaoMedica() {
         if (atendimento.status === 'liberado') {
             liberarAbaTesteComParametros(atendimento.relatorio_medico);
         } else if (atendimento.status === 'pendente' || atendimento.status === 'em_atendimento') {
-            document.getElementById('msgStatusSolicitacao').textContent = '⏳ Sua solicitação está sendo acompanhada pela central médica.';
+            document.getElementById('msgStatusSolicitacao').textContent = '⏳ Sua solicitação está na fila aguardando um Piloto/Médico.';
             document.getElementById('msgStatusSolicitacao').style.color = 'var(--warning)';
         }
     }
@@ -51,16 +51,15 @@ async function solicitarAtendimentoHumano() {
     msgDiv.style.color = 'var(--warning)';
 
     try {
+        // Insere apenas os campos garantidos na tabela atendimento_fila
         const { error } = await supabaseClient.from('atendimento_fila').insert({
             user_id: userId,
-            status: 'pendente',
-            motivo: 'Paciente solicitou escuta simbiótica e auditoria fônica.',
-            criado_em: new Date().toISOString()
+            status: 'pendente'
         });
 
         if (error) throw error;
 
-        msgDiv.textContent = '✅ Solicitação enviada! Os médicos na central mútua já podem visualizar seu ID.';
+        msgDiv.textContent = '✅ Solicitação enviada! Os médicos na central já podem visualizar seu ID.';
         msgDiv.style.color = 'var(--success)';
     } catch (err) {
         msgDiv.textContent = '❌ Erro ao solicitar: ' + err.message;
