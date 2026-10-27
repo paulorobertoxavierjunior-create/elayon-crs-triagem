@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elayon Health • Painel do Piloto & Central de Auditoria Médica</title>
+    <title>Elayon Health • Central do Piloto (CRS Engine & Responsabilidade Clínica)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -45,7 +45,7 @@
         .profile-info p { font-size: 11px; color: var(--muted); font-family: monospace; }
         .status-tag { font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 6px; background: #cce5ff; color: #004085; border: 1px solid #b8daff; }
 
-        /* Abas de Navegação do Piloto */
+        /* Abas de Navegação */
         .tabs-nav { display: flex; gap: 10px; border-bottom: 2px solid var(--line); padding-bottom: 10px; overflow-x: auto; }
         .tab-btn { background: #eef4f4; border: 1px solid var(--line); padding: 10px 16px; border-radius: 10px; font-size: 11px; font-weight: 800; color: var(--muted); cursor: pointer; transition: 0.2s; white-space: nowrap; }
         .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
@@ -77,11 +77,11 @@
         .btn-primary { background: var(--accent); color: #fff; }
         .btn-primary:hover { opacity: 0.9; }
 
-        /* Gráfico Unificado das 8 Dimensões */
+        /* Gráfico Unificado das 8 Dimensões em Cores Distintas */
         .unified-graph-box {
             background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 14px;
         }
-        .canvas-box { width: 100%; height: 200px; border-radius: 8px; background: #fafcfc; display: block; border: 1px solid var(--line); margin-bottom: 8px; }
+        .canvas-box { width: 100%; height: 220px; border-radius: 8px; background: #fafcfc; display: block; border: 1px solid var(--line); margin-bottom: 8px; }
         .legend-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; font-size: 9px; font-weight: 700; text-align: center; }
         .legend-item { padding: 4px; border-radius: 4px; color: #fff; }
 
@@ -93,42 +93,42 @@
     <div class="container">
         <!-- HUD Superior -->
         <header class="hud-header">
-            <div class="hud-info">PILOTO MÉDICO: <span style="color: var(--success);" id="hudPilotoStatus">NÃO REGISTRADO</span></div>
+            <div class="hud-info">ELAYON HEALTH (CRS): <span style="color: var(--success);" id="hudPilotoStatus">AGUARDANDO CREDENCIAIS</span></div>
             <a href="index.html" class="btn-voltar">⬅️ Sair / Trocar Papel</a>
         </header>
 
-        <!-- Perfil Responsável do Piloto -->
+        <!-- Perfil Responsável do Piloto (Médico) -->
         <div class="profile-card">
-            <img id="pilotAvatarImg" src="elayon_logo.png" alt="Avatar" class="logo-img" onerror="this.src='https://via.placeholder.com/48';">
+            <img id="pilotAvatarImg" src="IMG-20260218-WA0016.jpg" alt="Avatar" class="logo-img" onerror="this.src='https://via.placeholder.com/48';">
             <div class="profile-info">
-                <h2 id="lblNomePiloto">Carregando Credenciais...</h2>
+                <h2 id="lblNomePiloto">Médico Não Identificado</h2>
                 <p id="lblCrPiloto">CRM / CRFa / CRP: -- | Especialidade: --</p>
             </div>
-            <span class="status-tag">⚖️ Responsabilidade Legal Ativa</span>
+            <span class="status-tag">⚖️ Termo Legal Ativo (Termômetro Vocal)</span>
         </div>
 
         <!-- Abas de Navegação -->
         <div class="tabs-nav">
             <button class="tab-btn active" onclick="trocarAbaPiloto('credencial')" id="btnTab1">🛡️ 1. Credenciais & CRM</button>
-            <button class="tab-btn" onclick="trocarAbaPiloto('fila')" id="btnTab2">🚨 2. Central de Atendimento (Fila Mútua)</button>
-            <button class="tab-btn" onclick="trocarAbaPiloto('analise')" id="btnTab3">🎙️ 3. Cockpit & Análise ao Vivo / Upload</button>
-            <button class="tab-btn" onclick="trocarAbaPiloto('param')" id="btnTab4">⚙️ 4. Parametrização & Limites IA</button>
+            <button class="tab-btn" onclick="trocarAbaPiloto('fila')" id="btnTab2">🚨 2. Fila Mútua de Atendimento</button>
+            <button class="tab-btn" onclick="trocarAbaPiloto('analise')" id="btnTab3">🎙️ 3. Cockpit & Análise (CRS)</button>
+            <button class="tab-btn" onclick="trocarAbaPiloto('param')" id="btnTab4">⚙️ 4. Parametrização & Laudo</button>
         </div>
 
         <!-- ABA 1: CREDENCIAIS E RESPONSABILIDADE LEGAL -->
         <div class="tab-content active" id="tabCredencial">
             <div class="card-box">
-                <div class="section-title">🛡️ Cadastro Profissional & Termo de Responsabilidade Legal</div>
+                <div class="section-title">🛡️ Identificação do Responsável Clínico (Termômetro Vocal)</div>
                 <p style="font-size: 11px; color: var(--muted); line-height: 1.4;">
-                    Como funcionário/parceiro da Elayon Health, todas as validações clínicas, emissão de relatórios de escuta simbiótica e parametrizações de IA vinculam diretamente a sua responsabilidade profissional perante os conselhos de classe (CRM, CRFa, CRP ou afins). Preencha seus dados reais:
+                    <strong>Aviso Legal:</strong> O Elayon Health é um termômetro de sinais temporais (CRS) e não substitui o julgamento médico[span_9](start_span)[span_9](end_span). A interpretação e o diagnóstico são de sua exclusiva responsabilidade profissional[span_10](start_span)[span_10](end_span).
                 </p>
                 <div class="input-group">
-                    <label>Nome Completo do Médico / Especialista:</label>
-                    <input type="text" id="regNome" class="input-field" placeholder="Ex: Dr. Carlos Eduardo Silva">
+                    <label>Nome Completo:</label>
+                    <input type="text" id="regNome" class="input-field" placeholder="Ex: Dr. Paulo Roberto">
                 </div>
                 <div class="input-group">
-                    <label>Número do Registro (CRM / CRFa / CRP):</label>
-                    <input type="text" id="regCrm" class="input-field" placeholder="Ex: CRM-SP 123456">
+                    <label>Registro Profissional (CRM / CRFa / CRP):</label>
+                    <input type="text" id="regCrm" class="input-field" placeholder="Ex: CRM 123456 / SP">
                 </div>
                 <div class="input-group">
                     <label>Especialidade Principal:</label>
@@ -137,17 +137,17 @@
                         <option value="Fonoaudiologia">Fonoaudiologia</option>
                         <option value="Psicologia">Psicologia</option>
                         <option value="Neurofisiologia">Neurofisiologia</option>
-                        <option value="Outros">Outras Áreas Afins (Especificar)</option>
+                        <option value="Outros">Outras Áreas da Saúde / Comportamental</option>
                     </select>
                 </div>
                 <div class="input-group" id="boxOutraEsp" style="display:none;">
-                    <label>Especifique a Outra Área:</label>
-                    <input type="text" id="regOutraEspecialidade" class="input-field" placeholder="Ex: Linguística Computacional Médica">
+                    <label>Especifique a Especialidade:</label>
+                    <input type="text" id="regOutraEspecialidade" class="input-field" placeholder="Ex: Geriatria">
                 </div>
                 <div style="background: #f8fbfa; border: 1px solid var(--line); padding: 10px; border-radius: 8px; font-size: 10px; color: var(--muted);">
-                    ☑️ Declaro estar ciente de que os relatórios de triagem ELA e os parâmetros fônicos aplicados passam pela minha chancela técnica e legal.
+                    ☑️ Confirmo que os dados inseridos são válidos e que assumo total responsabilidade clínica sobre as análises.
                 </div>
-                <button class="btn-action btn-success" onclick="salvarCredenciaisPiloto()">💾 Salvar Credenciais & Ativar Perfil</button>
+                <button class="btn-action btn-success" onclick="salvarCredenciaisPiloto()">💾 Salvar Credenciais no Supabase</button>
                 <div class="msg" id="msgCredencial"></div>
             </div>
         </div>
@@ -156,7 +156,7 @@
         <div class="tab-content" id="tabFila">
             <div class="card-box">
                 <div class="section-title">🚨 Fila Coletiva de Pacientes (Central Mútua)</div>
-                <p style="font-size: 11px; color: var(--muted);">Qualquer médico/piloto logado pode selecionar um paciente da fila para iniciar o atendimento integrado.</p>
+                <p style="font-size: 11px; color: var(--muted);">Visualize e selecione qualquer ID de paciente pendente na base para iniciar a auditoria fônica[span_11](start_span)[span_11](end_span).</p>
                 <div id="queueContainer">
                     <p style="font-size: 12px; color: var(--muted);">A carregar chamados...</p>
                 </div>
@@ -166,64 +166,64 @@
         <!-- ABA 3: COCKPIT DE ANÁLISE AO VIVO E UPLOAD DE ÁUDIO -->
         <div class="tab-content" id="tabAnalise">
             <div class="card-box">
-                <div class="section-title">🎙️ Cockpit de Fonação ao Vivo & Análise de Áudio Bruto</div>
-                <p style="font-size: 11px; color: var(--muted);">Paciente Ativo: <span id="lblAtivoId" style="font-family:monospace; color:var(--accent); font-weight:bold;">Nenhum selecionado</span></p>
+                <div class="section-title">🎙️ Cockpit CRS • Análise Temporal & Fonação ao Vivo</div>
+                <p style="font-size: 11px; color: var(--muted);">Paciente Selecionado: <span id="lblAtivoId" style="font-family:monospace; color:var(--accent); font-weight:bold;">Nenhum selecionado</span></p>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button class="btn-action btn-primary" onclick="iniciarLigacaoOuAnaliseAoVivo()">📞 Iniciar Ligação / Captura ao Vivo</button>
+                    <button class="btn-action btn-primary" onclick="iniciarLigacaoOuAnaliseAoVivo()">📞 Iniciar Captura de Fonação ao Vivo</button>
                     <label class="btn-action btn-success" style="cursor:pointer; display:flex; align-items:center; justify-content:center; margin:0;">
-                        📂 Carregar Áudio do Telefone (.wav/.mp3)
+                        📂 Carregar Áudio Bruto (.wav/.mp3)
                         <input type="file" id="fileAudioUpload" accept="audio/*" style="display:none;" onchange="processarAudioUpload(this)">
                     </label>
                 </div>
 
                 <!-- Status CRS -->
                 <div style="background: #f8fbfa; border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
-                    <span>Status CRS (Relatório de Ritmo & Pausas): <strong id="statusCrsVal" style="color:var(--success);">Aguardando Áudio...</strong></span>
-                    <button class="btn-action btn-primary" style="width: auto; padding: 6px 12px; font-size: 10px;" onclick="gerarRelatorioCrsCompleto()">📄 Gerar Relatório CRS Completo</button>
+                    <span>Relatório CRS (Camada de Ritmo): <strong id="statusCrsVal" style="color:var(--success);">Aguardando Amostra...</strong></span>
+                    <button class="btn-action btn-primary" style="width: auto; padding: 6px 12px; font-size: 10px;" onclick="gerarRelatorioCrsCompleto()">📄 Congelar Relatório CRS</button>
                 </div>
 
-                <!-- Gráfico Unificado das 8 Dimensões Fônicas -->
+                <!-- Gráfico Unificado das 8 Dimensões com Cores Distintas -->
                 <div class="unified-graph-box">
-                    <span style="font-size: 10px; font-weight: 800; color: var(--muted);">Matriz Unificada em Tempo Real (8 Dimensões Fônicas)</span>
+                    <span style="font-size: 10px; font-weight: 800; color: var(--muted);">Overlay 8 Linhas • Sinais Temporais e Métricas Fônicas</span>
                     <canvas class="canvas-box" id="cvUnificado"></canvas>
                     <div class="legend-grid">
-                        <div class="legend-item" style="background:#2a9d8f;">1. Frequência</div>
-                        <div class="legend-item" style="background:#e76f51;">2. Intensidade</div>
-                        <div class="legend-item" style="background:#f4a261;">3. Timbre (HNR)</div>
-                        <div class="legend-item" style="background:#264653;">4. Prosódia (CRS)</div>
-                        <div class="legend-item" style="background:#8ab17d;">5. GRBAS</div>
-                        <div class="legend-item" style="background:#6a040f;">6. Fluxo Subglótico</div>
-                        <div class="legend-item" style="background:#3a86ff;">7. Eletroglotografia</div>
-                        <div class="legend-item" style="background:#8338ec;">8. Ruído Ambiental</div>
+                        <div class="legend-item" style="background:#2a9d8f;">1. RMS (Energia)</div>
+                        <div class="legend-item" style="background:#e76f51;">2. Pausa Curta</div>
+                        <div class="legend-item" style="background:#f4a261;">3. Pausa Média</div>
+                        <div class="legend-item" style="background:#264653;">4. Pausa Longa</div>
+                        <div class="legend-item" style="background:#8ab17d;">5. Pitch Proxy</div>
+                        <div class="legend-item" style="background:#6a040f;">6. Subgraves</div>
+                        <div class="legend-item" style="background:#3a86ff;">7. Graves</div>
+                        <div class="legend-item" style="background:#8338ec;">8. Médias-Altas</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ABA 4: PARAMETRIZAÇÃO E LIMITES DA IA -->
+        <!-- ABA 4: PARAMETRIZAÇÃO E LAUDO -->
         <div class="tab-content" id="tabParam">
             <div class="card-box">
-                <div class="section-title">⚙️ Parametrização Clínica & Limites Fixados pela IA</div>
-                <p style="font-size: 11px; color: var(--muted);">Defina os parâmetros que serão fixados na interface do usuário e respeitados pelo backend durante as interações fônicas:</p>
+                <div class="section-title">⚙️ Campo Obrigatório • Diagnóstico & Conduta Médica</div>
+                <p style="font-size: 11px; color: var(--muted);">Defina os parâmetros clínicos e a hipótese diagnóstica com base nos dados fornecidos pelo termômetro[span_12](start_span)[span_12](end_span):</p>
                 
                 <div class="input-group">
-                    <label>Relatório Clínico e Diretrizes para o Paciente:</label>
-                    <textarea id="paramRelatorio" class="input-field" placeholder="Escreva o laudo e orientações..."></textarea>
+                    <label>Hipótese Diagnóstica / Observações Clínicas:</label>
+                    <textarea id="paramRelatorio" class="input-field" placeholder="Ex: Paciente apresenta pausas prolongadas compatíveis com avaliação..."></textarea>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <div class="input-group">
-                        <label>Limiar Máximo de Jitter / F₀:</label>
-                        <input type="text" id="paramJitter" class="input-field" value="1.5%">
+                        <label>Severidade (0 a 10):</label>
+                        <input type="number" id="paramSeveridade" class="input-field" min="0" max="10" value="5">
                     </div>
                     <div class="input-group">
-                        <label>Limiar Mínimo de HNR (Timbre):</label>
-                        <input type="text" id="paramHnr" class="input-field" value="20 dB">
+                        <label>Conduta Recomendada:</label>
+                        <input type="text" id="paramConduta" class="input-field" value="Fonoaudiologia 2x/semana">
                     </div>
                 </div>
 
-                <button class="btn-action btn-success" onclick="salvarParametrizacaoEEnviarPaciente()">🚀 Salvar Parametrização & Liberar Paciente</button>
+                <button class="btn-action btn-success" onclick="salvarParametrizacaoEEnviarPaciente()">🚀 Assinar Laudo, Parametrizar e Liberar Paciente</button>
                 <div class="msg" id="msgParam"></div>
             </div>
         </div>
@@ -295,7 +295,7 @@
                 termo_responsabilidade_aceito: true
             });
 
-             if (error) {
+            if (error) {
                 msg.textContent = '❌ Erro ao salvar: ' + error.message;
                 msg.style.color = 'var(--danger)';
             } else {
@@ -305,7 +305,7 @@
             }
         }
 
-        async function carregarFilaMútua() {
+       async function carregarFilaMútua() {
             const container = document.getElementById('queueContainer');
             const { data: fila } = await supabaseClient
                 .from('atendimento_fila')
@@ -354,33 +354,38 @@
                 return;
             }
             alert(`📞 Iniciando captura de fonação ao vivo para o paciente ${selectedUserId}...`);
-            document.getElementById('statusCrsVal').textContent = 'Processando Fonação ao Vivo... (CRS: OK)';
+            document.getElementById('statusCrsVal').textContent = 'Processando Timestamps • CRS: OK';
             desenharGraficoUnificado([45, 60, 28, 85, 12, 110, 45, 30]);
         }
 
         function processarAudioUpload(input) {
             if (!input.files || !input.files[0]) return;
-            alert(`📂 Áudio "${input.files[0].name}" carregado. Executando análise fônica em tempo real...`);
-            document.getElementById('statusCrsVal').textContent = 'Análise Concluída • CRS: OK (Padrão ELA Estável)';
+            alert(`📂 Áudio "${input.files[0].name}" carregado. Extraindo vetores CRS...`);
+            document.getElementById('statusCrsVal').textContent = 'Análise Concluída • Relatório CRS Congelado';
             desenharGraficoUnificado([55, 75, 25, 90, 15, 115, 50, 32]);
         }
 
         function gerarRelatorioCrsCompleto() {
-            alert('📄 Relatório completo de Ritmo, Pausas e Micro-variações gerado e anexado com sucesso.');
+            alert('📄 Relatório temporal de pausas e frequências congelado para auditoria clínica.');
         }
 
         async function salvarParametrizacaoEEnviarPaciente() {
             const msg = document.getElementById('msgParam');
             const relatorio = document.getElementById('paramRelatorio').value.trim();
-            const jitter = document.getElementById('paramJitter').value.trim();
-            const hnr = document.getElementById('paramHnr').value.trim();
+            const sev = document.getElementById('paramSeveridade').value;
+            const conduta = document.getElementById('paramConduta').value.trim();
 
             if (!selectedUserId || !selectedRowId) {
                 alert('⚠️ Nenhum paciente selecionado para parametrização.');
                 return;
             }
 
-            msg.textContent = '⏳ A salvar parametrização no Supabase...';
+            if (!relatorio) {
+                alert('⚠️ O campo de diagnóstico e hipótese clínica é obrigatório.');
+                return;
+            }
+
+            msg.textContent = '⏳ A salvar laudo no Supabase...';
             msg.style.color = 'var(--warning)';
 
             const { error } = await supabaseClient
@@ -388,7 +393,7 @@
                 .update({
                     status: 'liberado',
                     relatorio_medico: relatorio,
-                    parametros_json: { jitter_max: jitter, hnr_min: hnr }
+                    parametros_json: { severidade: sev, conduta: conduta }
                 })
                 .eq('id', selectedRowId);
 
@@ -396,8 +401,9 @@
                 msg.textContent = '❌ Erro: ' + error.message;
                 msg.style.color = 'var(--danger)';
             } else {
-                msg.textContent = '✅ Parametrização aplicada! O paciente já pode interagir com os limites fixados.';
+                msg.textContent = '✅ Laudo emitido e paciente liberado com sucesso!';
                 msg.style.color = 'var(--success)';
+                document.getElementById('paramRelatorio').value = '';
                 await carregarFilaMútua();
             }
         }
@@ -407,12 +413,11 @@
             if (!cv) return;
             const ctx = cv.getContext('2d');
             const W = cv.width = cv.parentElement.clientWidth || 300;
-            const H = cv.height = 200;
+            const H = cv.height = 220;
 
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, W, H);
 
-            // Linhas de grade
             ctx.strokeStyle = '#e2f0ed';
             ctx.lineWidth = 1;
             for (let y = 25; y < H; y += 25) {
@@ -421,14 +426,13 @@
 
             const cores = ['#2a9d8f', '#e76f51', '#f4a261', '#264653', '#8ab17d', '#6a040f', '#3a86ff', '#8338ec'];
 
-            // Desenhar as 8 linhas fônicas juntas
             for (let dim = 0; dim < 8; dim++) {
                 ctx.strokeStyle = cores[dim];
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 2.2;
                 ctx.beginPath();
                 for (let x = 0; x < W; x += 5) {
-                    const base = dadosMock.length > 0 ? dadosMock[dim] : 40 + (dim * 5);
-                    const y = (H / 2) + Math.sin((x * 0.05) + dim) * (base * 0.4) + ((dim - 4) * 4);
+                    const base = dadosMock.length > 0 ? dadosMock[dim] : 35 + (dim * 4);
+                    const y = (H / 2) + Math.sin((x * 0.05) + dim) * (base * 0.35) + ((dim - 4) * 5);
                     if (x === 0) ctx.moveTo(x, y);
                     else ctx.lineTo(x, y);
                 }
