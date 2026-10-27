@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elayon Health • Dashboard do Paciente & Escuta Simbólica</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg1: #f4f9f4; --bg2: #eaf4f6; --card: #ffffff;
+            --ink: #0a2a2f; --muted: #4a6b70; --line: #d8e8eb;
+            --accent: #2a9d8f; --accent2: #3ecfcf; --accent-glow: rgba(42, 157, 143, 0.15);
+            --success: #2b8a3e; --danger: #d9534f; --warning: #f59e0b;
+            --shadow: 0 10px 30px rgba(0,0,0,0.06);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            min-height: 100vh; background: radial-gradient(circle at top left, var(--bg1), var(--bg2));
+            color: var(--ink); font-family: system-ui, -apple-system, sans-serif;
+            display: flex; flex-direction: column; align-items: center; padding: 20px; padding-bottom: 90px;
+        }
+        .container { width: 100%; max-width: 1100px; display: grid; gap: 20px; }
+
+        .hud-header {
+            background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+            padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: var(--shadow);
+        }
+        .hud-info { font-size: 11px; font-weight: 700; color: var(--muted); }
+        .hud-info span { color: var(--accent); }
+        .btn-voltar {
+            background: #f0f7f7; border: 1px solid var(--line); color: var(--ink);
+            padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 700;
+            cursor: pointer; text-decoration: none; transition: 0.2s;
+        }
+        .btn-voltar:hover { background: var(--accent); color: #fff; }
+
+        .profile-card {
+            background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--line);
+            box-shadow: var(--shadow); display: flex; align-items: center; gap: 16px;
+        }
+        .logo-img { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; background: #fff; }
+        .profile-info { flex: 1; text-align: left; }
+        .profile-info h2 { font-size: 18px; color: var(--ink); margin-bottom: 2px; }
+        .profile-info p { font-size: 11px; color: var(--muted); font-family: monospace; }
+        .status-tag { font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 6px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+
+        .section-title { font-size: 13px; margin-bottom: 8px; color: var(--accent); font-weight: 800; display: flex; align-items: center; justify-content: space-between; }
+        
+        .graphs-grid-2col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        @media(max-width: 800px) { .graphs-grid-2col { grid-template-columns: 1fr; } }
+
+        .graph-box {
+            background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 14px;
+        }
+        .graph-title { font-size: 11px; font-weight: 800; color: var(--ink); margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .canvas-box { width: 100%; height: 90px; border-radius: 8px; background: #fafcfc; display: block; border: 1px solid var(--line); margin-bottom: 6px; }
+        .metric-val { font-size: 11px; font-family: monospace; font-weight: 800; color: var(--accent); }
+
+        .session-history-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+        @media(max-width: 768px) { .session-history-grid { grid-template-columns: 1fr; } }
+        .session-box { background: #f8fbfa; border: 1px solid var(--line); border-radius: 12px; padding: 12px; text-align: left; }
+        .audio-player-custom { width: 100%; height: 28px; margin-top: 6px; border-radius: 6px; }
+
+        .action-card {
+            background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--line); box-shadow: var(--shadow); text-align: center; display: grid; gap: 12px;
+        }
+        .btn-action { display: block; width: 100%; padding: 14px; border-radius: 12px; font-size: 13px; font-weight: 800; border: none; cursor: pointer; text-align: center; transition: 0.2s; text-decoration: none; }
+        .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; box-shadow: 0 4px 15px var(--accent-glow); }
+        .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2); }
+        
+        .msg { font-size: 12px; font-weight: 600; min-height: 18px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- HUD Superior -->
+        <header class="hud-header">
+            <div class="hud-info">ELAYON HEALTH: <span style="color: var(--success);">CONECTADO VIA API</span> | TOKENS: <span id="userTokens">...</span></div>
+            <a href="index.html" class="btn-voltar">⬅️ Sair / Trocar Papel</a>
+        </header>
+
+        <!-- Perfil do Paciente -->
+        <div class="profile-card">
+            <img id="userAvatarImg" src="elayon_logo.png" alt="Avatar" class="logo-img" onerror="this.src='https://via.placeholder.com/48';">
+            <div class="profile-info">
+                <h2 id="userName">Carregando Paciente...</h2>
+                <p id="userIdDisplay">ID: --</p>
+            </div>
+            <span class="status-tag" id="statusCalibracao">🟢 Calibração OK (3/3)</span>
+        </div>
+
+        <!-- 8 Dimensões Fônicas Consolidadas -->
+        <div class="section-title">📊 Escuta Simbólica & Baseline Fônica do Paciente</div>
+        <div class="graphs-grid-2col">
+            <div class="graph-box"><div class="graph-title"><span>I. Frequência / Tom (F₀)</span><span class="metric-val" id="m1">-- Hz</span></div><canvas class="canvas-box" id="cv1"></canvas></div>
+            <div class="graph-box"><div class="graph-title"><span>II. Intensidade / Volume (SPL)</span><span class="metric-val" id="m2">-- dB</span></div><canvas class="canvas-box" id="cv2"></canvas></div>
+            <div class="graph-box"><div class="graph-title"><span>III. Qualidade / Timbre (HNR)</span><span class="metric-val" id="m3">-- dB</span></div><canvas class="canvas-box" id="cv3"></canvas></div>
+            <div class="graph-box"><div class="graph-title"><span>IV. Prosódia / Ritmo & Pausas (CRS)</span><span class="metric-val" id="m4">CRS: OK</span></div><canvas class="canvas-box" id="cv4"></canvas></div>
+            <div class="graph-box"><div class="graph-title"><span>V. Perceptivo-Auditivo (GRBAS)</span><span class="metric-val" id="m5">G0 S0</span></div><canvas class="canvas-box" id="cv5"></canvas></div>
+            <div class="graph-box"><div class="graph-title"><span>VI. Aerodinâmica & Fluxo</span><span class="metric-val" id="m6">120 L/s</span></div><canvas class="canvas-box" id="cv6"></canvas></div>
+            <div class="graph-box"><div class="graph-title"><span>VII. Eletroglotografia (Glote)</span><span class="metric-val" id="m7">48%</span></div><canvas class="canvas-box" id="cv7"></canvas></div>
+            <div class="graph-box"><div class="graph-title"><span>VIII. Contexto & Ruído</span><span class="metric-val" id="m8">35 dBA</span></div><canvas class="canvas-box" id="cv8"></canvas></div>
+        </div>
+
+        <!-- Buffer FIFO de Calibração -->
+        <div class="section-title" style="margin-top: 10px;">📦 Buffer FIFO das Sessões de Calibração Importadas</div>
+        <section style="background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--line); box-shadow: var(--shadow);">
+            <div class="session-history-grid">
+                <div class="session-box">
+                    <div style="font-size: 10px; font-weight: 800; color: var(--accent);">🔗 Calibração 1</div>
+                    <div style="font-size: 9px; color: var(--muted); margin: 4px 0;" id="infoSessao1">Carregando...</div>
+                    <audio id="audioPlayer1" controls class="audio-player-custom" style="display:none;"></audio>
+                </div>
+                <div class="session-box">
+                    <div style="font-size: 10px; font-weight: 800; color: var(--accent);">🔗 Calibração 2</div>
+                    <div style="font-size: 9px; color: var(--muted); margin: 4px 0;" id="infoSessao2">Carregando...</div>
+                    <audio id="audioPlayer2" controls class="audio-player-custom" style="display:none;"></audio>
+                </div>
+                <div class="session-box">
+                    <div style="font-size: 10px; font-weight: 800; color: var(--accent);">🔗 Baseline (3/3)</div>
+                    <div style="font-size: 9px; color: var(--muted); margin: 4px 0;" id="infoSessao3">Carregando...</div>
+                    <audio id="audioPlayer3" controls class="audio-player-custom" style="display:none;"></audio>
+                </div>
+            </div>
+        </section>
+
+        <!-- Área de Ação e Suporte Humano -->
+        <section class="action-card">
+            <h3 style="font-size: 14px; color: var(--ink);">🩺 Intervenção Médica & Piloto</h3>
+            <p style="font-size: 11px; color: var(--muted); line-height: 1.4;">
+                Caso sinta qualquer alteração vocal ou variação relevante nos parâmetros de escuta, solicite intervenção imediata da equipe médica. O chamado será priorizado na fila de atendimento clínico.
+            </p>
+            <button class="btn-action btn-warning" id="btnSolicitarAtendimento" onclick="solicitarAtendimentoHumano()">
+                🚨 Solicitar Atendimento Humano (Piloto / Médico)
+            </button>
+            <div class="msg" id="msgStatus"></div>
+        </section>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://xlktkelumtpugidnecbj.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa3RrZWx1bXRwdWdpZG5lY2JqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NzU4OTgsImV4cCI6MjEwNjM1MTg5OH0.EIn9oiFl7PmhYhaMlvYKljeFVZflRCbxD_HT65-88XM';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Lê os parâmetros passados pela URL (API de migração do Cockpit)
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('user_id') || 'c708823f-a48a-41f0-948f-287eee484821';
+        const tokensUrl = urlParams.get('tokens');
+        const statusCalib = urlParams.get('calibracao');
+
+        async function initDashboardUser() {
+            document.getElementById('userIdDisplay').textContent = `ID: ${userId}`;
+            
+            // Define tokens iniciais da URL se houver
+            if (tokensUrl) {
+                document.getElementById('userTokens').textContent = tokensUrl;
+            }
+
+            if (statusCalib) {
+                document.getElementById('statusCalibracao').textContent = '🟢 Calibração Baseline Ativa';
+            }
+
+            // Busca dados do perfil do usuário no Supabase
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .maybeSingle();
+
+            if (profile) {
+                document.getElementById('userName').textContent = profile.nome || 'Operador / Paciente';
+                document.getElementById('userTokens').textContent = profile.tokens ?? 100;
+                if (profile.avatar_url) document.getElementById('userAvatarImg').src = profile.avatar_url;
+            } else {
+                document.getElementById('userName').textContent = 'Paciente Elayon';
+            }
+
+            // Desenha os gráficos estáticos / de referência
+            desenharGraficosFônicos();
+
+            // Carrega as 3 sessões do FIFO gravadas no banco
+            await carregarSessoesFifoDoBanco();
+        }
+
+        async function carregarSessoesFifoDoBanco() {
+            const { data: sessoes } = await supabaseClient
+                .from('elayon_sessoes')
+                .select('*')
+                .eq('user_id', userId)
+                .order('criado_em', { ascending: false })
+                .limit(3);
+
+            if (sessoes && sessoes.length > 0) {
+                sessoes.reverse().forEach((sessao, index) => {
+                    const idx = index + 1;
+                    const infoElem = document.getElementById(`infoSessao${idx}`);
+                    const playerElem = document.getElementById(`audioPlayer${idx}`);
+
+                    if (infoElem && playerElem && sessao.audio_base64) {
+                        infoElem.textContent = `Etapa ${sessao.etapa_calibracao || idx} (${sessao.duracao_sec || 30}s)`;
+                        playerElem.src = sessao.audio_base64;
+                        playerElem.style.display = 'block';
+                    }
+                });
+            }
+        }
+
+        async function solicitarAtendimentoHumano() {
+            const msgDiv = document.getElementById('msgStatus');
+            msgDiv.textContent = '⏳ A enviar solicitação para a fila de atendimento clínico...';
+            msgDiv.style.color = 'var(--warning)';
+
+            try {
+                const { error } = await supabaseClient.from('atendimento_fila').insert({
+                    user_id: userId,
+                    status: 'pendente',
+                    motivo: 'Solicitação manual de intervenção humana pelo paciente no Dashboard.',
+                    criado_em: new Date().toISOString()
+                });
+
+                if (error) throw error;
+
+                msgDiv.textContent = '✅ Solicitação enviada com sucesso! Um Piloto/Médico foi notificado na fila.';
+                msgDiv.style.color = 'var(--success)';
+            } catch (err) {
+                msgDiv.textContent = '❌ Erro ao solicitar atendimento: ' + err.message;
+                msgDiv.style.color = 'var(--danger)';
+            }
+        }
+
+        function desenharGraficosFônicos() {
+            for (let i = 1; i <= 8; i++) {
+                const cv = document.getElementById(`cv${i}`);
+                if (!cv) continue;
+                const ctx = cv.getContext('2d');
+                const W = cv.width = cv.parentElement.clientWidth || 280;
+                const H = cv.height = 90;
+
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, W, H);
+                ctx.strokeStyle = '#e2f0ed';
+                ctx.lineWidth = 1;
+                for (let y = 15; y < H; y += 15) {
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+                }
+
+                ctx.strokeStyle = '#2a9d8f';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                for (let x = 0; x < W; x += 4) {
+                    const y = H / 2 + Math.sin(x * 0.05 + i) * (15 + (i % 3) * 5);
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+        }
+
+        initDashboardUser();
+    </script>
+</body>
+</html>
