@@ -7,7 +7,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
-      /* Paleta exata baseada no print de referência */
       --bg-gradient: radial-gradient(circle at top left, #f4fdf6, #e2f4ea);
       --card-bg: #ffffff;
       --text-main: #0a2a2f;
@@ -28,7 +27,6 @@
       position: relative;
     }
 
-    /* Logo Pequena no Canto Superior Direito */
     .top-right-logo {
       position: absolute;
       top: 20px;
@@ -110,7 +108,6 @@
 
     .input-field:focus { border-color: var(--accent-green); background: #fff; }
 
-    /* Caixa Dinâmica de Orientações (Usuário / Médico) */
     .guidance-box {
       background: #f4fbf7;
       border-left: 4px solid var(--accent-green);
@@ -141,7 +138,6 @@
 
     .btn-enter:hover { opacity: 0.95; transform: scale(0.99); }
 
-    /* Bloco Exclusivo para o Investidor */
     .investor-note {
       margin-top: 18px;
       font-size: 10px;
@@ -153,7 +149,6 @@
 </head>
 <body>
 
-  <!-- Logo Pequena no Canto Superior Direito -->
   <img src="IMG-20260218-WA0016.jpg" alt="Elayon Logo" class="top-right-logo" onerror="this.src='https://via.placeholder.com/42';" />
 
   <main class="minimal-card">
@@ -177,9 +172,9 @@
       </div>
     </div>
 
-    <!-- Caixa Dinâmica de Explicação (Altera conforme o clique) -->
+    <!-- Caixa Dinâmica de Explicação -->
     <div class="guidance-box" id="guidanceBox">
-      <strong>Orientação ao Usuário:</strong> Você terá acesso à auto-consulta de seus gráficos vocais e exercícios orientados pela IA. Se houver qualquer alteração perceptível, acione diretamente a consulta remota via WhatsApp.
+      <strong>Orientação ao Usuário:</strong> Você terá acesso à auto-consulta de seus gráficos vocais e exercícios orientados pela IA, consumindo os parâmetros da calibração estabelecida.
     </div>
 
     <!-- Seção Dinâmica do Usuário -->
@@ -199,10 +194,9 @@
     </div>
 
     <button class="btn-enter" id="btnAvancar" onclick="entrarNoPainel()">
-      🚀 Entrar como Usuário
+      🚀 Entrar no Painel do Usuário
     </button>
 
-    <!-- Visão para o Investidor (Pitch de Poucas Palavras) -->
     <div class="investor-note">
       💡 <strong>Nota para Investidores:</strong> O Elayon Health revoluciona a telemedicina ao transformar o silêncio e as micro-variações fônicas de pacientes atípicos em dados clínicos estruturados de alta precisão em tempo real.
     </div>
@@ -210,6 +204,22 @@
 
   <script>
     let papelSelecionado = 'usuario';
+    let tokensGlobal = 100;
+
+    // Captura automática de parâmetros vindos da API/Cockpit (URL)
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userIdParam = urlParams.get('user_id');
+      const tokensParam = urlParams.get('tokens');
+
+      if (userIdParam) {
+        document.getElementById('userIdInput').value = userIdParam;
+        document.getElementById('pilotTargetIdInput').value = userIdParam;
+      }
+      if (tokensParam) {
+        tokensGlobal = tokensParam;
+      }
+    });
 
     function escolherPapel(papel) {
       papelSelecionado = papel;
@@ -223,18 +233,18 @@
       const btn = document.getElementById('btnAvancar');
 
       if (papel === 'usuario') {
-        guidanceBox.innerHTML = `<strong>Orientação ao Usuário:</strong> Você terá acesso à auto-consulta de seus gráficos vocais e exercícios orientados pela IA. Se houver qualquer alteração perceptível, acione diretamente a consulta remota via WhatsApp.`;
+        guidanceBox.innerHTML = `<strong>Orientação ao Usuário:</strong> Você terá acesso à auto-consulta de seus gráficos vocais e exercícios orientados pela IA, consumindo os parâmetros da calibração estabelecida.`;
         btn.textContent = '🚀 Entrar no Painel do Usuário';
       } else {
         guidanceBox.innerHTML = `<strong>Responsabilidade do Médico (Piloto):</strong> Você assume a condução clínica da escuta simbiótica, validação do áudio bruto isolado, parametrização da evolução e assinatura do relatório final de ELA.`;
-        btn.textContent = '📞 Acessar Painel do Piloto (WhatsApp)';
+        btn.textContent = '👨‍⚕️ Acessar Painel do Piloto';
       }
     }
 
     function entrarNoPainel() {
       if (papelSelecionado === 'usuario') {
         const uid = document.getElementById('userIdInput').value.trim();
-        window.location.href = `dashboard-user.html?user_id=${encodeURIComponent(uid)}`;
+        window.location.href = `dashboard-user.html?user_id=${encodeURIComponent(uid)}&tokens=${encodeURIComponent(tokensGlobal)}`;
       } else {
         const targetId = document.getElementById('pilotTargetIdInput').value.trim();
         window.location.href = `dashboard-pilot.html?target_id=${encodeURIComponent(targetId)}`;
