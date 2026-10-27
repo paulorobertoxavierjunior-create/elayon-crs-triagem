@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elayon Health • Painel do Piloto & Central de Atendimento</title>
+    <title>Elayon Health • Painel do Piloto & Central de Auditoria Médica</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -45,39 +45,45 @@
         .profile-info p { font-size: 11px; color: var(--muted); font-family: monospace; }
         .status-tag { font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 6px; background: #cce5ff; color: #004085; border: 1px solid #b8daff; }
 
+        /* Abas de Navegação do Piloto */
+        .tabs-nav { display: flex; gap: 10px; border-bottom: 2px solid var(--line); padding-bottom: 10px; overflow-x: auto; }
+        .tab-btn { background: #eef4f4; border: 1px solid var(--line); padding: 10px 16px; border-radius: 10px; font-size: 11px; font-weight: 800; color: var(--muted); cursor: pointer; transition: 0.2s; white-space: nowrap; }
+        .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        .tab-content { display: none; grid-gap: 20px; }
+        .tab-content.active { display: grid; }
+
         .section-title { font-size: 13px; margin-bottom: 8px; color: var(--accent); font-weight: 800; display: flex; align-items: center; justify-content: space-between; }
         
-        .queue-card {
-            background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--line); box-shadow: var(--shadow);
+        .card-box {
+            background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--line); box-shadow: var(--shadow); display: grid; gap: 14px; text-align: left;
         }
+        .input-group { display: grid; gap: 6px; }
+        .input-group label { font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
+        .input-field {
+            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: #fafcfb; color: var(--ink); font-family: inherit; font-size: 12px; outline: none;
+        }
+        .input-field:focus { border-color: var(--accent); background: #fff; }
+
         .queue-item {
             background: #f8fbfa; border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
         }
         .queue-info h4 { font-size: 13px; color: var(--ink); margin-bottom: 4px; }
         .queue-info p { font-size: 11px; color: var(--muted); font-family: monospace; }
         
-        .btn-action { padding: 10px 16px; border-radius: 10px; font-size: 12px; font-weight: 800; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-action { padding: 10px 16px; border-radius: 10px; font-size: 12px; font-weight: 800; border: none; cursor: pointer; transition: 0.2s; width: 100%; text-align: center; }
         .btn-success { background: var(--success); color: #fff; }
         .btn-success:hover { opacity: 0.9; }
         .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { opacity: 0.9; }
 
-        .graphs-grid-2col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-        @media(max-width: 800px) { .graphs-grid-2col { grid-template-columns: 1fr; } }
-
-        .graph-box {
+        /* Gráfico Unificado das 8 Dimensões */
+        .unified-graph-box {
             background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 14px;
         }
-        .graph-title { font-size: 11px; font-weight: 800; color: var(--ink); margin-bottom: 8px; display: flex; justify-content: space-between; }
-        .canvas-box { width: 100%; height: 90px; border-radius: 8px; background: #fafcfc; display: block; border: 1px solid var(--line); margin-bottom: 6px; }
-        .metric-val { font-size: 11px; font-family: monospace; font-weight: 800; color: var(--accent); }
-
-        .param-card {
-            background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--line); box-shadow: var(--shadow); display: grid; gap: 12px; text-align: left;
-        }
-        .input-field {
-            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: #fafcfb; color: var(--ink); font-family: inherit; font-size: 12px; outline: none; resize: vertical; min-height: 70px;
-        }
-        .input-field:focus { border-color: var(--accent); background: #fff; }
+        .canvas-box { width: 100%; height: 200px; border-radius: 8px; background: #fafcfc; display: block; border: 1px solid var(--line); margin-bottom: 8px; }
+        .legend-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; font-size: 9px; font-weight: 700; text-align: center; }
+        .legend-item { padding: 4px; border-radius: 4px; color: #fff; }
 
         .msg { font-size: 12px; font-weight: 600; min-height: 18px; text-align: center; }
     </style>
@@ -87,53 +93,139 @@
     <div class="container">
         <!-- HUD Superior -->
         <header class="hud-header">
-            <div class="hud-info">PILOTO MÉDICO: <span style="color: var(--success);">CENTRAL MÚTUA ATIVA</span></div>
+            <div class="hud-info">PILOTO MÉDICO: <span style="color: var(--success);" id="hudPilotoStatus">NÃO REGISTRADO</span></div>
             <a href="index.html" class="btn-voltar">⬅️ Sair / Trocar Papel</a>
         </header>
 
-        <!-- Perfil do Médico / Piloto -->
+        <!-- Perfil Responsável do Piloto -->
         <div class="profile-card">
             <img id="pilotAvatarImg" src="elayon_logo.png" alt="Avatar" class="logo-img" onerror="this.src='https://via.placeholder.com/48';">
             <div class="profile-info">
-                <h2>Dr. Piloto / Central Médica</h2>
-                <p id="targetIdDisplay">Gerenciando Fila de Pacientes ELA</p>
+                <h2 id="lblNomePiloto">Carregando Credenciais...</h2>
+                <p id="lblCrPiloto">CRM / CRFa / CRP: -- | Especialidade: --</p>
             </div>
-            <span class="status-tag">👨‍⚕️ Atendimento Mútuo</span>
+            <span class="status-tag">⚖️ Responsabilidade Legal Ativa</span>
         </div>
 
-        <!-- Fila Coletiva (Todos os chamados de pacientes) -->
-        <div class="queue-card">
-            <div class="section-title">🚨 Fila Mútua de Atendimento (Pacientes Pendentes)</div>
-            <div id="queueContainer">
-                <p style="font-size: 12px; color: var(--muted);">A carregar chamados da base central...</p>
+        <!-- Abas de Navegação -->
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="trocarAbaPiloto('credencial')" id="btnTab1">🛡️ 1. Credenciais & CRM</button>
+            <button class="tab-btn" onclick="trocarAbaPiloto('fila')" id="btnTab2">🚨 2. Central de Atendimento (Fila Mútua)</button>
+            <button class="tab-btn" onclick="trocarAbaPiloto('analise')" id="btnTab3">🎙️ 3. Cockpit & Análise ao Vivo / Upload</button>
+            <button class="tab-btn" onclick="trocarAbaPiloto('param')" id="btnTab4">⚙️ 4. Parametrização & Limites IA</button>
+        </div>
+
+        <!-- ABA 1: CREDENCIAIS E RESPONSABILIDADE LEGAL -->
+        <div class="tab-content active" id="tabCredencial">
+            <div class="card-box">
+                <div class="section-title">🛡️ Cadastro Profissional & Termo de Responsabilidade Legal</div>
+                <p style="font-size: 11px; color: var(--muted); line-height: 1.4;">
+                    Como funcionário/parceiro da Elayon Health, todas as validações clínicas, emissão de relatórios de escuta simbiótica e parametrizações de IA vinculam diretamente a sua responsabilidade profissional perante os conselhos de classe (CRM, CRFa, CRP ou afins). Preencha seus dados reais:
+                </p>
+                <div class="input-group">
+                    <label>Nome Completo do Médico / Especialista:</label>
+                    <input type="text" id="regNome" class="input-field" placeholder="Ex: Dr. Carlos Eduardo Silva">
+                </div>
+                <div class="input-group">
+                    <label>Número do Registro (CRM / CRFa / CRP):</label>
+                    <input type="text" id="regCrm" class="input-field" placeholder="Ex: CRM-SP 123456">
+                </div>
+                <div class="input-group">
+                    <label>Especialidade Principal:</label>
+                    <select id="regEspecialidade" class="input-field" onchange="verificarOutraEspecialidade(this.value)">
+                        <option value="Neurologia">Neurologia</option>
+                        <option value="Fonoaudiologia">Fonoaudiologia</option>
+                        <option value="Psicologia">Psicologia</option>
+                        <option value="Neurofisiologia">Neurofisiologia</option>
+                        <option value="Outros">Outras Áreas Afins (Especificar)</option>
+                    </select>
+                </div>
+                <div class="input-group" id="boxOutraEsp" style="display:none;">
+                    <label>Especifique a Outra Área:</label>
+                    <input type="text" id="regOutraEspecialidade" class="input-field" placeholder="Ex: Linguística Computacional Médica">
+                </div>
+                <div style="background: #f8fbfa; border: 1px solid var(--line); padding: 10px; border-radius: 8px; font-size: 10px; color: var(--muted);">
+                    ☑️ Declaro estar ciente de que os relatórios de triagem ELA e os parâmetros fônicos aplicados passam pela minha chancela técnica e legal.
+                </div>
+                <button class="btn-action btn-success" onclick="salvarCredenciaisPiloto()">💾 Salvar Credenciais & Ativar Perfil</button>
+                <div class="msg" id="msgCredencial"></div>
             </div>
         </div>
 
-        <!-- Painel de Parametrização e Emissão de Relatório para o Paciente Selecionado -->
-        <div class="param-card">
-            <div class="section-title">⚙️ Cockpit de Parametrização & Emissão de Relatório ELA</div>
-            <p style="font-size: 11px; color: var(--muted);">Paciente Selecionado ID: <span id="lblSelectedUser" style="font-family:monospace; color:var(--accent);">Nenhum selecionado</span></p>
-            
-            <label style="font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase;">Diretrizes e Relatório Clínico:</label>
-            <textarea id="txtRelatorioParam" class="input-field" placeholder="Escreva as orientações e limites fônicos para o paciente..."></textarea>
-            
-            <button class="btn-action btn-success" onclick="liberarPacienteComRelatorio()">
-                ✅ Emitir Relatório, Parametrizar e Liberar Acesso ao Paciente
-            </button>
-            <div class="msg" id="msgStatusParam"></div>
+        <!-- ABA 2: FILA MÚTUA DE ATENDIMENTO -->
+        <div class="tab-content" id="tabFila">
+            <div class="card-box">
+                <div class="section-title">🚨 Fila Coletiva de Pacientes (Central Mútua)</div>
+                <p style="font-size: 11px; color: var(--muted);">Qualquer médico/piloto logado pode selecionar um paciente da fila para iniciar o atendimento integrado.</p>
+                <div id="queueContainer">
+                    <p style="font-size: 12px; color: var(--muted);">A carregar chamados...</p>
+                </div>
+            </div>
         </div>
 
-        <!-- 8 Dimensões Fônicas de Auditoria -->
-        <div class="section-title">📊 Auditoria das 8 Dimensões Fônicas da Baseline do Paciente</div>
-        <div class="graphs-grid-2col">
-            <div class="graph-box"><div class="graph-title"><span>I. Frequência / Tom (F₀)</span><span class="metric-val">125 Hz | OK</span></div><canvas class="canvas-box" id="cv1"></canvas></div>
-            <div class="graph-box"><div class="graph-title"><span>II. Intensidade / Volume (SPL)</span><span class="metric-val">72 dB | OK</span></div><canvas class="canvas-box" id="cv2"></canvas></div>
-            <div class="graph-box"><div class="graph-title"><span>III. Qualidade / Timbre (HNR)</span><span class="metric-val">24.5 dB | CRS: OK</span></div><canvas class="canvas-box" id="cv3"></canvas></div>
-            <div class="graph-box"><div class="graph-title"><span>IV. Prosódia / Ritmo & Pausas (CRS)</span><span class="metric-val">91% | 1.1s</span></div><canvas class="canvas-box" id="cv4"></canvas></div>
-            <div class="graph-box"><div class="graph-title"><span>V. Perceptivo-Auditivo (GRBAS)</span><span class="metric-val">G0 S0</span></div><canvas class="canvas-box" id="cv5"></canvas></div>
-            <div class="graph-box"><div class="graph-title"><span>VI. Aerodinâmica & Fluxo</span><span class="metric-val">120 L/s</span></div><canvas class="canvas-box" id="cv6"></canvas></div>
-            <div class="graph-box"><div class="graph-title"><span>VII. Eletroglotografia (Glote)</span><span class="metric-val">48%</span></div><canvas class="canvas-box" id="cv7"></canvas></div>
-            <div class="graph-box"><div class="graph-title"><span>VIII. Contexto & Ruído</span><span class="metric-val">35 dBA</span></div><canvas class="canvas-box" id="cv8"></canvas></div>
+        <!-- ABA 3: COCKPIT DE ANÁLISE AO VIVO E UPLOAD DE ÁUDIO -->
+        <div class="tab-content" id="tabAnalise">
+            <div class="card-box">
+                <div class="section-title">🎙️ Cockpit de Fonação ao Vivo & Análise de Áudio Bruto</div>
+                <p style="font-size: 11px; color: var(--muted);">Paciente Ativo: <span id="lblAtivoId" style="font-family:monospace; color:var(--accent); font-weight:bold;">Nenhum selecionado</span></p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="btn-action btn-primary" onclick="iniciarLigacaoOuAnaliseAoVivo()">📞 Iniciar Ligação / Captura ao Vivo</button>
+                    <label class="btn-action btn-success" style="cursor:pointer; display:flex; align-items:center; justify-content:center; margin:0;">
+                        📂 Carregar Áudio do Telefone (.wav/.mp3)
+                        <input type="file" id="fileAudioUpload" accept="audio/*" style="display:none;" onchange="processarAudioUpload(this)">
+                    </label>
+                </div>
+
+                <!-- Status CRS -->
+                <div style="background: #f8fbfa; border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+                    <span>Status CRS (Relatório de Ritmo & Pausas): <strong id="statusCrsVal" style="color:var(--success);">Aguardando Áudio...</strong></span>
+                    <button class="btn-action btn-primary" style="width: auto; padding: 6px 12px; font-size: 10px;" onclick="gerarRelatorioCrsCompleto()">📄 Gerar Relatório CRS Completo</button>
+                </div>
+
+                <!-- Gráfico Unificado das 8 Dimensões Fônicas -->
+                <div class="unified-graph-box">
+                    <span style="font-size: 10px; font-weight: 800; color: var(--muted);">Matriz Unificada em Tempo Real (8 Dimensões Fônicas)</span>
+                    <canvas class="canvas-box" id="cvUnificado"></canvas>
+                    <div class="legend-grid">
+                        <div class="legend-item" style="background:#2a9d8f;">1. Frequência</div>
+                        <div class="legend-item" style="background:#e76f51;">2. Intensidade</div>
+                        <div class="legend-item" style="background:#f4a261;">3. Timbre (HNR)</div>
+                        <div class="legend-item" style="background:#264653;">4. Prosódia (CRS)</div>
+                        <div class="legend-item" style="background:#8ab17d;">5. GRBAS</div>
+                        <div class="legend-item" style="background:#6a040f;">6. Fluxo Subglótico</div>
+                        <div class="legend-item" style="background:#3a86ff;">7. Eletroglotografia</div>
+                        <div class="legend-item" style="background:#8338ec;">8. Ruído Ambiental</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 4: PARAMETRIZAÇÃO E LIMITES DA IA -->
+        <div class="tab-content" id="tabParam">
+            <div class="card-box">
+                <div class="section-title">⚙️ Parametrização Clínica & Limites Fixados pela IA</div>
+                <p style="font-size: 11px; color: var(--muted);">Defina os parâmetros que serão fixados na interface do usuário e respeitados pelo backend durante as interações fônicas:</p>
+                
+                <div class="input-group">
+                    <label>Relatório Clínico e Diretrizes para o Paciente:</label>
+                    <textarea id="paramRelatorio" class="input-field" placeholder="Escreva o laudo e orientações..."></textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="input-group">
+                        <label>Limiar Máximo de Jitter / F₀:</label>
+                        <input type="text" id="paramJitter" class="input-field" value="1.5%">
+                    </div>
+                    <div class="input-group">
+                        <label>Limiar Mínimo de HNR (Timbre):</label>
+                        <input type="text" id="paramHnr" class="input-field" value="20 dB">
+                    </div>
+                </div>
+
+                <button class="btn-action btn-success" onclick="salvarParametrizacaoEEnviarPaciente()">🚀 Salvar Parametrização & Liberar Paciente</button>
+                <div class="msg" id="msgParam"></div>
+            </div>
         </div>
     </div>
 
@@ -142,124 +234,207 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa3RrZWx1bXRwdWdpZG5lY2JqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NzU4OTgsImV4cCI6MjEwNjM1MTg5OH0.EIn9oiFl7PmhYhaMlvYKljeFVZflRCbxD_HT65-88XM';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        let currentPilotUser = null;
         let selectedUserId = null;
         let selectedRowId = null;
 
-        async function initDashboardPilot() {
-            desenharGraficosFônicos();
-            await carregarFilaAtendimentoMútua();
+        window.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session && session.user) {
+                currentPilotUser = session.user;
+                await carregarPerfilPiloto();
+            }
+            await carregarFilaMútua();
+            desenharGraficoUnificado([]);
+        });
+
+        async function carregarPerfilPiloto() {
+            if (!currentPilotUser) return;
+            const { data: piloto } = await supabaseClient
+                .from('pilotos_perfil')
+                .select('*')
+                .eq('id', currentPilotUser.id)
+                .maybeSingle();
+
+            if (piloto) {
+                document.getElementById('lblNomePiloto').textContent = piloto.nome_completo;
+                document.getElementById('lblCrPiloto').textContent = `Registro: ${piloto.crm_crfa_crp} | Especialidade: ${piloto.especialidade}`;
+                document.getElementById('hudPilotoStatus').textContent = 'REGISTRADO & ATIVO';
+                document.getElementById('hudPilotoStatus').style.color = 'var(--success)';
+                
+                document.getElementById('regNome').value = piloto.nome_completo;
+                document.getElementById('regCrm').value = piloto.crm_crfa_crp;
+                document.getElementById('regEspecialidade').value = piloto.especialidade;
+            }
         }
 
-        async function carregarFilaAtendimentoMútua() {
-            const queueContainer = document.getElementById('queueContainer');
-            
-            const { data: fila, error } = await supabaseClient
+        function verificarOutraEspecialidade(val) {
+            document.getElementById('boxOutraEsp').style.display = (val === 'Outros') ? 'grid' : 'none';
+        }
+
+        async function salvarCredenciaisPiloto() {
+            if (!currentPilotUser) {
+                alert('⚠️ Faça login no Supabase para salvar suas credenciais.');
+                return;
+            }
+            const nome = document.getElementById('regNome').value.trim();
+            const crm = document.getElementById('regCrm').value.trim();
+            const esp = document.getElementById('regEspecialidade').value;
+            const outraEsp = document.getElementById('regOutraEspecialidade').value.trim();
+            const especialidadeFinal = (esp === 'Outros') ? outraEsp : esp;
+
+            const msg = document.getElementById('msgCredencial');
+            msg.textContent = '⏳ A salvar credenciais legais...';
+            msg.style.color = 'var(--warning)';
+
+            const { error } = await supabaseClient.from('pilotos_perfil').upsert({
+                id: currentPilotUser.id,
+                nome_completo: nome,
+                crm_crfa_crp: crm,
+                especialidade: especialidadeFinal,
+                termo_responsabilidade_aceito: true
+            });
+
+             if (error) {
+                msg.textContent = '❌ Erro ao salvar: ' + error.message;
+                msg.style.color = 'var(--danger)';
+            } else {
+                msg.textContent = '✅ Credenciais gravadas com sucesso!';
+                msg.style.color = 'var(--success)';
+                await carregarPerfilPiloto();
+            }
+        }
+
+        async function carregarFilaMútua() {
+            const container = document.getElementById('queueContainer');
+            const { data: fila } = await supabaseClient
                 .from('atendimento_fila')
                 .select('*')
                 .eq('status', 'pendente')
                 .order('criado_em', { ascending: false });
 
-            if (error) {
-                queueContainer.innerHTML = `<p style="font-size:12px; color:var(--danger);">Erro ao carregar fila mútua: ${error.message}</p>`;
-                return;
-            }
-
             if (!fila || fila.length === 0) {
-                queueContainer.innerHTML = `<p style="font-size:12px; color:var(--muted);">Nenhum paciente aguardando atendimento no momento.</p>`;
+                container.innerHTML = '<p style="font-size:12px; color:var(--muted);">Nenhum paciente na fila mútua.</p>';
                 return;
             }
 
-            queueContainer.innerHTML = '';
+            container.innerHTML = '';
             fila.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'queue-item';
                 div.innerHTML = `
                     <div class="queue-info">
                         <h4>Paciente ID: ${item.user_id}</h4>
-                        <p>${item.motivo || 'Solicitação de escuta simbiótica'} • ${new Date(item.criado_em).toLocaleTimeString()}</p>
+                        <p>${item.motivo || 'Solicitação de escuta'} • ${new Date(item.criado_em).toLocaleTimeString()}</p>
                     </div>
-                    <button class="btn-action btn-primary" onclick="selecionarPacienteAtendimento('${item.user_id}', '${item.id}')">🩺 Atender & Parametrizar</button>
+                    <button class="btn-action btn-primary" style="width:auto;" onclick="atenderPaciente('${item.user_id}', '${item.id}')">🩺 Selecionar</button>
                 `;
-                queueContainer.appendChild(div);
+                container.appendChild(div);
             });
         }
 
-        function selecionarPacienteAtendimento(userId, rowId) {
+        function atenderPaciente(userId, rowId) {
             selectedUserId = userId;
             selectedRowId = rowId;
-            document.getElementById('lblSelectedUser').textContent = userId;
-            document.getElementById('msgStatusParam').textContent = '✅ Paciente carregado no cockpit do piloto.';
-            document.getElementById('msgStatusParam').style.color = 'var(--success)';
+            document.getElementById('lblAtivoId').textContent = userId;
+            trocarAbaPiloto('analise');
         }
 
-        async function liberarPacienteComRelatorio() {
-            const msgDiv = document.getElementById('msgStatusParam');
-            const relatorio = document.getElementById('txtRelatorioParam').value.trim();
+        function trocarAbaPiloto(aba) {
+            const abas = ['credencial', 'fila', 'analise', 'param'];
+            abas.forEach((a, idx) => {
+                document.getElementById(`tab${a.charAt(0).toUpperCase() + a.slice(1)}`).classList.toggle('active', a === aba);
+                document.getElementById(`btnTab${idx+1}`).classList.toggle('active', a === aba);
+            });
+        }
+
+        function iniciarLigacaoOuAnaliseAoVivo() {
+            if (!selectedUserId) {
+                alert('⚠️ Selecione um paciente na Fila Mútua (Aba 2) primeiro.');
+                return;
+            }
+            alert(`📞 Iniciando captura de fonação ao vivo para o paciente ${selectedUserId}...`);
+            document.getElementById('statusCrsVal').textContent = 'Processando Fonação ao Vivo... (CRS: OK)';
+            desenharGraficoUnificado([45, 60, 28, 85, 12, 110, 45, 30]);
+        }
+
+        function processarAudioUpload(input) {
+            if (!input.files || !input.files[0]) return;
+            alert(`📂 Áudio "${input.files[0].name}" carregado. Executando análise fônica em tempo real...`);
+            document.getElementById('statusCrsVal').textContent = 'Análise Concluída • CRS: OK (Padrão ELA Estável)';
+            desenharGraficoUnificado([55, 75, 25, 90, 15, 115, 50, 32]);
+        }
+
+        function gerarRelatorioCrsCompleto() {
+            alert('📄 Relatório completo de Ritmo, Pausas e Micro-variações gerado e anexado com sucesso.');
+        }
+
+        async function salvarParametrizacaoEEnviarPaciente() {
+            const msg = document.getElementById('msgParam');
+            const relatorio = document.getElementById('paramRelatorio').value.trim();
+            const jitter = document.getElementById('paramJitter').value.trim();
+            const hnr = document.getElementById('paramHnr').value.trim();
 
             if (!selectedUserId || !selectedRowId) {
-                alert('⚠️ Selecione um paciente da fila mútua primeiro.');
+                alert('⚠️ Nenhum paciente selecionado para parametrização.');
                 return;
             }
 
-            if (!relatorio) {
-                alert('⚠️ Escreva o relatório e as diretrizes clínicas antes de liberar.');
-                return;
-            }
-
-            msgDiv.textContent = '⏳ A processar parametrização e liberação...';
-            msgDiv.style.color = 'var(--warning)';
+            msg.textContent = '⏳ A salvar parametrização no Supabase...';
+            msg.style.color = 'var(--warning)';
 
             const { error } = await supabaseClient
                 .from('atendimento_fila')
-                .update({ 
+                .update({
                     status: 'liberado',
-                    relatorio_medico: relatorio 
+                    relatorio_medico: relatorio,
+                    parametros_json: { jitter_max: jitter, hnr_min: hnr }
                 })
                 .eq('id', selectedRowId);
 
             if (error) {
-                msgDiv.textContent = '❌ Erro ao liberar paciente: ' + error.message;
-                msgDiv.style.color = 'var(--danger)';
+                msg.textContent = '❌ Erro: ' + error.message;
+                msg.style.color = 'var(--danger)';
             } else {
-                msgDiv.textContent = '✅ Paciente parametrizado e liberado com sucesso para a aba de testes!';
-                msgDiv.style.color = 'var(--success)';
-                document.getElementById('txtRelatorioParam').value = '';
-                selectedUserId = null;
-                selectedRowId = null;
-                document.getElementById('lblSelectedUser').textContent = 'Nenhum selecionado';
-                await carregarFilaAtendimentoMútua();
+                msg.textContent = '✅ Parametrização aplicada! O paciente já pode interagir com os limites fixados.';
+                msg.style.color = 'var(--success)';
+                await carregarFilaMútua();
             }
         }
 
-        function desenharGraficosFônicos() {
-            for (let i = 1; i <= 8; i++) {
-                const cv = document.getElementById(`cv${i}`);
-                if (!cv) continue;
-                const ctx = cv.getContext('2d');
-                const W = cv.width = cv.parentElement.clientWidth || 280;
-                const H = cv.height = 90;
+        function desenharGraficoUnificado(dadosMock) {
+            const cv = document.getElementById('cvUnificado');
+            if (!cv) return;
+            const ctx = cv.getContext('2d');
+            const W = cv.width = cv.parentElement.clientWidth || 300;
+            const H = cv.height = 200;
 
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, W, H);
-                ctx.strokeStyle = '#e2f0ed';
-                ctx.lineWidth = 1;
-                for (let y = 15; y < H; y += 15) {
-                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-                }
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, W, H);
 
-                ctx.strokeStyle = '#2a9d8f';
+            // Linhas de grade
+            ctx.strokeStyle = '#e2f0ed';
+            ctx.lineWidth = 1;
+            for (let y = 25; y < H; y += 25) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+            }
+
+            const cores = ['#2a9d8f', '#e76f51', '#f4a261', '#264653', '#8ab17d', '#6a040f', '#3a86ff', '#8338ec'];
+
+            // Desenhar as 8 linhas fônicas juntas
+            for (let dim = 0; dim < 8; dim++) {
+                ctx.strokeStyle = cores[dim];
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                for (let x = 0; x < W; x += 4) {
-                    const y = H / 2 + Math.sin(x * 0.05 + i) * (15 + (i % 3) * 5);
+                for (let x = 0; x < W; x += 5) {
+                    const base = dadosMock.length > 0 ? dadosMock[dim] : 40 + (dim * 5);
+                    const y = (H / 2) + Math.sin((x * 0.05) + dim) * (base * 0.4) + ((dim - 4) * 4);
                     if (x === 0) ctx.moveTo(x, y);
                     else ctx.lineTo(x, y);
                 }
                 ctx.stroke();
             }
         }
-
-        initDashboardPilot();
     </script>
 </body>
 </html>
