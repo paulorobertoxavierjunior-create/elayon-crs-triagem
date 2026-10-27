@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elayon Health • Painel do Piloto & Monitoramento Clínico</title>
+    <title>Elayon Health • Painel do Piloto & Central de Atendimento</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -59,6 +59,7 @@
         .btn-action { padding: 10px 16px; border-radius: 10px; font-size: 12px; font-weight: 800; border: none; cursor: pointer; transition: 0.2s; }
         .btn-success { background: var(--success); color: #fff; }
         .btn-success:hover { opacity: 0.9; }
+        .btn-primary { background: var(--accent); color: #fff; }
 
         .graphs-grid-2col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
         @media(max-width: 800px) { .graphs-grid-2col { grid-template-columns: 1fr; } }
@@ -70,7 +71,15 @@
         .canvas-box { width: 100%; height: 90px; border-radius: 8px; background: #fafcfc; display: block; border: 1px solid var(--line); margin-bottom: 6px; }
         .metric-val { font-size: 11px; font-family: monospace; font-weight: 800; color: var(--accent); }
 
-        .msg { font-size: 12px; font-weight: 600; min-height: 18px; text-align: center; margin-top: 10px; }
+        .param-card {
+            background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--line); box-shadow: var(--shadow); display: grid; gap: 12px; text-align: left;
+        }
+        .input-field {
+            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: #fafcfb; color: var(--ink); font-family: inherit; font-size: 12px; outline: none; resize: vertical; min-height: 70px;
+        }
+        .input-field:focus { border-color: var(--accent); background: #fff; }
+
+        .msg { font-size: 12px; font-weight: 600; min-height: 18px; text-align: center; }
     </style>
 </head>
 <body>
@@ -78,7 +87,7 @@
     <div class="container">
         <!-- HUD Superior -->
         <header class="hud-header">
-            <div class="hud-info">PILOTO MÉDICO: <span style="color: var(--success);">ATIVO NA REDE</span></div>
+            <div class="hud-info">PILOTO MÉDICO: <span style="color: var(--success);">CENTRAL MÚTUA ATIVA</span></div>
             <a href="index.html" class="btn-voltar">⬅️ Sair / Trocar Papel</a>
         </header>
 
@@ -86,23 +95,36 @@
         <div class="profile-card">
             <img id="pilotAvatarImg" src="elayon_logo.png" alt="Avatar" class="logo-img" onerror="this.src='https://via.placeholder.com/48';">
             <div class="profile-info">
-                <h2>Dr. Piloto / Médico Responsável</h2>
-                <p id="targetIdDisplay">Monitorando Paciente ID: --</p>
+                <h2>Dr. Piloto / Central Médica</h2>
+                <p id="targetIdDisplay">Gerenciando Fila de Pacientes ELA</p>
             </div>
-            <span class="status-tag">👨‍⚕️ Atendimento Clínico</span>
+            <span class="status-tag">👨‍⚕️ Atendimento Mútuo</span>
         </div>
 
-        <!-- Fila de Atendimento (atendimento_fila) -->
+        <!-- Fila Coletiva (Todos os chamados de pacientes) -->
         <div class="queue-card">
-            <div class="section-title">🚨 Fila de Chamados Pendentes (Atendimento ELA)</div>
+            <div class="section-title">🚨 Fila Mútua de Atendimento (Pacientes Pendentes)</div>
             <div id="queueContainer">
-                <p style="font-size: 12px; color: var(--muted);">A verificar chamados na fila do Supabase...</p>
+                <p style="font-size: 12px; color: var(--muted);">A carregar chamados da base central...</p>
             </div>
-            <div class="msg" id="msgStatus"></div>
         </div>
 
-        <!-- 8 Dimensões Fônicas de Acompanhamento -->
-        <div class="section-title">📊 Auditoria das 8 Dimensões Fônicas do Paciente</div>
+        <!-- Painel de Parametrização e Emissão de Relatório para o Paciente Selecionado -->
+        <div class="param-card">
+            <div class="section-title">⚙️ Cockpit de Parametrização & Emissão de Relatório ELA</div>
+            <p style="font-size: 11px; color: var(--muted);">Paciente Selecionado ID: <span id="lblSelectedUser" style="font-family:monospace; color:var(--accent);">Nenhum selecionado</span></p>
+            
+            <label style="font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase;">Diretrizes e Relatório Clínico:</label>
+            <textarea id="txtRelatorioParam" class="input-field" placeholder="Escreva as orientações e limites fônicos para o paciente..."></textarea>
+            
+            <button class="btn-action btn-success" onclick="liberarPacienteComRelatorio()">
+                ✅ Emitir Relatório, Parametrizar e Liberar Acesso ao Paciente
+            </button>
+            <div class="msg" id="msgStatusParam"></div>
+        </div>
+
+        <!-- 8 Dimensões Fônicas de Auditoria -->
+        <div class="section-title">📊 Auditoria das 8 Dimensões Fônicas da Baseline do Paciente</div>
         <div class="graphs-grid-2col">
             <div class="graph-box"><div class="graph-title"><span>I. Frequência / Tom (F₀)</span><span class="metric-val">125 Hz | OK</span></div><canvas class="canvas-box" id="cv1"></canvas></div>
             <div class="graph-box"><div class="graph-title"><span>II. Intensidade / Volume (SPL)</span><span class="metric-val">72 dB | OK</span></div><canvas class="canvas-box" id="cv2"></canvas></div>
@@ -117,19 +139,18 @@
 
     <script>
         const SUPABASE_URL = 'https://xlktkelumtpugidnecbj.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa3RrZWx1bXRwdWdpZG5lY2JqIiwicm9sZSI6Inhsa3FnZWx1bXRwdWdpZG5lY2JqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NzU4OTgsImV4cCI6MjEwNjM1MTg5OH0.EIn9oiFl7PmhYhaMlvYKljeFVZflRCbxD_HT65-88XM';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa3RrZWx1bXRwdWdpZG5lY2JqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NzU4OTgsImV4cCI6MjEwNjM1MTg5OH0.EIn9oiFl7PmhYhaMlvYKljeFVZflRCbxD_HT65-88XM';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const targetId = urlParams.get('target_id') || 'c708823f-a48a-41f0-948f-287eee484821';
+        let selectedUserId = null;
+        let selectedRowId = null;
 
         async function initDashboardPilot() {
-            document.getElementById('targetIdDisplay').textContent = `Monitorando Paciente ID: ${targetId}`;
             desenharGraficosFônicos();
-            await carregarFilaAtendimento();
+            await carregarFilaAtendimentoMútua();
         }
 
-        async function carregarFilaAtendimento() {
+        async function carregarFilaAtendimentoMútua() {
             const queueContainer = document.getElementById('queueContainer');
             
             const { data: fila, error } = await supabaseClient
@@ -139,12 +160,12 @@
                 .order('criado_em', { ascending: false });
 
             if (error) {
-                queueContainer.innerHTML = `<p style="font-size:12px; color:var(--danger);">Erro ao carregar fila: ${error.message}</p>`;
+                queueContainer.innerHTML = `<p style="font-size:12px; color:var(--danger);">Erro ao carregar fila mútua: ${error.message}</p>`;
                 return;
             }
 
             if (!fila || fila.length === 0) {
-                queueContainer.innerHTML = `<p style="font-size:12px; color:var(--muted);">Nenhum chamado pendente na fila no momento.</p>`;
+                queueContainer.innerHTML = `<p style="font-size:12px; color:var(--muted);">Nenhum paciente aguardando atendimento no momento.</p>`;
                 return;
             }
 
@@ -154,29 +175,59 @@
                 div.className = 'queue-item';
                 div.innerHTML = `
                     <div class="queue-info">
-                        <h4>Paciente ID: ${item.user_id.substring(0, 13)}...</h4>
-                        <p>${item.motivo || 'Solicitação de atendimento clínico'} • ${new Date(item.criado_em).toLocaleTimeString()}</p>
+                        <h4>Paciente ID: ${item.user_id}</h4>
+                        <p>${item.motivo || 'Solicitação de escuta simbiótica'} • ${new Date(item.criado_em).toLocaleTimeString()}</p>
                     </div>
-                    <button class="btn-action btn-success" onclick="concluirAtendimento('${item.id}')">✅ Concluir Atendimento</button>
+                    <button class="btn-action btn-primary" onclick="selecionarPacienteAtendimento('${item.user_id}', '${item.id}')">🩺 Atender & Parametrizar</button>
                 `;
                 queueContainer.appendChild(div);
             });
         }
 
-        async function concluirAtendimento(id) {
-            const msgDiv = document.getElementById('msgStatus');
+        function selecionarPacienteAtendimento(userId, rowId) {
+            selectedUserId = userId;
+            selectedRowId = rowId;
+            document.getElementById('lblSelectedUser').textContent = userId;
+            document.getElementById('msgStatusParam').textContent = '✅ Paciente carregado no cockpit do piloto.';
+            document.getElementById('msgStatusParam').style.color = 'var(--success)';
+        }
+
+        async function liberarPacienteComRelatorio() {
+            const msgDiv = document.getElementById('msgStatusParam');
+            const relatorio = document.getElementById('txtRelatorioParam').value.trim();
+
+            if (!selectedUserId || !selectedRowId) {
+                alert('⚠️ Selecione um paciente da fila mútua primeiro.');
+                return;
+            }
+
+            if (!relatorio) {
+                alert('⚠️ Escreva o relatório e as diretrizes clínicas antes de liberar.');
+                return;
+            }
+
+            msgDiv.textContent = '⏳ A processar parametrização e liberação...';
+            msgDiv.style.color = 'var(--warning)';
+
             const { error } = await supabaseClient
                 .from('atendimento_fila')
-                .update({ status: 'concluido' })
-                .eq('id', id);
+                .update({ 
+                    status: 'liberado',
+                    relatorio_medico: relatorio 
+                })
+                .eq('id', selectedRowId);
 
             if (error) {
-                msgDiv.textContent = 'Erro ao atualizar chamado: ' + error.message;
+                msgDiv.textContent = '❌ Erro ao liberar paciente: ' + error.message;
                 msgDiv.style.color = 'var(--danger)';
             } else {
-                msgDiv.textContent = '✅ Atendimento concluído com sucesso e removido da fila.';
+                msgDiv.textContent = '✅ Paciente parametrizado e liberado com sucesso para a aba de testes!';
                 msgDiv.style.color = 'var(--success)';
-                await carregarFilaAtendimento();
+                document.getElementById('txtRelatorioParam').value = '';
+                selectedUserId = null;
+                selectedRowId = null;
+                document.getElementById('lblSelectedUser').textContent = 'Nenhum selecionado';
+                await carregarFilaAtendimentoMútua();
             }
         }
 
