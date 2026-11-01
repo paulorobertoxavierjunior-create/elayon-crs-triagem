@@ -3,24 +3,29 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Elayon Space • Transcrição e Auditoria Literal do Repositório</title>
+    <title>Elayon Space • Auditoria e Transcrição Literal (Fundo Branco)</title>
     <style>
         :root {
-            --bg1: #0f172a; --bg2: #1e293b; --card: rgba(30, 41, 59, 0.9);
-            --ink: #f8fafc; --muted: #94a3b8; --line: rgba(255, 255, 255, 0.15);
-            --accent: #0ea5e9; --accent2: #14b8a6; --success: #10b981;
-            --shadow: 0 20px 40px rgba(0,0,0,0.5);
+            --bg-body: #ffffff;
+            --bg-card: #f8fafc;
+            --ink: #0f172a;
+            --muted: #64748b;
+            --line: #cbd5e1;
+            --accent: #0284c7;
+            --accent2: #0d9488;
+            --success: #16a34a;
+            --shadow: 0 10px 25px rgba(0,0,0,0.05);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            min-height: 100vh; background: linear-gradient(135deg, var(--bg1), var(--bg2));
+            min-height: 100vh; background: var(--bg-body);
             color: var(--ink); font-family: system-ui, -apple-system, sans-serif;
             display: flex; flex-direction: column; align-items: center; padding: 24px; padding-bottom: 100px;
         }
         .container { width: 100%; max-width: 1200px; display: grid; gap: 24px; }
 
         .hud-header {
-            background: var(--card); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: 16px;
+            background: var(--bg-card); border: 1px solid var(--line); border-radius: 16px;
             padding: 20px; display: flex; justify-content: space-between; align-items: center;
             box-shadow: var(--shadow);
         }
@@ -28,38 +33,42 @@
         .hud-title p { font-size: 11px; color: var(--muted); font-family: monospace; }
 
         .btn-acao {
-            background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; color: #000;
+            background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; color: #fff;
             padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 800;
-            cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+            cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.2);
         }
         .btn-acao:hover { transform: translateY(-2px); }
-        .btn-secundario { background: rgba(255, 255, 255, 0.08); color: var(--ink); border: 1px solid var(--line); }
-        .btn-secundario:hover { background: rgba(255, 255, 255, 0.15); }
+        .btn-secundario { background: #e2e8f0; color: var(--ink); border: 1px solid var(--line); }
+        .btn-secundario:hover { background: #cbd5e1; }
 
         .panel {
-            background: var(--card); backdrop-filter: blur(12px); border-radius: 20px; padding: 24px; border: 1px solid var(--line);
+            background: var(--bg-card); border-radius: 20px; padding: 24px; border: 1px solid var(--line);
             box-shadow: var(--shadow); text-align: left;
         }
         .panel h2 { font-size: 15px; color: var(--accent); margin-bottom: 16px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
 
         .file-tree { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 20px; }
         .file-card {
-            background: rgba(15, 23, 42, 0.6); border: 1px solid var(--line); border-radius: 10px; padding: 12px;
+            background: #ffffff; border: 1px solid var(--line); border-radius: 10px; padding: 12px;
             font-size: 12px; font-family: monospace; display: flex; flex-direction: column; gap: 6px;
         }
         .file-name { font-weight: 800; color: var(--success); display: flex; align-items: center; gap: 6px; }
         .file-meta { font-size: 10px; color: var(--muted); }
 
         .code-preview-container {
-            background: #090d16; border: 1px solid var(--line); border-radius: 12px; padding: 20px;
-            max-height: 600px; overflow-y: auto; font-family: 'Courier New', Courier, monospace; font-size: 12px; line-height: 1.5; color: #cbd5e1;
+            background: #ffffff; border: 1px solid var(--line); border-radius: 12px; padding: 20px;
+            max-height: 600px; overflow-y: auto; font-family: 'Courier New', Courier, monospace; font-size: 12px; line-height: 1.5; color: #1e293b;
         }
         .code-block-title { color: var(--accent); font-weight: bold; border-bottom: 1px solid var(--line); padding-bottom: 4px; margin-top: 16px; margin-bottom: 8px; font-size: 13px; }
         pre { white-space: pre-wrap; word-break: break-word; }
 
+        .status-carregamento {
+            font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 10px; font-family: monospace;
+        }
+
         @media print {
             body { background: #fff; color: #000; padding: 0; }
-            .hud-header, .btn-acao, .btn-secundario { display: none !important; }
+            .hud-header, .btn-acao, .btn-secundario, .status-carregamento { display: none !important; }
             .panel { background: #fff; border: none; box-shadow: none; padding: 0; }
             .code-preview-container { background: #fff; color: #000; border: none; max-height: none; overflow: visible; font-size: 10px; }
             .code-block-title { color: #000; border-bottom: 1px solid #000; }
@@ -72,11 +81,11 @@
         
         <header class="hud-header">
             <div class="hud-title">
-                <h1>Elayon Space • Transcrição Literal do Repositório</h1>
-                <p>Repositório: elayon-crs-triagem | Auditoria Completa</p>
+                <h1>Elayon Space • Transcrição e Auditoria Literal</h1>
+                <p>Repositório: elayon-crs-triagem | Modo Fundo Branco</p>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button class="btn-acao btn-secundario" onclick="executarRefresh()">🔄 Atualizar Leitura</button>
+                <button class="btn-acao btn-secundario" onclick="iniciarCarregamentoSequencial()">🔄 Atualizar / Recarregar</button>
                 <button class="btn-acao" onclick="window.print()">📥 Exportar / Salvar em PDF</button>
             </div>
         </header>
@@ -88,6 +97,7 @@
 
         <div class="panel">
             <h2>📜 Códigos-Fonte Literais (*ipsissima verba*)</h2>
+            <div class="status-carregamento" id="statusCarregamento">Pressione "Atualizar" para iniciar o carregamento sequencial dos arquivos...</div>
             <div class="code-preview-container" id="codePreviewBox"></div>
         </div>
 
@@ -142,21 +152,24 @@
             }
         ];
 
-        function executarRefresh() {
-            alert('🔄 Leitura de código executada com sucesso.');
-            carregarInterface();
-        }
-
-        function carregarInterface() {
+        async function iniciarCarregamentoSequencial() {
             const treeContainer = document.getElementById('fileTreeContainer');
             const previewBox = document.getElementById('codePreviewBox');
+            const statusEl = document.getElementById('statusCarregamento');
             
             treeContainer.innerHTML = '';
             previewBox.innerHTML = '';
+            document.getElementById('totalArquivos').textContent = `[${repositorioCompleto.length} arquivos mapeados]`;
 
-            document.getElementById('totalArquivos').textContent = `[${repositorioCompleto.length} arquivos]`;
+            statusEl.textContent = "⏳ Iniciando varredura sequencial dos códigos...";
 
-            repositorioCompleto.forEach((file) => {
+            for (let i = 0; i < repositorioCompleto.length; i++) {
+                const file = repositorioCompleto[i];
+                
+                // Atualiza status
+                statusEl.textContent = `📂 Carregando (${i + 1}/${repositorioCompleto.length}): ${file.caminho}...`;
+
+                // Adiciona na árvore visual
                 const card = document.createElement('div');
                 card.className = 'file-card';
                 card.innerHTML = `
@@ -165,19 +178,28 @@
                 `;
                 treeContainer.appendChild(card);
 
+                // Adiciona o código literal no preview
                 const blockTitle = document.createElement('div');
                 blockTitle.className = 'code-block-title';
-                blockTitle.textContent = `=== ARQUIVO: ${file.caminho} ===`;
+                blockTitle.textContent = `=== ARQUIVO [${i + 1}/${repositorioCompleto.length}]: ${file.caminho} ===`;
                 
                 const pre = document.createElement('pre');
                 pre.textContent = file.conteudo;
 
                 previewBox.appendChild(blockTitle);
                 previewBox.appendChild(pre);
-            });
+
+                // Rola o container para o final para acompanhar a digitação/carregamento
+                previewBox.scrollTop = previewBox.scrollHeight;
+
+                // Delay de 1 segundo (1000ms) por arquivo
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+
+            statusEl.textContent = "✅ Carregamento completo! Todos os códigos foram exibidos e estão prontos para exportação em PDF.";
         }
 
-        window.onload = carregarInterface;
+        window.onload = iniciarCarregamentoSequencial;
     </script>
 </body>
 </html>
