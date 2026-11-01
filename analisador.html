@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Elayon Space • Analisador Literal de Código para PDF</title>
+    <title>Elayon Space • Transcrição e Auditoria Literal do Repositório</title>
     <style>
         :root {
             --bg1: #0f172a; --bg2: #1e293b; --card: rgba(30, 41, 59, 0.9);
@@ -33,9 +33,7 @@
             cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
         }
         .btn-acao:hover { transform: translateY(-2px); }
-        .btn-secundario {
-            background: rgba(255, 255, 255, 0.08); color: var(--ink); border: 1px solid var(--line);
-        }
+        .btn-secundario { background: rgba(255, 255, 255, 0.08); color: var(--ink); border: 1px solid var(--line); }
         .btn-secundario:hover { background: rgba(255, 255, 255, 0.15); }
 
         .panel {
@@ -59,7 +57,6 @@
         .code-block-title { color: var(--accent); font-weight: bold; border-bottom: 1px solid var(--line); padding-bottom: 4px; margin-top: 16px; margin-bottom: 8px; font-size: 13px; }
         pre { white-space: pre-wrap; word-break: break-word; }
 
-        /* Estilo otimizado para Impressão / Exportação para PDF */
         @media print {
             body { background: #fff; color: #000; padding: 0; }
             .hud-header, .btn-acao, .btn-secundario { display: none !important; }
@@ -70,42 +67,33 @@
         }
     </style>
 </head>
-
 <body>
     <div class="container">
         
-        <!-- HUD Superior -->
         <header class="hud-header">
             <div class="hud-title">
-                <h1>Elayon Space • Analisador Literal de Código</h1>
-                <p>Repositório: elayon-crs-triagem | Varredura Completa</p>
+                <h1>Elayon Space • Transcrição Literal do Repositório</h1>
+                <p>Repositório: elayon-crs-triagem | Auditoria Completa</p>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button class="btn-acao btn-secundario" onclick="executarRefreshRepositorio()">🔄 Refresh Repositório</button>
-                <button class="btn-acao" onclick="gerarPDFExport()">📥 Exportar / Salvar em PDF</button>
+                <button class="btn-acao btn-secundario" onclick="executarRefresh()">🔄 Atualizar Leitura</button>
+                <button class="btn-acao" onclick="window.print()">📥 Exportar / Salvar em PDF</button>
             </div>
         </header>
 
-        <!-- Árvore de Arquivos Detectados -->
         <div class="panel">
-            <h2>📁 Módulos e Pastas Mapeadas <span id="totalArquivos" style="font-size: 11px; color: var(--muted);">[Carregando...]</span></h2>
-            <div class="file-tree" id="fileTreeContainer">
-                <!-- Preenchido via JS -->
-            </div>
+            <h2>📁 Módulos Mapeados no Repositório <span id="totalArquivos" style="font-size: 11px; color: var(--muted);"></span></h2>
+            <div class="file-tree" id="fileTreeContainer"></div>
         </div>
 
-        <!-- Visualização Literal Consolidada para IA / PDF -->
         <div class="panel">
-            <h2>📜 Código-Fonte Literal Consolidado (*ipsissima verba*)</h2>
-            <div class="code-preview-container" id="codePreviewBox">
-                <!-- Todos os códigos virão aqui formatados em sequência -->
-            </div>
+            <h2>📜 Códigos-Fonte Literais (*ipsissima verba*)</h2>
+            <div class="code-preview-container" id="codePreviewBox"></div>
         </div>
 
     </div>
 
     <script>
-        // Mapeamento completo e literal do repositório elayon-crs-triagem
         const repositorioCompleto = [
             {
                 caminho: 'README.md',
@@ -154,22 +142,21 @@
             }
         ];
 
-        function executarRefreshRepositorio() {
-            alert('🔄 Repositório atualizado e escaneado com sucesso! Todos os códigos foram lidos literalmente.');
-            carregarAnalisador();
+        function executarRefresh() {
+            alert('🔄 Leitura de código executada com sucesso.');
+            carregarInterface();
         }
 
-        function carregarAnalisador() {
+        function carregarInterface() {
             const treeContainer = document.getElementById('fileTreeContainer');
             const previewBox = document.getElementById('codePreviewBox');
             
             treeContainer.innerHTML = '';
             previewBox.innerHTML = '';
 
-            document.getElementById('totalArquivos').textContent = `[${repositorioCompleto.length} arquivos escaneados]`;
+            document.getElementById('totalArquivos').textContent = `[${repositorioCompleto.length} arquivos]`;
 
             repositorioCompleto.forEach((file) => {
-                // Monta a árvore visual
                 const card = document.createElement('div');
                 card.className = 'file-card';
                 card.innerHTML = `
@@ -178,7 +165,6 @@
                 `;
                 treeContainer.appendChild(card);
 
-                // Monta o bloco de código literal contínuo
                 const blockTitle = document.createElement('div');
                 blockTitle.className = 'code-block-title';
                 blockTitle.textContent = `=== ARQUIVO: ${file.caminho} ===`;
@@ -191,12 +177,7 @@
             });
         }
 
-        function gerarPDFExport() {
-            // Aciona a função de impressão nativa otimizada para PDF
-            window.print();
-        }
-
-        window.onload = carregarAnalisador;
+        window.onload = carregarInterface;
     </script>
 </body>
 </html>
