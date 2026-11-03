@@ -1,0 +1,202 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Elayon Health • Sala de Consulta</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>
+:root{--ink:#0a2a2f;--m:#4a6b70;--l:#d8e8eb;--a:#2a9d8f;--ok:#2b8a3e;--w:#f59e0b;--d:#d9534f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(circle at top left,#f4f9f4,#eaf4f6);color:var(--ink);font-family:system-ui;padding:16px 16px 80px;display:flex;flex-direction:column;align-items:center}
+.w{width:100%;max-width:760px;display:grid;gap:14px}
+.c{background:#fff;border:1px solid var(--l);border-radius:18px;padding:16px;box-shadow:0 8px 24px #0000000d;display:grid;gap:10px}
+h1{font-size:18px}h3{font-size:13px;color:var(--a)}p,small{font-size:11px;color:var(--m);line-height:1.45}
+.b{padding:12px;border:0;border-radius:12px;font-weight:800;font-size:13px;cursor:pointer;background:linear-gradient(135deg,#2a9d8f,#3ecfcf);color:#fff;text-align:center;text-decoration:none;display:block;width:100%}
+.b.g{background:#f0f7f7;color:var(--a);border:1px solid var(--a)}.b.r{background:linear-gradient(135deg,#f59e0b,#d97706)}.b.k{background:#e2e8f0;color:#94a3b8;pointer-events:none}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--l);border-radius:10px;font:inherit;font-size:12px;background:#fafcfb}textarea{min-height:70px}
+label{font-size:10px;font-weight:800;color:var(--m);text-transform:uppercase;display:block;margin-bottom:4px}
+.tag{font-size:10px;font-weight:800;padding:4px 10px;border-radius:6px;background:#fff3cd;color:#856404;display:inline-block}.tag.ok{background:#d4edda;color:#155724}
+.row{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.hd{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;color:var(--m)}.hd a{color:var(--a);text-decoration:none}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.msg{font-size:12px;font-weight:600;text-align:center;min-height:16px}
+.sl{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.sl>div{border:1px solid var(--l);border-radius:10px;padding:6px;font-size:10px}.sl img{width:100%;border-radius:6px;display:block}.sl .on{border-color:var(--a);box-shadow:0 0 0 1px var(--a)}.ia{font-size:12px;line-height:1.5;white-space:pre-wrap;max-height:260px;overflow:auto}</style></head><body><div class="w"><div class="hd"><span id="titulo">Sala</span><a id="volta" href="#">⬅️ Sair</a></div>
+<div class="c"><div class="row"><h3>🗣️ Pergunta do médico</h3><span class="tag" id="stt">aguardando</span></div><p id="perg" style="font-size:15px;color:var(--ink);font-weight:700">—</p>
+<div id="ctlP" style="display:none;gap:8px"><input id="pin" placeholder="Pergunta para o paciente"><div class="g2"><button class="b g" onclick="perguntar()">📢 Enviar pergunta</button><button class="b" id="bcap" onclick="capturar()">▶ Iniciar captura</button></div></div>
+<div id="ctlU" style="display:none"><button class="b g" id="bmic" onclick="permitirMic()">🎙️ Permitir microfone (o médico controla a captura)</button></div></div>
+<div class="c"><h3>📦 FIFO • últimas 3 sessões</h3><div id="slots" class="sl"></div></div>
+<div class="c"><h3>🔍 Sessão em análise</h3><img id="vimg" style="width:100%;border-radius:10px;display:none"><audio id="au" controls style="width:100%"></audio><div id="vmet"></div></div>
+<div class="c"><h3>🤖 IA do médico (espelhada ao paciente)</h3><div id="iab" class="ia">—</div>
+<div id="ctlIA" style="display:none;gap:8px"><button class="b" onclick="analisarIA()">🧠 Analisar as 3 sessões</button><input id="iq" placeholder="Pergunta à IA sobre as sessões…"><button class="b g" onclick="perguntarIA()">Perguntar</button><button class="b r" onclick="concluir()">✅ Concluir consulta e ir ao laudo</button></div><p id="fimU"></p><div class="msg" id="msg"></div></div></div>
+<script>
+const SB_URL='https://xlktkelumtpugidnecbj.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa3RrZWx1bXRwdWdpZG5lY2JqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NzU4OTgsImV4cCI6MjEwNjM1MTg5OH0.EIn9oiFl7PmhYhaMlvYKljeFVZflRCbxD_HT65-88XM';
+const COCKPIT='https://project-f7o5k.vercel.app/cockpit.html';   // Vibes 8 (elayon-ia-api)
+const sb=supabase.createClient(SB_URL,SB_KEY),$=id=>document.getElementById(id),Q=new URLSearchParams(location.search);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function eu(){const {data:{session}}=await sb.auth.getSession();if(!session){location.href='index.html';throw new Error('sem sessão')}return session.user}
+
+const A=Q.get('a');let U,ME={},PILOT=false,PAC=null,ch,S=[],sel=0,capt=false,rec=null,mr=null,chunks=[],H=[],D={jit:0,shim:0};const TR={};
+const R={ctx:null,an:null,stream:null,buf:null,fb:null,sr:48000,fl:[],P:[],A:[],vz:[],prev:.3};
+const rg=(v,a,b)=>Math.max(0,Math.min(1,(v-a)/(b-a)));
+const GR=['#38bdf8','#fb923c','#4ade80','#fbbf24','#c084fc','#2dd4bf','#ec4899','#60a5fa','#a3e635','#f87171','#22d3ee'].map(c=>['','',c]);
+const med=a=>a.length?a.reduce((p,q)=>p+q,0)/a.length:0;
+function mk(o){
+  R.vz.push(o.voz?1:0);if(R.vz.length>40)R.vz.shift();
+  const pros=med(R.vz),sil=1-med(R.vz.slice(-10));
+  const R_=Math.min(3,o.jit/1),B_=Math.min(3,Math.max(0,(15-o.hnr)/5)),A_=Math.min(3,Math.max(0,(-42-o.db)/6)),S_=Math.min(3,Math.max(0,(o.cent-1800)/700)),G_=Math.min(3,(R_+B_+A_+S_)/4*1.6);
+  const k=Object.assign({},o,{G:G_,Rr:R_,B:B_,As:A_,S:S_,pros,sil});
+  if(o.voz)R.prev=rg(o.f0,70,400);
+  k.n=[R.prev,rg(o.db,-70,-10),rg(o.hnr,0,30),pros,G_/3,o.flow,o.cq,rg(o.floor,-90,-30),rg(o.cent,200,4000),sil,0];
+  k.n[10]=med(k.n.slice(0,8));return k
+}
+
+function analisar(){
+  const b=R.buf,sr=R.sr;R.an.getFloatTimeDomainData(b);R.an.getFloatFrequencyData(R.fb);
+  let e=0;for(let i=0;i<b.length;i++)e+=b[i]*b[i];const rms=Math.sqrt(e/b.length),db=20*Math.log10(rms+1e-6);
+  const d=Math.max(1,Math.round(sr/12000)),n=512,x=new Float32Array(n),off=b.length-n*d;
+  for(let i=0;i<n;i++){let s=0;for(let j=0;j<d;j++)s+=b[off+i*d+j]||0;x[i]=s/d}
+  const fs=sr/d,lmin=Math.floor(fs/400),lmax=Math.floor(fs/70);let r0=1e-9;for(let i=0;i<n;i++)r0+=x[i]*x[i];
+  let best=0,bl=lmin;const rr=[];
+  for(let l=lmin;l<=lmax;l++){let s=0;for(let i=0;i<n-l;i++)s+=x[i]*x[i+l];s/=r0;rr[l]=s;if(s>best){best=s;bl=l}}
+  for(let l=lmin+1;l<bl;l++)if(rr[l]>=.9*best&&rr[l]>rr[l-1]&&rr[l]>=rr[l+1]){bl=l;best=rr[l];break}
+  R.fl.push(db);if(R.fl.length>80)R.fl.shift();const floor=Math.min(...R.fl);
+  const voz=db>floor+9&&best>.5;let f0=0,jit=D.jit,shim=D.shim;
+  if(voz){const T=bl/fs;f0=1/T;R.P.push(T);R.A.push(rms);if(R.P.length>10){R.P.shift();R.A.shift()}
+    if(R.P.length>3){let s=0,q=0;for(let i=1;i<R.P.length;i++){s+=Math.abs(R.P[i]-R.P[i-1]);q+=Math.abs(20*Math.log10(R.A[i]/R.A[i-1]))}jit=s/(R.P.length-1)/med(R.P)*100;shim=q/(R.A.length-1)}}
+  else{R.P=[];R.A=[]}
+  const bc=Math.min(.98,Math.max(.02,best)),hnr=10*Math.log10(bc/(1-bc)),fb=R.fb,nb=fb.length,bh=sr/2/nb,sp=new Uint8Array(64),pw=[];
+  let lo=0,hi=0,cs=0,ct=0;
+  for(let j=0;j<64;j++){const f1=60*Math.pow(8000/60,j/64),f2=60*Math.pow(8000/60,(j+1)/64);let m=-140;
+    for(let k=Math.floor(f1/bh);k<=Math.max(Math.floor(f2/bh),Math.floor(f1/bh));k++)if(fb[k]>m)m=fb[k];
+    sp[j]=Math.max(0,Math.min(255,(m+100)*3.2));const p=Math.pow(10,m/10),fc=Math.sqrt(f1*f2);cs+=fc*p;ct+=p;if(fc<1000)lo+=p;else if(fc<5000)hi+=p}
+  const cent=ct?cs/ct:0,tilt=10*Math.log10((hi+1e-12)/(lo+1e-12));
+  const k0=Math.ceil(60/bh),k1=Math.floor(4000/bh);let mL=0;for(let k=k0;k<k1;k++)mL+=Math.max(-140,fb[k]);mL/=(k1-k0);
+  let cmax=0,csum=0,cn=0;for(let q=.001;q<.02;q+=.0004){let s=0;for(let k=k0;k<k1;k++)s+=(Math.max(-140,fb[k])-mL)*Math.cos(6.2832*k*bh*q);s=Math.abs(s)/(k1-k0);csum+=s;cn++;if(q>.0025&&q<.014&&s>cmax)cmax=s}
+  const cpp=Math.max(0,cmax-csum/cn);
+  let cq=.5,flow=.3;
+  if(voz){const a=Math.max(...[-1,0,1].map(o=>fb[Math.round(f0/bh)+o]||-140)),c=Math.max(...[-1,0,1].map(o=>fb[Math.round(2*f0/bh)+o]||-140));cq=Math.max(.1,Math.min(.9,.6-(a-c)/40));flow=Math.min(1,.15+.5*(1-bc)+.35*rg(db,-60,-10))}
+  return mk({f0,db,jit,shim,hnr,cpp,cent,tilt,voz,flow,cq,floor,sp})
+}
+
+function analisarSessao(tk){
+  const dur=tk.length/20,V=tk.filter(k=>k.voz),r=(v,d=1)=>+(+v).toFixed(d);
+  const est=a=>{if(!a.length)return null;const m=med(a);return{m:r(m,2),min:r(Math.min(...a),2),max:r(Math.max(...a),2),dp:r(Math.sqrt(med(a.map(q=>(q-m)**2))),2)}};
+  const segs=[];let sil=0,cur=null;
+  tk.forEach((k,i)=>{if(k.voz){if(!cur||sil>=6){if(cur)segs.push(cur);cur={t0:i/20,f:[],ar:0,n:0}}sil=0;cur.n++;cur.ar+=Math.pow(10,k.db/20)*.05;if(k.f0)cur.f.push(k.f0)}else sil++});
+  if(cur)segs.push(cur);
+  const ret=segs.map(s=>({t:r(s.t0),dur:r(s.n/20),f0:Math.round(med(s.f)),area:r(s.ar*100,2)}));
+  let pk=0;tk.forEach((k,i)=>{if(k.voz&&i>3&&i<tk.length-3&&k.db>tk[i-1].db&&k.db>=tk[i+1].db&&k.db-Math.min(...tk.slice(i-3,i+4).map(q=>q.db))>4)pk++});
+  const sec=[];for(let s=0;s*20<tk.length;s++){const B=tk.slice(s*20,s*20+20),Vv=B.filter(k=>k.voz);sec.push({db:med(B.map(k=>k.db)),f0:Vv.length?med(Vv.map(k=>k.f0)):0,hnr:med(Vv.map(k=>k.hnr)),jit:med(Vv.map(k=>k.jit)),shim:med(Vv.map(k=>k.shim)),cpp:med(Vv.map(k=>k.cpp))})}
+  const m=a=>r(med(V.map(k=>k[a])),2);
+  const res={dur:r(dur),fon:r(V.length/Math.max(1,tk.length),2),pausas:Math.max(0,segs.length-1),silabas_s:r(pk/Math.max(.5,V.length/20)),
+    f0:est(V.map(k=>k.f0)),db:est(V.map(k=>k.db)),jit:est(V.map(k=>k.jit)),shim:est(V.map(k=>k.shim)),hnr:est(V.map(k=>k.hnr)),cpp:est(V.map(k=>k.cpp)),cent:est(V.map(k=>k.cent)),
+    grbas_est:{G:m('G'),R:m('Rr'),B:m('B'),A:m('As'),S:m('S')},fluxo_proxy:m('flow'),contato_proxy:m('cq'),piso_ruido_dbfs:r(med(tk.map(k=>k.floor)),0),
+    retomadas:ret.slice(0,12),por_s:{f0:sec.map(s=>Math.round(s.f0)),db:sec.map(s=>r(s.db)),hnr:sec.map(s=>r(s.hnr)),jit:sec.map(s=>r(s.jit,2))},d_db_por_s:sec.map((s,i)=>i?r(s.db-sec[i-1].db):0)};
+  return{res,sec,ret}
+}
+function espectroide(tk,sec,ret,dur){
+  const W=900,Hh=540,c=document.createElement('canvas');c.width=W;c.height=Hh;const x=c.getContext('2d'),n=tk.length||1,w=W/n+.8;
+  x.fillStyle='#04060b';x.fillRect(0,0,W,Hh);
+  tk.forEach((k,i)=>{for(let j=0;j<64;j++){const v=k.sp[j]/255;x.fillStyle=`hsl(${280-v*260},90%,${6+v*58}%)`;x.fillRect(i/n*W,(63-j)*3.9,w,4.5)}});
+  x.strokeStyle='#fde047';x.lineWidth=2;x.beginPath();let pen=false;tk.forEach((k,i)=>{if(k.voz&&k.f0){const y=250-250*Math.log(k.f0/60)/Math.log(8000/60);pen?x.lineTo(i/n*W,y):x.moveTo(i/n*W,y);pen=true}else pen=false});x.stroke();
+  x.fillStyle='#020408';x.fillRect(0,256,W,140);
+  for(let m=0;m<11;m++){x.strokeStyle=GR[m][2];x.lineWidth=1.3;x.beginPath();tk.forEach((k,i)=>{const y=392-k.n[m]*128;i?x.lineTo(i/n*W,y):x.moveTo(i/n*W,y)});x.stroke()}
+  tk.forEach((k,i)=>{x.fillStyle=k.voz?'#0e7490':'#b91c1c';x.fillRect(i/n*W,402,w,22)});
+  x.fillStyle='#020408';x.fillRect(0,430,W,100);const sw=W/Math.max(1,dur);
+  sec.forEach((s,i)=>{const d=i?s.db-sec[i-1].db:0,hh=Math.max(-30,Math.min(30,d*3));x.fillStyle=d>=0?'#22c55e':'#ef4444';x.fillRect(i*sw+2,470-Math.max(hh,0),sw-4,Math.abs(hh)||1);x.fillStyle='#94a3b8';x.font='11px monospace';x.fillText(i+'s',i*sw+3,525)});
+  x.setLineDash([5,4]);x.strokeStyle='#fff';x.lineWidth=1;ret.slice(1).forEach(s=>{const px=s.t/dur*W;x.beginPath();x.moveTo(px,0);x.lineTo(px,440);x.stroke();x.fillStyle='#fff';x.font='bold 11px sans-serif';x.fillText('↻∫'+s.area,px+3,12)});x.setLineDash([]);
+  x.fillStyle='#e2e8f0';x.font='11px sans-serif';x.fillText('Espectrograma 60Hz–8kHz + F0 (amarelo)',6,246);x.fillText('Dimensões I–XI (normalizadas)',6,272);x.fillText('Voz (azul) / Silêncio (vermelho)',6,420);x.fillText('Δ intensidade por segundo (verde sobe, vermelho cai) · ↻ = retomada sonora, ∫ = área da fala',6,448);
+  return c.toDataURL('image/jpeg',.82)
+}
+
+
+async function crsAudio(){
+  if(R.stream)return;
+  R.ctx=new (window.AudioContext||window.webkitAudioContext)();await R.ctx.resume();
+  R.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+  R.an=R.ctx.createAnalyser();R.an.fftSize=2048;R.an.smoothingTimeConstant=.3;R.sr=R.ctx.sampleRate;
+  R.ctx.createMediaStreamSource(R.stream).connect(R.an);R.buf=new Float32Array(2048);R.fb=new Float32Array(1024);H=[]
+}
+
+const b64=u=>{let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s)};
+async function wav(blob){
+  const ab=await blob.arrayBuffer(),AC=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+  const buf=await new AC(1,1,16000).decodeAudioData(ab),oc=new AC(1,Math.ceil(buf.duration*16000),16000),s=oc.createBufferSource();s.buffer=buf;s.connect(oc.destination);s.start();
+  const o=(await oc.startRendering()).getChannelData(0),v=new DataView(new ArrayBuffer(44+o.length*2)),w=(p,t)=>[...t].forEach((c,i)=>v.setUint8(p+i,c.charCodeAt(0)));
+  w(0,'RIFF');v.setUint32(4,36+o.length*2,true);w(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,16000,true);v.setUint32(28,32000,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,o.length*2,true);
+  for(let i=0;i<o.length;i++)v.setInt16(44+i*2,Math.max(-1,Math.min(1,o[i]))*32767,true);return new Uint8Array(v.buffer)
+}
+async function pcm16(blob){const ab=await blob.arrayBuffer(),AC=window.OfflineAudioContext||window.webkitOfflineAudioContext,buf=await new AC(1,1,16000).decodeAudioData(ab),oc=new AC(1,Math.ceil(buf.duration*16000),16000),s=oc.createBufferSource();s.buffer=buf;s.connect(oc.destination);s.start();return (await oc.startRendering()).getChannelData(0)}
+
+const tx_=p=>ch&&ch.send({type:'broadcast',event:'sala',payload:p}),pub=p=>sb.storage.from('consultas').getPublicUrl(p).data.publicUrl;
+(async()=>{U=await eu();
+  const [{data:me},{data:pil},{data:at}]=await Promise.all([sb.from('profiles').select('*').eq('id',U.id).maybeSingle(),sb.from('pilotos_perfil').select('id').eq('id',U.id).maybeSingle(),sb.from('atendimento_fila').select('*').eq('id',A).maybeSingle()]);
+  ME=me||{};PILOT=Q.get('role')==='pilot'&&!!pil;PAC=at;
+  if(!at||(!PILOT&&at.user_id!==U.id)){$('perg').textContent='Atendimento não encontrado ou sem permissão.';return}
+  $('volta').href=PILOT?'dashboard-pilot.html':'dashboard-user.html';
+  $('titulo').textContent=PILOT?'Sala • Controle do médico':'Sala • Espelho do médico (somente leitura)';
+  if(PILOT){$('ctlP').style.display='grid';$('ctlIA').style.display='grid'}else $('ctlU').style.display='block';
+  ch=sb.channel('sala-'+A,{config:{broadcast:{self:false}}}).on('broadcast',{event:'sala'},({payload})=>onMsg(payload)).subscribe();
+  await carregar();setInterval(carregar,6000)})();
+setInterval(()=>{if(!R.an)return;try{const k=analisar();D.jit=k.jit;D.shim=k.shim;if(rec)rec.tk.push(k)}catch(e){}},50);
+
+function onMsg(p){
+  if(p.t==='perg')$('perg').textContent=p.txt;
+  else if(p.t==='cmd'&&!PILOT)p.cmd==='start'?iniciar():parar();
+  else if(p.t==='sel'){sel=p.i;render()}
+  else if(p.t==='ia')addIA(p.txt,p.q);
+  else if(p.t==='novo')carregar();
+  else if(p.t==='st'&&PILOT)$('stt').textContent=p.txt;
+  else if(p.t==='fim'&&!PILOT)$('fimU').innerHTML='✅ Consulta concluída. O médico vai emitir o relatório. <a href="dashboard-user.html">Voltar à sala de espera</a>'
+}
+async function carregar(){
+  const {data}=await sb.from('consulta_sessoes').select('*').eq('atendimento_id',A).order('criado_em',{ascending:false}).limit(3);
+  S=data||[];if(sel>=S.length)sel=0;render();
+  if(PILOT)for(const s of S)if(!s.transcricao&&!TR[s.id]){TR[s.id]=1;transcrever(s)}
+}
+function render(){
+  $('slots').innerHTML=[0,1,2].map(i=>{const s=S[i];return s?`<div class="${i==sel?'on':''}" onclick="${PILOT?`selecionar(${i})`:''}"><b>Sessão ${i+1}${i?'':' • atual'}</b><img src="${s.img}">${s.dur}s · ${s.res.f0?Math.round(s.res.f0.m)+' Hz':'—'}</div>`:`<div><b>Sessão ${i+1}</b><br>vazio</div>`}).join('');
+  const s=S[sel];if(!s){$('vimg').style.display='none';$('vmet').innerHTML='<p>Nenhuma sessão capturada ainda.</p>';return}
+  $('vimg').src=s.img;$('vimg').style.display='block';const u=pub(s.path);if($('au').dataset.u!==u){$('au').src=u;$('au').dataset.u=u}
+  const r=s.res,m=x=>x?x.m:'—',g=r.grbas_est;
+  $('vmet').innerHTML=`<p>F0 ${m(r.f0)} Hz · intensidade ${m(r.db)} dBFS · jitter ${m(r.jit)}% · shimmer ${m(r.shim)} dB · HNR ${m(r.hnr)} dB · CPP~ ${m(r.cpp)}<br>fonação ${Math.round(r.fon*100)}% · pausas ${r.pausas} · sílabas/s ${r.silabas_s} · GRBAS~ G${g.G} R${g.R} B${g.B} A${g.A} S${g.S}<br><b>Transcrição:</b> ${esc(s.transcricao||'—')}</p>`
+}
+function selecionar(i){sel=i;render();tx_({t:'sel',i})}
+function addIA(t,q){const b=$('iab');if(b.textContent==='—')b.textContent='';b.textContent+=(q?'▸ '+q+'\n':'')+t+'\n\n';b.scrollTop=1e9}
+
+/* ---- médico ---- */
+function perguntar(){const t=$('pin').value.trim();if(!t)return;$('perg').textContent=t;tx_({t:'perg',txt:t})}
+function capturar(){capt=!capt;tx_({t:'cmd',cmd:capt?'start':'stop'});$('bcap').textContent=capt?'⏹ Parar captura':'▶ Iniciar captura';$('stt').textContent=capt?'capturando…':'aguardando'}
+async function aiCall(prompt,imgs){
+  const k=ME.ai_key,pv=ME.ai_provider||'gemini',sys='Você é a IA do cockpit de um médico do Elayon Health (termômetro vocal CRS). Não emita diagnóstico: descreva achados acústicos estimados (microfone de celular), compare sessões, aponte pontos de atenção para o médico avaliar e sugira parâmetros e exercícios de autoexame. Linguagem clara, em português do Brasil, objetiva.';
+  if(!k)throw new Error('Configure a chave de IA no perfil do médico.');
+  if(pv==='openai'){const c=[{type:'text',text:prompt},...imgs.map(u=>({type:'image_url',image_url:{url:u}}))];
+    return (await (await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+k},body:JSON.stringify({model:'gpt-4o',messages:[{role:'system',content:sys},{role:'user',content:c}]})})).json()).choices[0].message.content}
+  const parts=[{text:prompt},...imgs.map(u=>({inline_data:{mime_type:'image/jpeg',data:u.split(',')[1]}}))];
+  return (await (await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${k}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[{role:'user',parts}]})})).json()).candidates[0].content.parts[0].text
+}
+const ctx=()=>JSON.stringify(S.map((s,i)=>({sessao:i+1,res:s.res,transcricao:s.transcricao})));
+async function rodarIA(q,prompt){$('msg').textContent='🧠 IA analisando…';try{const t=(await aiCall(prompt,S.map(s=>s.img))).trim();addIA(t,q);tx_({t:'ia',txt:t,q});$('msg').textContent=''}catch(e){$('msg').textContent='❌ '+e.message}}
+function analisarIA(){if(!S.length)return;rodarIA('Análise das sessões',`Analise as ${S.length} sessões (a 1ª é a mais recente). Dados: ${ctx()}. As imagens anexas são os espectroides, na mesma ordem. Entregue: 1) leitura dos gráficos em linguagem simples para explicar ao paciente; 2) comparação entre as sessões; 3) pontos de atenção para o médico; 4) faixas sugeridas de autoexame (F0, jitter, shimmer, HNR, pausas) e exercícios.`)}
+function perguntarIA(){const q=$('iq').value.trim();if(!q||!S.length)return;$('iq').value='';rodarIA(q,`Pergunta do médico: ${q}. Dados das sessões: ${ctx()}. Imagens anexas = espectroides na ordem.`)}
+async function concluir(){await sb.from('atendimento_fila').update({status:'analise'}).eq('id',A);tx_({t:'fim'});location.href='dashboard-pilot.html?lau='+A}
+async function transcrever(s){
+  if(!ME.ai_key)return;
+  try{const blob=await (await fetch(pub(s.path))).blob(),w=await wav(blob);let t='';
+    if((ME.ai_provider||'gemini')==='openai'){const f=new FormData();f.append('file',new Blob([w],{type:'audio/wav'}),'a.wav');f.append('model','whisper-1');f.append('language','pt');t=(await (await fetch('https://api.openai.com/v1/audio/transcriptions',{method:'POST',headers:{Authorization:'Bearer '+ME.ai_key},body:f})).json()).text||''}
+    else{t=(await (await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${ME.ai_key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'Transcreva fielmente a fala em português do Brasil. Responda somente com a transcrição. Se não houver fala, responda exatamente: (silêncio)'},{inline_data:{mime_type:'audio/wav',data:b64(w)}}]}]})})).json()).candidates[0].content.parts[0].text}
+    t=t.trim();if(t==='(silêncio)')t='(sem fala)';await sb.from('consulta_sessoes').update({transcricao:t}).eq('id',s.id);carregar()}catch(e){}
+}
+
+/* ---- paciente: só libera o microfone; o médico comanda a captura ---- */
+async function permitirMic(){try{await crsAudio();$('bmic').textContent='✅ Microfone liberado';tx_({t:'st',txt:'microfone liberado'})}catch(e){alert(e&&e.name==='NotReadableError'?'Microfone em uso por outro app ou aba.':'Microfone indisponível')}}
+function iniciar(){
+  if(!R.an){tx_({t:'st',txt:'⚠️ paciente ainda não liberou o microfone'});return}
+  if(rec)return;rec={tk:[]};chunks=[];mr=new MediaRecorder(R.stream);mr.ondataavailable=e=>chunks.push(e.data);mr.onstop=enviar;mr.start();
+  $('stt').textContent='● gravando (comando do médico)';tx_({t:'st',txt:'● paciente gravando'})
+}
+function parar(){if(rec&&mr&&mr.state!=='inactive'){$('stt').textContent='enviando…';mr.stop()}}
+async function enviar(){
+  const rt=rec;rec=null;if(!rt.tk.length){tx_({t:'st',txt:'⚠️ captura vazia'});return}
+  tx_({t:'st',txt:'⏳ processando áudio…'});
+  const blob=new Blob(chunks,{type:mr.mimeType||'audio/webm'}),{res,sec,ret}=analisarSessao(rt.tk),img=espectroide(rt.tk,sec,ret,Math.max(1,res.dur)),path=`${A}/${Date.now()}.webm`;
+  const up=await sb.storage.from('consultas').upload(path,blob,{contentType:blob.type});if(up.error){tx_({t:'st',txt:'❌ upload: '+up.error.message});return}
+  const ins=await sb.from('consulta_sessoes').insert({atendimento_id:A,user_id:U.id,path,dur:res.dur,res,img});if(ins.error){tx_({t:'st',txt:'❌ '+ins.error.message});return}
+  const {data}=await sb.from('consulta_sessoes').select('id,path').eq('atendimento_id',A).order('criado_em',{ascending:false});
+  for(const o of (data||[]).slice(3)){await sb.storage.from('consultas').remove([o.path]);await sb.from('consulta_sessoes').delete().eq('id',o.id)}   // FIFO: ficam as 3 últimas
+  $('stt').textContent='aguardando';tx_({t:'st',txt:'✅ sessão enviada'});tx_({t:'novo'});carregar()
+}
+</script></body></html>
