@@ -1,255 +1,123 @@
 <!doctype html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Elayon Health V1 • Ecossistema de Saúde Simbiótica</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root {
-      --bg-gradient: radial-gradient(circle at top left, #f4fdf6, #e2f4ea);
-      --card-bg: #ffffff;
-      --text-main: #0a2a2f;
-      --text-muted: #5a7b80;
-      --border-line: #d2e6dc;
-      --accent-green: #2a9d8f;
-      --accent-gradient: linear-gradient(135deg, #2a9d8f, #218380);
-      --hover-bg: #f0f8f5;
-    }
-
-    body {
-      background: var(--bg-gradient);
-      color: var(--text-main);
-      font-family: system-ui, -apple-system, sans-serif;
-      margin: 0; padding: 0;
-      min-height: 100vh;
-      display: flex; flex-direction: column; justify-content: center; align-items: center;
-      position: relative;
-    }
-
-    .top-right-logo {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      border: 2px solid var(--accent-green);
-      object-fit: cover;
-      background: #fff;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    }
-
-    .minimal-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-line);
-      border-radius: 24px;
-      padding: 32px;
-      width: 100%; max-width: 480px;
-      text-align: center;
-      box-sizing: border-box;
-      margin: 16px;
-      box-shadow: 0 15px 35px rgba(42, 157, 143, 0.08);
-    }
-
-    .role-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin: 20px 0;
-    }
-
-    .role-card {
-      background: #f8fbfa;
-      border: 2px solid var(--border-line);
-      border-radius: 16px;
-      padding: 18px 10px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      color: var(--text-main);
-    }
-
-    .role-card:hover, .role-card.active {
-      border-color: var(--accent-green);
-      background: var(--hover-bg);
-      transform: translateY(-2px);
-    }
-
-    .role-icon { font-size: 26px; display: block; margin-bottom: 6px; }
-    .role-title { font-size: 14px; font-weight: 800; color: var(--text-main); }
-    .role-desc { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
-
-    .input-box {
-      text-align: left;
-      margin-bottom: 14px;
-    }
-
-    .input-box label {
-      display: block;
-      font-size: 10px;
-      font-weight: 800;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      margin-bottom: 6px;
-    }
-
-    .input-field {
-      width: 100%;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid var(--border-line);
-      background: #fafcfb;
-      color: var(--text-main);
-      font-family: inherit;
-      font-size: 13px;
-      outline: none;
-      box-sizing: border-box;
-    }
-
-    .input-field:focus { border-color: var(--accent-green); background: #fff; }
-
-    .guidance-box {
-      background: #f4fbf7;
-      border-left: 4px solid var(--accent-green);
-      border-radius: 8px;
-      padding: 12px;
-      font-size: 11px;
-      color: var(--text-muted);
-      text-align: left;
-      margin-bottom: 16px;
-      line-height: 1.4;
-    }
-
-    .guidance-box strong { color: var(--text-main); }
-
-    .btn-enter {
-      width: 100%;
-      background: var(--accent-gradient);
-      color: #ffffff;
-      font-weight: 800;
-      font-size: 14px;
-      padding: 16px;
-      border: none;
-      border-radius: 14px;
-      cursor: pointer;
-      transition: 0.2s;
-      box-shadow: 0 4px 15px rgba(42, 157, 143, 0.2);
-    }
-
-    .btn-enter:hover { opacity: 0.95; transform: scale(0.99); }
-
-    .investor-note {
-      margin-top: 18px;
-      font-size: 10px;
-      color: var(--text-muted);
-      border-top: 1px solid var(--border-line);
-      padding-top: 12px;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Elayon Health • Ecossistema de Saúde Simbiótica</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:radial-gradient(circle at top left,#f4fdf6,#e2f4ea);--card:#fff;--ink:#0a2a2f;--mut:#5a7b80;--line:#d2e6dc;--ac:#2a9d8f;--grad:linear-gradient(135deg,#2a9d8f,#218380);--hov:#f0f8f5}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,sans-serif;margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:28px 26px;width:100%;max-width:480px;text-align:center;box-shadow:0 15px 35px rgba(42,157,143,.08)}
+.logo{width:92px;height:92px;border-radius:22px;object-fit:contain;background:#fafaf8;border:2px solid var(--ac);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+h1{font-size:19px;margin:10px 0 2px}.sub{font-size:11px;color:var(--mut);margin:0 0 4px}.lema{font-size:10px;color:var(--ac);font-weight:800;letter-spacing:.4px;text-transform:uppercase;margin:0 0 14px}
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.role{background:#f8fbfa;border:2px solid var(--line);border-radius:16px;padding:16px 8px;cursor:pointer;transition:.2s;color:var(--ink)}
+.role:hover,.role.on{border-color:var(--ac);background:var(--hov);transform:translateY(-2px)}
+.role i{font-size:26px;display:block;font-style:normal;margin-bottom:4px}.role b{font-size:14px}.role small{display:block;font-size:10px;color:var(--mut);margin-top:3px}
+.box{background:#f4fbf7;border-left:4px solid var(--ac);border-radius:8px;padding:12px;font-size:11px;color:var(--mut);text-align:left;line-height:1.5;margin-bottom:12px}.box b{color:var(--ink)}
+.box ol{margin:6px 0 0 16px;padding:0}
+.rota{border:1px dashed var(--ac);border-radius:12px;padding:10px 12px;font-size:12px;text-align:left;margin-bottom:12px;background:#fff}.rota small{display:block;color:var(--mut);font-size:10px;text-transform:uppercase;font-weight:800;margin-bottom:3px}
+label{display:block;font-size:10px;font-weight:800;color:var(--mut);text-transform:uppercase;margin:0 0 5px;text-align:left}
+input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#fafcfb;color:var(--ink);font:inherit;font-size:13px;outline:none;margin-bottom:12px}
+input:focus{border-color:var(--ac);background:#fff}
+.btn{width:100%;background:var(--grad);color:#fff;font-weight:800;font-size:14px;padding:15px;border:none;border-radius:14px;cursor:pointer;transition:.2s;box-shadow:0 4px 15px rgba(42,157,143,.2);display:block;text-decoration:none}
+.btn:hover{opacity:.95;transform:scale(.99)}
+.btn.g{background:#f0f7f7;color:var(--ac);border:1px solid var(--ac);box-shadow:none;margin-top:8px;font-size:12px;padding:11px}
+.msg{font-size:12px;font-weight:600;min-height:16px;margin-top:8px;color:#d9534f}.who{font-size:11px;color:var(--mut);margin-bottom:6px}.who b{color:var(--ac)}
+.note{margin-top:16px;font-size:10px;color:var(--mut);border-top:1px solid var(--line);padding-top:12px}
+</style>
 </head>
 <body>
+<main class="card">
+  <img class="logo" src="IMG-20260218-WA0016.jpg" alt="Elayon" onerror="this.style.display='none'">
+  <h1>Elayon Health</h1>
+  <p class="sub">Plataforma de Escuta Simbiótica & Triagem</p>
+  <p class="lema">Humanidade e Tecnologia em Harmonia</p>
 
-  <img src="IMG-20260218-WA0016.jpg" alt="Elayon Logo" class="top-right-logo" onerror="this.src='https://via.placeholder.com/42';" />
+  <!-- ENTRAR -->
+  <div id="login" style="display:none">
+    <label>E-mail</label><input id="em" type="email" autocomplete="username">
+    <label>Senha</label><input id="pw" type="password" autocomplete="current-password">
+    <button class="btn" onclick="entrar()">Entrar</button>
+    <a class="btn g" href="https://project-f7o5k.vercel.app/cadastro.html">Criar conta</a>
+    <div class="msg" id="msg"></div>
+  </div>
 
-  <main class="minimal-card">
-    <h1 style="font-size:18px; margin:0 0 4px 0; color:var(--text-main);">Elayon Health</h1>
-    <p style="font-size:11px; color:var(--text-muted); margin:0 0 16px 0;">
-      Plataforma de Escuta Simbiótica & Triagem ELA
-    </p>
-
-    <!-- Escolha de Papel Minimalista -->
-    <div class="role-grid">
-      <div class="role-card active" id="cardUser" onclick="escolherPapel('usuario')">
-        <span class="role-icon">🗣️</span>
-        <div class="role-title">Usuário</div>
-        <div class="role-desc">Paciente / Auto-consulta</div>
-      </div>
-
-      <div class="role-card" id="cardPilot" onclick="escolherPapel('piloto')">
-        <span class="role-icon">👨‍⚕️</span>
-        <div class="role-title">Piloto</div>
-        <div class="role-desc">Médico / Atendimento</div>
-      </div>
+  <!-- DEFINIR FUNÇÃO E SEGUIR -->
+  <div id="app" style="display:none">
+    <div class="who" id="who"></div>
+    <div class="roles">
+      <div class="role on" id="rU" onclick="papel('usuario')"><i>🗣️</i><b>Usuário</b><small>Paciente / Auto-consulta</small></div>
+      <div class="role" id="rP" onclick="papel('piloto')"><i>👨‍⚕️</i><b>Piloto</b><small>Médico / Atendimento</small></div>
     </div>
+    <div class="box" id="guia"></div>
+    <div class="rota" id="rota"><small>Sua posição na jornada</small><span id="rotaT">Verificando…</span></div>
+    <a class="btn" id="go" href="#">Continuar</a>
+    <a class="btn g" id="painel" href="#">Ir ao painel inicial</a>
+    <button class="btn g" onclick="sair()">Sair da conta</button>
+  </div>
 
-    <!-- Caixa Dinâmica de Explicação -->
-    <div class="guidance-box" id="guidanceBox">
-      <strong>Orientação ao Usuário:</strong> Você terá acesso à auto-consulta de seus gráficos vocais e exercícios orientados pela IA, consumindo os parâmetros da calibração estabelecida.
-    </div>
+  <div class="note">💡 <b>Nota para investidores:</b> o Elayon Health transforma o silêncio e as micro-variações fônicas de pacientes atípicos em dados clínicos estruturados em tempo real. É um termômetro de sinais vocais e não substitui o julgamento clínico.</div>
+</main>
 
-    <!-- Seção Dinâmica do Usuário -->
-    <div id="sectionUser">
-      <div class="input-box">
-        <label for="userIdInput">Seu ID de Usuário (Supabase):</label>
-        <input type="text" id="userIdInput" class="input-field" value="c708823f-a48a-41f0-948f-287eee484821" />
-      </div>
-    </div>
+<script>
+const SB_URL='https://xlktkelumtpugidnecbj.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa3RrZWx1bXRwdWdpZG5lY2JqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NzU4OTgsImV4cCI6MjEwNjM1MTg5OH0.EIn9oiFl7PmhYhaMlvYKljeFVZflRCbxD_HT65-88XM';
+const COCKPIT='https://project-f7o5k.vercel.app/cockpit.html';   // Vibes 8 (elayon-ia-api)
+const sb=supabase.createClient(SB_URL,SB_KEY),$=id=>document.getElementById(id);
+let P='usuario',U=null,ehPiloto=false,ROTAS={};
 
-    <!-- Seção Dinâmica do Piloto -->
-    <div id="sectionPilot" style="display:none;">
-      <div class="input-box">
-        <label for="pilotTargetIdInput">ID do Paciente a Acompanhar:</label>
-        <input type="text" id="pilotTargetIdInput" class="input-field" value="c708823f-a48a-41f0-948f-287eee484821" />
-      </div>
-    </div>
+const GUIA={
+ usuario:'<b>Usuário (paciente):</b> sua jornada em 3 passos.<ol><li>Solicite a consulta na sala de espera.</li><li>Entre na sala quando o médico chamar: ele conduz a captura de 3 áudios e você acompanha em espelho.</li><li>Com o laudo assinado, ative a camada Health no Vibes 8 (2 tokens por uso).</li></ol>',
+ piloto:'<b>Piloto (médico):</b> você assume a condução clínica.<ol><li>Registre suas credenciais e assuma a responsabilidade.</li><li>Atenda a fila, conduza a escuta na sala e analise as 3 sessões com sua IA.</li><li>Parametrize o autoexame, assine o laudo e libere o paciente.</li></ol>'};
 
-    <button class="btn-enter" id="btnAvancar" onclick="entrarNoPainel()">
-      🚀 Entrar no Painel do Usuário
-    </button>
+function papel(p){
+  P=p;$('rU').classList.toggle('on',p==='usuario');$('rP').classList.toggle('on',p==='piloto');
+  $('guia').innerHTML=GUIA[p];
+  const r=ROTAS[p];if(!r)return;
+  $('rotaT').textContent=r.txt;$('go').href=r.url;$('go').textContent=r.btn;$('painel').href=p==='usuario'?'dashboard-user.html':'dashboard-pilot.html';
+  $('painel').style.display=r.url===$('painel').href.split('/').pop()?'none':'block'
+}
 
-    <div class="investor-note">
-      💡 <strong>Nota para Investidores:</strong> O Elayon Health revoluciona a telemedicina ao transformar o silêncio e as micro-variações fônicas de pacientes atípicos em dados clínicos estruturados de alta precisão em tempo real.
-    </div>
-  </main>
+async function rotaUsuario(){
+  const [{data:a},{data:p}]=await Promise.all([
+    sb.from('atendimento_fila').select('id,status').eq('user_id',U.id).order('criado_em',{ascending:false}).limit(1).maybeSingle(),
+    sb.from('profiles').select('health_status,health_relatorio').eq('id',U.id).maybeSingle()]);
+  const ok=p&&(p.health_status==='ok'||p.health_relatorio),s=a&&a.status;
+  if(s==='em_atendimento')return{url:'sala.html?a='+a.id,txt:'🟡 O médico está chamando você para a sala de consulta.',btn:'🎙️ Entrar na sala de consulta'};
+  if(s==='pendente')return{url:'dashboard-user.html',txt:'⏳ Você está na fila, aguardando o médico.',btn:'Ir para a sala de espera'};
+  if(s==='analise')return{url:'dashboard-user.html',txt:'🧠 Suas 3 sessões foram capturadas. O médico está analisando.',btn:'Acompanhar na sala de espera'};
+  if(ok)return{url:COCKPIT,txt:'🟢 Health calibrado. O laudo já foi emitido.',btn:'🚀 Ir para o Vibes 8'};
+  return{url:'dashboard-user.html',txt:'🩺 Você ainda não solicitou consulta. Comece pela sala de espera.',btn:'🚀 Entrar na sala de espera'}
+}
+async function rotaPiloto(){
+  if(!ehPiloto)return{url:'dashboard-pilot.html',txt:'🛡️ Complete suas credenciais (CRM/CRFa/CRP) para atender.',btn:'🛡️ Registrar credenciais'};
+  const {data:m}=await sb.from('atendimento_fila').select('id,status').eq('piloto_id',U.id).in('status',['em_atendimento','analise']).order('criado_em',{ascending:false}).limit(1).maybeSingle();
+  if(m&&m.status==='em_atendimento')return{url:'sala.html?a='+m.id+'&role=pilot',txt:'🎙️ Você tem um paciente em atendimento. Retome a sala.',btn:'🎙️ Retomar a sala'};
+  if(m&&m.status==='analise')return{url:'dashboard-pilot.html?lau='+m.id,txt:'📝 Há um laudo aguardando sua assinatura.',btn:'📝 Emitir laudo'};
+  const {count}=await sb.from('atendimento_fila').select('id',{count:'exact',head:true}).eq('status','pendente');
+  return{url:'dashboard-pilot.html',txt:count?`🚨 ${count} paciente(s) na fila de atendimento.`:'✅ Nenhum paciente na fila agora.',btn:'👨‍⚕️ Abrir central do piloto'}
+}
 
-  <script>
-    let papelSelecionado = 'usuario';
-    let tokensGlobal = 100;
+async function sair(){await sb.auth.signOut();location.reload()}
+async function entrar(){
+  const {error}=await sb.auth.signInWithPassword({email:$('em').value.trim(),password:$('pw').value});
+  if(error)$('msg').textContent=error.message;else location.reload()
+}
 
-    // Captura automática de parâmetros vindos da API/Cockpit (URL)
-    window.addEventListener('DOMContentLoaded', () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const userIdParam = urlParams.get('user_id');
-      const tokensParam = urlParams.get('tokens');
-
-      if (userIdParam) {
-        document.getElementById('userIdInput').value = userIdParam;
-        document.getElementById('pilotTargetIdInput').value = userIdParam;
-      }
-      if (tokensParam) {
-        tokensGlobal = tokensParam;
-      }
-    });
-
-    function escolherPapel(papel) {
-      papelSelecionado = papel;
-      document.getElementById('cardUser').classList.toggle('active', papel === 'usuario');
-      document.getElementById('cardPilot').classList.toggle('active', papel === 'piloto');
-
-      document.getElementById('sectionUser').style.display = (papel === 'usuario') ? 'block' : 'none';
-      document.getElementById('sectionPilot').style.display = (papel === 'piloto') ? 'block' : 'none';
-
-      const guidanceBox = document.getElementById('guidanceBox');
-      const btn = document.getElementById('btnAvancar');
-
-      if (papel === 'usuario') {
-        guidanceBox.innerHTML = `<strong>Orientação ao Usuário:</strong> Você terá acesso à auto-consulta de seus gráficos vocais e exercícios orientados pela IA, consumindo os parâmetros da calibração estabelecida.`;
-        btn.textContent = '🚀 Entrar no Painel do Usuário';
-      } else {
-        guidanceBox.innerHTML = `<strong>Responsabilidade do Médico (Piloto):</strong> Você assume a condução clínica da escuta simbiótica, validação do áudio bruto isolado, parametrização da evolução e assinatura do relatório final de ELA.`;
-        btn.textContent = '👨‍⚕️ Acessar Painel do Piloto';
-      }
-    }
-
-    function entrarNoPainel() {
-      if (papelSelecionado === 'usuario') {
-        const uid = document.getElementById('userIdInput').value.trim();
-        window.location.href = `dashboard-user.html?user_id=${encodeURIComponent(uid)}&tokens=${encodeURIComponent(tokensGlobal)}`;
-      } else {
-        const targetId = document.getElementById('pilotTargetIdInput').value.trim();
-        window.location.href = `dashboard-pilot.html?target_id=${encodeURIComponent(targetId)}`;
-      }
-    }
-  </script>
+(async()=>{
+  const h=new URLSearchParams(location.hash.slice(1));
+  if(h.get('token')&&h.get('rt')){await sb.auth.setSession({access_token:h.get('token'),refresh_token:h.get('rt')});history.replaceState(null,'',location.pathname)}
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){$('login').style.display='block';return}
+  U=session.user;$('app').style.display='block';$('who').innerHTML='Conectado: <b>'+U.email+'</b>';
+  const {data:pil}=await sb.from('pilotos_perfil').select('id').eq('id',U.id).maybeSingle();ehPiloto=!!pil;
+  ROTAS.usuario=await rotaUsuario();ROTAS.piloto=await rotaPiloto();
+  if(h.get('origem')==='cockpit'){location.href=ROTAS.usuario.url;return}   // veio do botão Health do Vibes 8
+  papel(ehPiloto?'piloto':'usuario');
+  if(ehPiloto)$('who').innerHTML+=' • <b>conta médica detectada</b>'
+})()
+</script>
 </body>
 </html>
